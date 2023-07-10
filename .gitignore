@@ -1,0 +1,14 @@
+*parquet
+*h5ad
+*png
+*gz
+*html
+.ipynb_checkpoints
+.DS_Store
+__pycache__
+outputs
+*plotly
+*csv
+*npz
+*pkl
+*pickle

@@ -1,0 +1,24 @@
+{
+    "sources": [
+        "source_2",
+        "source_6",
+        "source_10"
+    ],
+    "plate_types": [
+        "TARGET2"
+    ],
+    "batch_key": "Metadata_Source",
+    "label_key": "Metadata_JCP2022",
+    "column_norm": "Metadata_JCP2022",
+    "values_norm": [
+        "DMSO"
+    ],
+    "epsilon_mad": 0.0011857951574861373,
+    "mad_norm": true,
+    "outlier_removal": true,
+    "nan_removal": true,
+    "feature_selection": true,
+    "sphering": true,
+    "sphering_mode": "corr",
+    "sphering_lambda": 2.5463848916334983
+}
