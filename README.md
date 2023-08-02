@@ -1,47 +1,46 @@
-# Batch correction baseline
+# Evaluating batch correction methods for image-based cell profiling
 
-Scripts to evaluate batch correction methods in Target2 plates. This script generates several embedding visualizations and .csv files for quantitative evaluation of batch correction methods.
+This repository contains the source code to reproduce the results in the
+paper: "Evaluating batch correction methods for image-based cell profiling".
+
+These scripts generate several embedding visualizations and .csv files for
+quantitative evaluation of batch correction methods.
 
 ## Installation
 
-This set of commands creates the environment from scratch and install the packages via `pip` command.
+We suggest [Mamba](https://github.com/conda-forge/miniforge#mambaforge) for
+environment management. The following commands create the environment from
+scratch and install the required packages.
 
 ```bash
-./Miniconda3-py39_4.11.0-Linux-x86_64.sh
-conda update -n base -c defaults conda
-conda install mamba -n base -c conda-forge
-mamba init
-mamba create -n bcorrect python=3.10 R=3.6 -c conda-forge
-mamba activate bcorrect
-mamba install r-devtools
-mamba install numpy pandas scvi-tools tensorflow-probability pyarrow plotly scikit-learn sqlalchemy  pytest leidenalg umap-learn numba anndata  scanpy scikit-misc deprecated  llvmlite louvain pillow pydot kneed python-igraph rpy2 pymde python-kaleido
-mamba install anndata2ri -c bioconda
-
-# Install correction methods
-pip install harmonypy pymde scanorama desc
-# pip install mnnpy. # requires installation from source
+mamba env create --file environment.yaml
+mamba activate batchcp
 ```
-
-The following packages are installed manually
+### kBET installation
+Run the following command to install R package `kBET`:
 
 ```bash
-git clone https://github.com/cytomining/pycytominer ~/projects/pycytominer
-cd ~/projects/pycytominer
-pip install -e .
-
-git clone git@github.com:theislab/scib.git ~/projects/scib
-cd ~/projects/scib
-pip install -e .
-
-pip install git+https://github.com/cytomining/copairs.git@v0.0.3
+R -e "devtools::install_github('theislab/kBET')"
 ```
 
-Additionally, in order to run the R package `kBET`, you need to install it through R.
+### scib installation
 
-```R
-devtools::install_github('theislab/kBET')
+The single-cell integration benchmark `scib` package includes `c/c++` code that
+should be compiled specifically for your environment. Thus it requires
+installation from source. More info in [this
+issue](https://github.com/theislab/scib/issues/308)
+
+```bash
+DEST=$HOME/projects/scib
+git clone https://github.com/theislab/scib.git $DEST
+cd $DEST
+git checkout v1.1.4
+pip install -e .
 ```
 
+### mnnpy installation
+Similarly, `mnnpy` may require manual installation. More info at
+https://github.com/chriscainx/mnnpy#install
 
 ## Get input data
 
@@ -50,25 +49,13 @@ Download profiles and metadata:
 source download_data.sh
 ```
 
-## Setup file
+## Run scenarios
+Every scenario reported in the paper can be reproduced running the associated
+bash script. For example, to reproduce Scenario 1:
 
-The [`config.json`](config.json) file has the parameters to define the sources to be the processed as well as the preprocessing steps:
-
- - `"sources": ["source_4"]`: List of sources to be processed.
- - `"plate_types": ["TARGET2"]`: plate types to be loaded.
- - `"epsilon_mad": 1e0`: Hyperparameter used in the Robust MAD Normalization. Only used when `mad_norm` set to `true`.
- - `"mad_norm": true`: Enable the Robust MAD normalization.
- - `"outlier_removal": true`: Enable the outlier removal preprocessing.
- - `"nan_removal": true`: Enable the NaN removal preprocessing.
- - `"feature_selection": true`: Enable the feature selection preprocessing.
- - `"sphering": true`: Enable the sphering alignment.
- - `"sphering_mode": "corr"`: Hyperparameter used to define how the normalization matrix is calculated in the sphering.
- - `"sphering_lambda": null`: Hyperparameter to regularize sphering when it is set to `null` the parameter is auto configured based on the eigenvalues.
-
-## Run the analysis
-To train all the available models, run:
 ```bash
-python run_correction config.json
+source run_scenario_1.sh
 ```
 
-Output is written in the `./outputs/` folder.
+The output is written in the `./outputs/` folder. You can get the scores and
+plots in [Plot_figures.ipynb](Plot_figures.ipynb) notebook.
