@@ -30,6 +30,7 @@ dependencies:
   - pymde=0.1.18
   - python-kaleido=0.2.1
   - anndata2ri=1.1
+  - pynndescent=0.5.8
   - pip:
       - sqlalchemy==1.4.46
       - python-igraph==0.10.4
