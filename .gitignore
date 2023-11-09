@@ -1,3 +1,4 @@
+.snakemake
 *parquet
 *h5ad
 *png

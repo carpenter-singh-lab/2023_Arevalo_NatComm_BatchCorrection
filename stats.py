@@ -16,8 +16,6 @@ logging.basicConfig(format='%(levelname)s:%(asctime)s:%(name)s:%(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DMSO = 'JCP2022_033924'
-
 
 def get_rows(path):
     '''Count the number of rows in a parquet file'''
@@ -146,7 +144,7 @@ def write_negcon_stats(parquet_path, neg_stats_path):
     dframe = pd.read_parquet(parquet_path)
     logger.info('Removing nan and inf columns')
     dframe = remove_nan_infs_columns(dframe)
-    negcon = dframe.query('Metadata_JCP2022 == @DMSO')
+    negcon = dframe.query('Metadata_JCP2022 == "DMSO"')
     logger.info('computing stats for negcons')
     neg_stats = get_stats(negcon)
     logger.info('stats done.')
@@ -165,12 +163,12 @@ def write_variant_features(neg_stats_path, variant_feats_path):
     variant_features.to_parquet(variant_feats_path)
 
 
-def write_normalize_features(neg_stats_path, variant_feats_path, parquet_path,
+def write_normalize_features(parquet_path, neg_stats_path, variant_feats_path,
                              norm_parquet_path):
+    dframe = pd.read_parquet(parquet_path)
     neg_stats = pd.read_parquet(neg_stats_path)
     variant_features = pd.read_parquet(variant_feats_path).variant_features
     neg_stats = neg_stats.query('feature in @variant_features')
-    dframe = pd.read_parquet(parquet_path)
 
     # Compute params for MAD normalization
     mads = neg_stats.pivot(columns='feature',
