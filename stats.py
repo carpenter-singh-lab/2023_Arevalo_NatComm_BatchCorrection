@@ -61,12 +61,12 @@ def load_data(config):
     params = np.concatenate([paths[:, None], slices], axis=1)
     thread_map(read_parquet, params)
 
-    meta = pd.DataFrame(columns=meta_cols,
-                        data=meta.astype(str),
+    meta = pd.DataFrame(data=meta.astype(str),
+                        columns=meta_cols,
                         dtype='category')
     dframe = pd.DataFrame(columns=feat_cols, data=feats)
-    for i, col in enumerate(meta_cols[::-1]):
-        dframe.insert(loc=0, column=col, value=meta[col].values)
+    for i, col in enumerate(meta_cols):
+        dframe[col] = meta[col]
     return dframe
 
 
@@ -77,13 +77,10 @@ def write_parquet(config_path, output_file):
     dframe = load_data(config)
     # Efficient merge
     meta = load_metadata(config['sources'], config['plate_types'])
-    meta = (dframe[[
-        'Metadata_Source', 'Metadata_Plate', 'Metadata_Well'
-    ]].merge(meta,
-             on=['Metadata_Source', 'Metadata_Plate', 'Metadata_Well'],
-             how='left'))
+    foreign_key = ['Metadata_Source', 'Metadata_Plate', 'Metadata_Well']
+    meta = dframe[foreign_key].merge(meta, on=foreign_key, how='left')
     for c in meta:
-        dframe[c] = meta[c].values
+        dframe[c] = meta[c].astype('category')
     dframe.to_parquet(output_file)
 
 
@@ -117,6 +114,15 @@ def get_stats(dframe: pd.DataFrame):
     stats['abs_coef_var'] = ((stats['mad'] /
                               stats['median']).fillna(0).abs().replace(
                                   np.inf, 0))
+    stats = stats.astype({
+        'min': np.float32,
+        'max': np.float32,
+        'count': np.int32,
+        'median': np.float32,
+        'mad': np.float32,
+        'abs_coef_var': np.float32,
+        'feature': 'category'
+    })
     return stats
 
 
