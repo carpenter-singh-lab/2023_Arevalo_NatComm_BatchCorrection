@@ -33,7 +33,7 @@ def prealloc_params(config):
                    'Metadata_Plate']].drop_duplicates().apply(build_path,
                                                               axis=1)).values
 
-    counts = thread_map(get_rows, paths)
+    counts = thread_map(get_rows, paths, leave=False, desc='counts')
     total = sum(counts)
     slices = np.zeros((len(paths), 2), dtype=int)
     slices[:, 1] = np.cumsum(counts)
@@ -85,18 +85,18 @@ def write_parquet(config_path, output_file):
 
 
 def get_stats(dframe: pd.DataFrame):
+    mad_fn = partial(median_abs_deviation, nan_policy="omit", axis=0)
+
     feat_cols = find_feat_cols(dframe)
     dframe = dframe[feat_cols + ['Metadata_Plate']]
-    median = dframe.groupby('Metadata_Plate').median().round(6)
-    max_ = dframe.groupby('Metadata_Plate').max()
-    min_ = dframe.groupby('Metadata_Plate').min()
-    count = dframe.groupby('Metadata_Plate').count()
-
-    mad_fn = partial(median_abs_deviation, nan_policy="omit", axis=0)
-    mad = dframe.groupby('Metadata_Plate').apply(mad_fn)
+    median = dframe.groupby('Metadata_Plate', observed=True).median()
+    max_ = dframe.groupby('Metadata_Plate', observed=True).max()
+    min_ = dframe.groupby('Metadata_Plate', observed=True).min()
+    count = dframe.groupby('Metadata_Plate', observed=True).count()
+    mad = dframe.groupby('Metadata_Plate', observed=True).apply(mad_fn)
     mad = pd.DataFrame(index=mad.index,
                        data=np.stack(mad.values),
-                       columns=feat_cols).round(6)
+                       columns=feat_cols)
 
     median['stat'] = 'median'
     mad['stat'] = 'mad'
@@ -130,9 +130,10 @@ def add_metadata(stats: pd.DataFrame, meta: pd.DataFrame):
     source_map = meta[['Metadata_Source', 'Metadata_Plate']].drop_duplicates()
     source_map = source_map.set_index('Metadata_Plate').Metadata_Source
     stats['Metadata_Source'] = stats['Metadata_Plate'].map(source_map)
-    stats['compartment'] = stats['feature'].apply(lambda x: x.split('_')[0])
-    stats['family'] = stats['feature'].apply(
-        lambda x: '_'.join(x.split('_')[:3]))
+    parts = stats['feature'].str.split('_', expand=True)
+    stats['compartment'] = parts[0].astype('category')
+    stats['family'] = parts[range(3)].apply('_'.join,
+                                            axis=1).astype('category')
 
 
 def remove_nan_infs_columns(dframe: pd.DataFrame) -> pd.DataFrame:
@@ -162,10 +163,10 @@ def write_variant_features(neg_stats_path, variant_feats_path):
     '''select features that have mad != 0 and abs_coef_var>1e-3 in every plate for negative controls.'''
     neg_stats = pd.read_parquet(neg_stats_path)
     neg_stats = neg_stats.query('mad!=0 and abs_coef_var>1e-3')
-    variant_features = set.intersection(
-        *neg_stats.groupby('Metadata_Plate')['feature'].agg(set).tolist())
+    groups = neg_stats.groupby('Metadata_Plate', observed=True)['feature']
+    variant_features = set.intersection(*groups.agg(set).tolist())
     variant_features = pd.DataFrame(
-        {'variant_features': list(variant_features)})
+        {'variant_features': sorted(variant_features)})
     variant_features.to_parquet(variant_feats_path)
 
 
@@ -173,21 +174,34 @@ def write_normalize_features(parquet_path, neg_stats_path, variant_feats_path,
                              norm_parquet_path):
     dframe = pd.read_parquet(parquet_path)
     neg_stats = pd.read_parquet(neg_stats_path)
-    variant_features = pd.read_parquet(variant_feats_path).variant_features
+    variant_features = np.ravel(pd.read_parquet(variant_feats_path))
+
+    # Use only plates with variant features
     neg_stats = neg_stats.query('feature in @variant_features')
+    dframe = dframe.query('Metadata_Plate in @neg_stats.Metadata_Plate')
+    dframe = dframe.sort_values(by='Metadata_Plate')
+    plate_counts = dframe['Metadata_Plate'].value_counts(sort=False)
+    plates, counts = plate_counts.index, plate_counts.values
+    meta = dframe[find_meta_cols(dframe)]
+    feats = dframe[variant_features].values
+    # del dframe
 
-    # Compute params for MAD normalization
-    mads = neg_stats.pivot(columns='feature',
-                           index='Metadata_Plate',
+    # get mad and median matrices for MAD normalization
+    mads = neg_stats.pivot(index='Metadata_Plate',
+                           columns='feature',
                            values='mad')
-    medians = neg_stats.pivot(columns='feature',
-                              index='Metadata_Plate',
+    mads = mads.loc[plates, variant_features].values
+    medians = neg_stats.pivot(index='Metadata_Plate',
+                              columns='feature',
                               values='median')
+    medians = medians.loc[plates, variant_features].values
 
-    # Get normalized features with epsilon = 0 for all plates that have MAD stats
-    feats = dframe.query('Metadata_Plate in @mads.index')
-    fnorm = (feats.set_index('Metadata_Plate')[mads.columns] - medians) / mads
-    fnorm.reset_index(drop=True, inplace=True)
-    for c in find_meta_cols(feats):
-        fnorm[c] = feats[c].values
-    fnorm.to_parquet(norm_parquet_path)
+    # Get normalized features (epsilon = 0) for all plates that have MAD stats
+    # -= and /= are inplace operations. i.e save memory
+    feats -= np.repeat(medians, counts, axis=0)
+    feats /= np.repeat(mads, counts, axis=0)
+
+    dframe = pd.DataFrame(feats, columns=variant_features)
+    for c in meta:
+        dframe[c] = meta[c].values
+    dframe.to_parquet(norm_parquet_path)
