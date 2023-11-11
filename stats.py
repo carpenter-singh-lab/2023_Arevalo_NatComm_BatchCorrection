@@ -181,10 +181,11 @@ def write_normalize_features(parquet_path, neg_stats_path, variant_feats_path,
     dframe = dframe.query('Metadata_Plate in @neg_stats.Metadata_Plate')
     dframe = dframe.sort_values(by='Metadata_Plate')
     plate_counts = dframe['Metadata_Plate'].value_counts(sort=False)
+    plate_counts = plate_counts[plate_counts > 0]
     plates, counts = plate_counts.index, plate_counts.values
     meta = dframe[find_meta_cols(dframe)]
     feats = dframe[variant_features].values
-    # del dframe
+    del dframe
 
     # get mad and median matrices for MAD normalization
     mads = neg_stats.pivot(index='Metadata_Plate',
