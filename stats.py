@@ -12,8 +12,6 @@ from tqdm.contrib.concurrent import thread_map
 from loader import build_path, load_metadata
 from utils import find_feat_cols, find_meta_cols
 
-logging.basicConfig(format='%(levelname)s:%(asctime)s:%(name)s:%(message)s',
-                    level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -84,7 +82,17 @@ def write_parquet(config_path, output_file):
     dframe.to_parquet(output_file)
 
 
-def get_stats(dframe: pd.DataFrame):
+def get_feat_stats(dframe: pd.DataFrame, features=None):
+    '''Get statistics per each feature'''
+    if features is None:
+        features = find_feat_cols(dframe)
+    desc = thread_map(lambda x: dframe[x].describe(), features, leave=False)
+    desc = pd.DataFrame(desc)
+    desc['iqr'] = desc['75%'] - desc['25%']
+    return desc
+
+
+def get_plate_stats(dframe: pd.DataFrame):
     mad_fn = partial(median_abs_deviation, nan_policy="omit", axis=0)
 
     feat_cols = find_feat_cols(dframe)
@@ -146,17 +154,25 @@ def remove_nan_infs_columns(dframe: pd.DataFrame) -> pd.DataFrame:
 
 
 def write_negcon_stats(parquet_path, neg_stats_path):
-    '''create statistics of negative controls for all the plates'''
+    '''create statistics of negative controls platewise'''
     logger.info('Loading data')
     dframe = pd.read_parquet(parquet_path)
     logger.info('Removing nan and inf columns')
     dframe = remove_nan_infs_columns(dframe)
     negcon = dframe.query('Metadata_JCP2022 == "DMSO"')
     logger.info('computing stats for negcons')
-    neg_stats = get_stats(negcon)
+    neg_stats = get_plate_stats(negcon)
     logger.info('stats done.')
     add_metadata(neg_stats, dframe[find_meta_cols(dframe)])
     neg_stats.to_parquet(neg_stats_path)
+
+
+def write_normalize_feat_stats(normalized_path, variant_feats_path,
+                               stats_path):
+    dframe = pd.read_parquet(normalized_path)
+    variant_features = np.ravel(pd.read_parquet(variant_feats_path))
+    fea_stats = get_feat_stats(dframe, variant_features)
+    fea_stats.to_parquet(stats_path)
 
 
 def write_variant_features(neg_stats_path, variant_feats_path):
@@ -171,7 +187,7 @@ def write_variant_features(neg_stats_path, variant_feats_path):
 
 
 def write_normalize_features(parquet_path, neg_stats_path, variant_feats_path,
-                             norm_parquet_path):
+                             normalized_path):
     dframe = pd.read_parquet(parquet_path)
     neg_stats = pd.read_parquet(neg_stats_path)
     variant_features = np.ravel(pd.read_parquet(variant_feats_path))
@@ -205,4 +221,4 @@ def write_normalize_features(parquet_path, neg_stats_path, variant_feats_path,
     dframe = pd.DataFrame(feats, columns=variant_features)
     for c in meta:
         dframe[c] = meta[c].values
-    dframe.to_parquet(norm_parquet_path)
+    dframe.to_parquet(normalized_path)

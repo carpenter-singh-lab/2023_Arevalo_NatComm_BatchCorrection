@@ -2,7 +2,7 @@ import stats
 scenarios = glob_wildcards("inputs/conf/{scenario}.json").scenario
 
 rule all:
-    input: expand("outputs/{scenario}/normalized.parquet", scenario=scenarios)
+    input: expand("outputs/{scenario}/norm_feat_stats.parquet", scenario=scenarios)
 
 rule to_parquet:
     input: 'inputs/conf/{scenario}.json'
@@ -27,3 +27,12 @@ rule normalize_features:
     output: 'outputs/{scenario}/normalized.parquet'
     run:
         stats.write_normalize_features(*input, *output)
+
+rule norm_feat_stats:
+    input:
+        'outputs/{scenario}/normalized.parquet',
+        'outputs/{scenario}/variant_feats.parquet'
+    output:
+        'outputs/{scenario}/norm_feat_stats.parquet'
+    run:
+        stats.write_normalize_feat_stats(*input, *output)
