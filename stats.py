@@ -168,11 +168,9 @@ def write_negcon_stats(parquet_path, neg_stats_path):
     neg_stats.to_parquet(neg_stats_path)
 
 
-def write_normalize_feat_stats(normalized_path, variant_feats_path,
-                               stats_path):
+def write_normalize_feat_stats(normalized_path, stats_path):
     dframe = pd.read_parquet(normalized_path)
-    variant_features = np.ravel(pd.read_parquet(variant_feats_path))
-    fea_stats = get_feat_stats(dframe, variant_features)
+    fea_stats = get_feat_stats(dframe)
     fea_stats.to_parquet(stats_path)
 
 
@@ -225,38 +223,39 @@ def write_normalize_features(parquet_path, neg_stats_path, variant_feats_path,
     dframe.to_parquet(normalized_path)
 
 
-def load_separated(dframe_path, variant_features):
+def load_separated(dframe_path, features=None, return_names=False):
     dframe = pd.read_parquet(dframe_path)
-    vals = np.empty((len(variant_features), len(dframe)), dtype=np.float32)
-    for i, c in enumerate(variant_features):
+    if features is None:
+        features = find_feat_cols(dframe)
+    vals = np.empty((len(features), len(dframe)), dtype=np.float32)
+    for i, c in enumerate(features):
         vals[i] = dframe[c]
     meta = dframe[find_meta_cols(dframe)].copy()
+    if return_names:
+        return meta, vals, features
     return meta, vals
 
 
 def write_iqr_outliers(
     scale: float,
     normalized_path,
-    variant_feats_path,
     stats_path,
     outlier_path,
 ):
     desc = pd.read_parquet(stats_path)
-    variant_features = pd.read_parquet(variant_feats_path).variant_features
-    meta, vals = load_separated(normalized_path, variant_features)
+    meta, vals, features = load_separated(normalized_path, return_names=True)
 
     cutoff = desc['iqr'] * scale
     lower, higher = desc['25%'] - cutoff, desc['75%'] + cutoff
     logger.info(f'Lowest/Highest threshold: {lower.min()}, {higher.min()}')
     outliers = np.logical_or(vals.T < lower.values, vals.T > higher.values)
-    outliers = pd.DataFrame(outliers, columns=variant_features)
+    outliers = pd.DataFrame(outliers, columns=features)
     for c in meta:
         outliers[c] = meta[c]
     outliers.to_parquet(outlier_path)
 
 
 def write_map_drop_outlier_cols(normalized_path,
-                                variant_feats_path,
                                 outlier_path,
                                 ap_path,
                                 map_path,
@@ -267,12 +266,12 @@ def write_map_drop_outlier_cols(normalized_path,
     '''
     Compute mAP dropping the columns with at least one outlier. It ignores DMSO
     '''
-    variant_features = pd.read_parquet(variant_feats_path).variant_features
-    meta, vals = load_separated(normalized_path, variant_features)
-    mask = pd.read_parquet(outlier_path)[variant_features].values
+    meta, vals, features = load_separated(normalized_path, return_names=True)
+    mask = pd.read_parquet(outlier_path)[features].values
 
     ix = meta['Metadata_PlateType'].isin(plate_types)
 
+    # Select compounds to be used in mAP computation
     valid_cmpd = meta.loc[ix, 'Metadata_JCP2022'].value_counts()
     if ignore_dmso:
         valid_cmpd.drop('DMSO', inplace=True)

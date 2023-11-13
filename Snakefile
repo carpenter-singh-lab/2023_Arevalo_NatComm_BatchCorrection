@@ -34,7 +34,6 @@ rule normalize_features:
 rule norm_feat_stats:
     input:
         'outputs/{scenario}/normalized.parquet',
-        'outputs/{scenario}/variant_feats.parquet'
     output:
         'outputs/{scenario}/norm_feat_stats.parquet'
     run:
@@ -43,7 +42,6 @@ rule norm_feat_stats:
 rule iqr_outliers:
     input:
         'outputs/{scenario}/normalized.parquet',
-        'outputs/{scenario}/variant_feats.parquet',
         'outputs/{scenario}/norm_feat_stats.parquet'
     output:
         'outputs/{scenario}/iqr_outliers_' f'{config["iqr_scale"]}.parquet'
@@ -69,7 +67,6 @@ rule map_production_drop_iqr_outliers:
 rule map_target2_drop_iqr_outliers:
     input:
         'outputs/{scenario}/normalized.parquet',
-        'outputs/{scenario}/variant_feats.parquet',
         f'outputs/{{scenario}}/iqr_outliers_{config["iqr_scale"]}.parquet'
     output:
         f'outputs/{{scenario}}/ap_target2_drop_iqr_{config["iqr_scale"]}.parquet',
