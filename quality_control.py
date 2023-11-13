@@ -339,3 +339,99 @@ def write_map_clip_outlier_cols(normalized_path,
     agg_result = agg_result.query('Metadata_JCP2022 in @valid_cmpd')
     result.to_parquet(ap_path)
     agg_result.to_parquet(map_path)
+
+
+def write_map_impute_median_outlier_cols(normalized_path,
+                                         outlier_path,
+                                         ap_path,
+                                         map_path,
+                                         plate_types,
+                                         min_replicates,
+                                         max_replicates,
+                                         ignore_dmso=True):
+    '''
+    Compute mAP clipping values to a given magnitude. It ignores DMSO
+    '''
+    meta, vals, features = load_separated(normalized_path, return_names=True)
+    mask = pd.read_parquet(outlier_path)[features].values
+
+    ix = meta['Metadata_PlateType'].isin(plate_types)
+
+    # Select compounds to be used in mAP computation
+    valid_cmpd = meta.loc[ix, 'Metadata_JCP2022'].value_counts()
+    if ignore_dmso:
+        valid_cmpd.drop('DMSO', inplace=True)
+    valid_cmpd = valid_cmpd[valid_cmpd.between(min_replicates, max_replicates)]
+    valid_cmpd = valid_cmpd.index
+
+    from sklearn.impute import SimpleImputer
+    imputer = SimpleImputer(copy=False, strategy='median')
+    vals = vals.T[ix]
+    vals[mask] = np.nan
+    imputer.fit_transform(vals)
+
+
+    ix = (ix & meta['Metadata_JCP2022'].isin(valid_cmpd)).values
+    result = run_pipeline(
+        meta[ix],
+        vals[ix],
+        pos_sameby=['Metadata_JCP2022'],
+        pos_diffby=[],
+        neg_sameby=['Metadata_Plate'],
+        neg_diffby=['Metadata_JCP2022'],
+        null_size=10000,
+        batch_size=20000,
+        seed=0,
+    )
+    agg_result = aggregate(result, 'Metadata_JCP2022', threshold=0.05)
+    agg_result = agg_result.query('Metadata_JCP2022 in @valid_cmpd')
+    result.to_parquet(ap_path)
+    agg_result.to_parquet(map_path)
+
+
+def write_map_impute_knn_outlier_cols(normalized_path,
+                                         outlier_path,
+                                         ap_path,
+                                         map_path,
+                                         plate_types,
+                                         min_replicates,
+                                         max_replicates,
+                                         ignore_dmso=True):
+    '''
+    Compute mAP clipping values to a given magnitude. It ignores DMSO
+    '''
+    meta, vals, features = load_separated(normalized_path, return_names=True)
+    mask = pd.read_parquet(outlier_path)[features].values
+
+    ix = meta['Metadata_PlateType'].isin(plate_types)
+
+    # Select compounds to be used in mAP computation
+    valid_cmpd = meta.loc[ix, 'Metadata_JCP2022'].value_counts()
+    if ignore_dmso:
+        valid_cmpd.drop('DMSO', inplace=True)
+    valid_cmpd = valid_cmpd[valid_cmpd.between(min_replicates, max_replicates)]
+    valid_cmpd = valid_cmpd.index
+
+    from sklearn.impute import KNNImputer
+    imputer = KNNImputer(copy=False)
+    vals = vals.T[ix]
+    vals[mask] = np.nan
+    imputer.fit_transform(vals)
+
+
+    ix = (ix & meta['Metadata_JCP2022'].isin(valid_cmpd)).values
+    result = run_pipeline(
+        meta[ix],
+        vals[ix],
+        pos_sameby=['Metadata_JCP2022'],
+        pos_diffby=[],
+        neg_sameby=['Metadata_Plate'],
+        neg_diffby=['Metadata_JCP2022'],
+        null_size=10000,
+        batch_size=20000,
+        seed=0,
+    )
+    agg_result = aggregate(result, 'Metadata_JCP2022', threshold=0.05)
+    agg_result = agg_result.query('Metadata_JCP2022 in @valid_cmpd')
+    result.to_parquet(ap_path)
+    agg_result.to_parquet(map_path)

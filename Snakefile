@@ -107,3 +107,33 @@ rule map_target2_clip_iqr_outliers:
         clip_value = config['clip_value']
     run:
         qc.write_map_clip_outlier_cols(*input, *output, **params)
+
+
+rule map_target2_impute_median_iqr_outliers:
+    input:
+        'outputs/{scenario}/normalized.parquet',
+        f'outputs/{{scenario}}/iqr_outliers_{config["iqr_scale"]}.parquet'
+    output:
+        f'outputs/{{scenario}}/ap_target2_impute_median_iqr_{config["iqr_scale"]}.parquet',
+        f'outputs/{{scenario}}/map_target2_impute_median_iqr_{config["iqr_scale"]}.parquet'
+    params:
+        plate_types = ['TARGET2'],
+        min_replicates = 2,
+        max_replicates = float('inf'),
+    run:
+        qc.write_map_impute_median_outlier_cols(*input, *output, **params)
+
+
+rule map_target2_impute_knn_iqr_outliers:
+    input:
+        'outputs/{scenario}/normalized.parquet',
+        f'outputs/{{scenario}}/iqr_outliers_{config["iqr_scale"]}.parquet'
+    output:
+        f'outputs/{{scenario}}/ap_target2_impute_knn_iqr_{config["iqr_scale"]}.parquet',
+        f'outputs/{{scenario}}/map_target2_impute_knn_iqr_{config["iqr_scale"]}.parquet'
+    params:
+        plate_types = ['TARGET2'],
+        min_replicates = 2,
+        max_replicates = float('inf'),
+    run:
+        qc.write_map_impute_knn_outlier_cols(*input, *output, **params)
