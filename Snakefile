@@ -1,6 +1,6 @@
 configfile: "snake_params.json"
 
-import stats
+import quality_control as qc
 scenarios = glob_wildcards("inputs/conf/{scenario}.json").scenario
 
 rule all:
@@ -10,17 +10,17 @@ rule all:
 rule to_parquet:
     input: 'inputs/conf/{scenario}.json'
     output: 'outputs/{scenario}/raw.parquet'
-    run: stats.write_parquet(*input, *output)
+    run: qc.write_parquet(*input, *output)
 
 rule get_negcon_stats:
     input: 'outputs/{scenario}/raw.parquet'
     output: 'outputs/{scenario}/neg_stats.parquet'
-    run: stats.write_negcon_stats(*input, *output)
+    run: qc.write_negcon_stats(*input, *output)
 
 rule get_variant_feats:
     input: 'outputs/{scenario}/neg_stats.parquet'
     output: 'outputs/{scenario}/variant_feats.parquet'
-    run: stats.write_variant_features(*input, *output)
+    run: qc.write_variant_features(*input, *output)
 
 rule normalize_features:
     input:
@@ -29,7 +29,7 @@ rule normalize_features:
         'outputs/{scenario}/variant_feats.parquet'
     output: 'outputs/{scenario}/normalized.parquet'
     run:
-        stats.write_normalize_features(*input, *output)
+        qc.write_normalize_features(*input, *output)
 
 rule norm_feat_stats:
     input:
@@ -37,7 +37,7 @@ rule norm_feat_stats:
     output:
         'outputs/{scenario}/norm_feat_stats.parquet'
     run:
-        stats.write_normalize_feat_stats(*input, *output)
+        qc.write_normalize_feat_stats(*input, *output)
 
 rule iqr_outliers:
     input:
@@ -46,7 +46,7 @@ rule iqr_outliers:
     output:
         'outputs/{scenario}/iqr_outliers_' f'{config["iqr_scale"]}.parquet'
     run:
-        stats.write_iqr_outliers(config['iqr_scale'], *input, *output)
+        qc.write_iqr_outliers(config['iqr_scale'], *input, *output)
 
 rule map_production_drop_iqr_outliers:
     input:
@@ -61,7 +61,7 @@ rule map_production_drop_iqr_outliers:
         min_replicates = 2,
         max_replicates = 100 # POSCONs and DMSO has a lot more
     run:
-        stats.write_map_drop_outlier_cols(*input, *output, **params)
+        qc.write_map_drop_outlier_cols(*input, *output, **params)
 
 
 rule map_target2_drop_iqr_outliers:
@@ -76,4 +76,4 @@ rule map_target2_drop_iqr_outliers:
         min_replicates = 2,
         max_replicates = float('inf')
     run:
-        stats.write_map_drop_outlier_cols(*input, *output, **params)
+        qc.write_map_drop_outlier_cols(*input, *output, **params)
