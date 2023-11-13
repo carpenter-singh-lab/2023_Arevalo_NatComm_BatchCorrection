@@ -1,3 +1,4 @@
 {
-    "iqr_scale": 100
+    "iqr_scale": 100,
+    "clip_value": 500
 }
