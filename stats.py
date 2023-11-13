@@ -3,6 +3,7 @@ from itertools import chain
 import json
 import logging
 
+from copairs.map import aggregate, run_pipeline
 import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
@@ -222,3 +223,66 @@ def write_normalize_features(parquet_path, neg_stats_path, variant_feats_path,
     for c in meta:
         dframe[c] = meta[c].values
     dframe.to_parquet(normalized_path)
+
+
+def load_separated(dframe_path, variant_features):
+    dframe = pd.read_parquet(dframe_path)
+    vals = np.empty((len(variant_features), len(dframe)), dtype=np.float32)
+    for i, c in enumerate(variant_features):
+        vals[i] = dframe[c]
+    meta = dframe[find_meta_cols(dframe)].copy()
+    return meta, vals
+
+
+def write_iqr_outliers(
+    scale: float,
+    normalized_path,
+    variant_feats_path,
+    stats_path,
+    outlier_path,
+):
+    desc = pd.read_parquet(stats_path)
+    variant_features = pd.read_parquet(variant_feats_path).variant_features
+    meta, vals = load_separated(normalized_path, variant_features)
+
+    cutoff = desc['iqr'] * scale
+    lower, higher = desc['25%'] - cutoff, desc['75%'] + cutoff
+    logger.info(f'Lowest/Highest threshold: {lower.min()}, {higher.min()}')
+    outliers = np.logical_or(vals.T < lower.values, vals.T > higher.values)
+    outliers = pd.DataFrame(outliers, columns=variant_features)
+    for c in meta:
+        outliers[c] = meta[c]
+    outliers.to_parquet(outlier_path)
+
+
+def write_map_drop_outlier_cols(normalized_path, variant_feats_path,
+                                outlier_path, ap_path, map_path, plate_types,
+                                min_replicates, max_replicates
+                                ):
+    '''
+    Compute mAP dropping the columns with at least one outlier.
+    '''
+    variant_features = pd.read_parquet(variant_feats_path).variant_features
+    meta, vals = load_separated(normalized_path, variant_features)
+    mask = pd.read_parquet(outlier_path)[variant_features].values
+
+    ix = meta['Metadata_PlateType'].isin(plate_types)
+    valid_cpmd = meta[ix]['Metadata_JCP2022'].value_counts(
+    )[lambda x: x.between(min_replicates, max_replicates)].index
+    ix = (ix & meta['Metadata_JCP2022'].isin(valid_cpmd)).values
+    result = run_pipeline(
+        meta[ix],
+        vals[mask.sum(axis=0) == 0].T[ix],
+        pos_sameby=['Metadata_JCP2022'],
+        pos_diffby=[],
+        neg_sameby=['Metadata_Plate'],
+        neg_diffby=['Metadata_JCP2022'],
+        null_size=10000,
+        batch_size=20000,
+        seed=0,
+    )
+    agg_result = aggregate(result, 'Metadata_JCP2022', threshold=0.05)
+    agg_result = agg_result.query('Metadata_JCP2022 in @valid_cpmd')
+    agg_result['mean_average_precision'].describe()
+    result.to_parquet(ap_path)
+    agg_result.to_parquet(map_path)
