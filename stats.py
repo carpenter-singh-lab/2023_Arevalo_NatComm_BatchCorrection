@@ -255,21 +255,32 @@ def write_iqr_outliers(
     outliers.to_parquet(outlier_path)
 
 
-def write_map_drop_outlier_cols(normalized_path, variant_feats_path,
-                                outlier_path, ap_path, map_path, plate_types,
-                                min_replicates, max_replicates
-                                ):
+def write_map_drop_outlier_cols(normalized_path,
+                                variant_feats_path,
+                                outlier_path,
+                                ap_path,
+                                map_path,
+                                plate_types,
+                                min_replicates,
+                                max_replicates,
+                                ignore_dmso=True):
     '''
-    Compute mAP dropping the columns with at least one outlier.
+    Compute mAP dropping the columns with at least one outlier. It ignores DMSO
     '''
     variant_features = pd.read_parquet(variant_feats_path).variant_features
     meta, vals = load_separated(normalized_path, variant_features)
     mask = pd.read_parquet(outlier_path)[variant_features].values
 
     ix = meta['Metadata_PlateType'].isin(plate_types)
-    valid_cpmd = meta[ix]['Metadata_JCP2022'].value_counts(
-    )[lambda x: x.between(min_replicates, max_replicates)].index
-    ix = (ix & meta['Metadata_JCP2022'].isin(valid_cpmd)).values
+
+    valid_cmpd = meta.loc[ix, 'Metadata_JCP2022'].value_counts()
+    if ignore_dmso:
+        valid_cmpd.drop('DMSO', inplace=True)
+    valid_cmpd = valid_cmpd[valid_cmpd.between(min_replicates, max_replicates)]
+    valid_cmpd = valid_cmpd.index
+
+    ix = (ix & meta['Metadata_JCP2022'].isin(valid_cmpd)).values
+
     result = run_pipeline(
         meta[ix],
         vals[mask.sum(axis=0) == 0].T[ix],
@@ -282,7 +293,6 @@ def write_map_drop_outlier_cols(normalized_path, variant_feats_path,
         seed=0,
     )
     agg_result = aggregate(result, 'Metadata_JCP2022', threshold=0.05)
-    agg_result = agg_result.query('Metadata_JCP2022 in @valid_cpmd')
-    agg_result['mean_average_precision'].describe()
+    agg_result = agg_result.query('Metadata_JCP2022 in @valid_cmpd')
     result.to_parquet(ap_path)
     agg_result.to_parquet(map_path)

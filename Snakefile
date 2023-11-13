@@ -59,9 +59,11 @@ rule map_production_drop_iqr_outliers:
         f'outputs/{{scenario}}/ap_prod_drop_iqr_{config["iqr_scale"]}.parquet',
         f'outputs/{{scenario}}/map_prod_drop_iqr_{config["iqr_scale"]}.parquet'
     params:
-        plate_types = ['COMPOUND']
+        plate_types = ['COMPOUND'],
+        min_replicates = 2,
+        max_replicates = 100 # POSCONs and DMSO has a lot more
     run:
-        stats.write_map_drop_outlier_cols(*input, *output, params.plate_types)
+        stats.write_map_drop_outlier_cols(*input, *output, **params)
 
 
 rule map_target2_drop_iqr_outliers:
@@ -73,8 +75,8 @@ rule map_target2_drop_iqr_outliers:
         f'outputs/{{scenario}}/ap_target2_drop_iqr_{config["iqr_scale"]}.parquet',
         f'outputs/{{scenario}}/map_target2_drop_iqr_{config["iqr_scale"]}.parquet'
     params:
-        plate_types=['TARGET2'],
-        min_replicates=2,
-        max_replicates=float('inf')
+        plate_types = ['TARGET2'],
+        min_replicates = 2,
+        max_replicates = float('inf')
     run:
         stats.write_map_drop_outlier_cols(*input, *output, **params)
