@@ -137,3 +137,18 @@ rule map_target2_impute_knn_iqr_outliers:
         max_replicates = float('inf'),
     run:
         qc.write_map_impute_knn_outlier_cols(*input, *output, **params)
+
+
+rule map_target2_rank_int_drop_iqr_outliers:
+    input:
+        'outputs/{scenario}/normalized.parquet',
+        f'outputs/{{scenario}}/iqr_outliers_{config["iqr_scale"]}.parquet'
+    output:
+        f'outputs/{{scenario}}/ap_target2_rank_int_drop_iqr_{config["iqr_scale"]}.parquet',
+        f'outputs/{{scenario}}/map_target2_rank_int_drop_iqr_{config["iqr_scale"]}.parquet'
+    params:
+        plate_types = ['TARGET2'],
+        min_replicates = 2,
+        max_replicates = float('inf'),
+    run:
+        qc.write_map_rank_int_drop_outlier_cols(*input, *output, **params)
