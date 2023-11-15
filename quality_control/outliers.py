@@ -40,7 +40,8 @@ def clip_cols(normalized_path, outlier_path, clip_value, clip_outliers_path):
     Compute mAP clipping values to a given magnitude. It ignores DMSO
     '''
     meta, vals, features = split_parquet(normalized_path)
-    np.clip(vals, -clip_value, clip_value, out=vals)
+    mask = pd.read_parquet(outlier_path)[features].values
+    vals[mask] = np.clip(vals[mask], -clip_value, clip_value)
     merge_parquet(meta, vals, features, clip_outliers_path)
 
 
