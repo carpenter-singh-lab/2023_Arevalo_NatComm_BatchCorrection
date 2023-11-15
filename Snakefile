@@ -1,7 +1,6 @@
 configfile: "snake_params.json"
 
 import quality_control as qc
-#scenarios = glob_wildcards("inputs/conf/{scenario}.json").scenario
 target2_scenarios = ['scenario_2', 'scenario_3', 'scenario_4', 'scenario_5', 'scenario_7']
 prod_scenarios = ['scenario_3', 'scenario_5', 'scenario_7']
 
@@ -41,6 +40,14 @@ rule compute_norm_stats:
     run:
         qc.stats.compute_stats(*input, *output)
 
+rule rank_int:
+    input:
+        'outputs/{scenario}/mad.parquet',
+    output:
+        'outputs/{scenario}/mad_rank_int.parquet'
+    run:
+        qc.transform.rank_int(*input, *output)
+
 rule iqr_outliers:
     input:
         'outputs/{scenario}/mad.parquet',
@@ -49,6 +56,17 @@ rule iqr_outliers:
         'outputs/{scenario}/iqr_outliers.parquet'
     run:
         qc.outliers.iqr(config['iqr_scale'], *input, *output)
+
+rule clip_iqr_outliers:
+    input:
+        'outputs/{scenario}/mad.parquet',
+        'outputs/{scenario}/iqr_outliers.parquet'
+    output:
+        'outputs/{scenario}/mad_clip_outlier_cols.parquet'
+    params:
+        clip_value = config['clip_value']
+    run:
+        qc.outliers.clip_cols(*input, *params, *output)
 
 rule drop_outlier_cols:
     input:
@@ -99,11 +117,42 @@ rule map_target2_drop_iqr_outliers:
     run:
         qc.evaluation.mean_average_precision(*input, *output)
 
-
-rule rank_int:
+rule ap_target2_clip_iqr_outliers:
     input:
-        'outputs/{scenario}/mad.parquet',
+        'outputs/{scenario}/mad_clip_outlier_cols.parquet'
     output:
-        'outputs/{scenario}/mad_rank_int.parquet'
+        'outputs/{scenario}/ap_target2_clip_iqr.parquet'
+    params:
+        plate_types = ['TARGET2'],
+        min_replicates = 2,
+        max_replicates = float('inf')
     run:
-        qc.transform.rank_int(*input, *output)
+        qc.evaluation.average_precision(*input, *output, **params)
+
+rule map_target2_clip_iqr_outliers:
+    input:
+        'outputs/{scenario}/ap_target2_clip_iqr.parquet'
+    output:
+        'outputs/{scenario}/map_target2_clip_iqr.parquet'
+    run:
+        qc.evaluation.mean_average_precision(*input, *output)
+
+rule ap_target2_rank_int:
+    input:
+        'outputs/{scenario}/mad_rank_int.parquet'
+    output:
+        'outputs/{scenario}/ap_target2_rank_int.parquet'
+    params:
+        plate_types = ['TARGET2'],
+        min_replicates = 2,
+        max_replicates = float('inf')
+    run:
+        qc.evaluation.average_precision(*input, *output, **params)
+
+rule map_target2_rank_int:
+    input:
+        'outputs/{scenario}/ap_target2_rank_int.parquet'
+    output:
+        'outputs/{scenario}/map_target2_rank_int.parquet'
+    run:
+        qc.evaluation.mean_average_precision(*input, *output)
