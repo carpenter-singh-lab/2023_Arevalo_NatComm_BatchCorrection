@@ -40,5 +40,5 @@ def rank_int(normalized_path, rank_int_path):
     def to_normal(i):
         vals[:, i] = rank_int_array(vals[:, i]).astype(np.float32)
 
-    thread_map(to_normal, range(len(features)))
+    thread_map(to_normal, range(len(features)), leave=False)
     merge_parquet(meta, vals, features, rank_int_path)
