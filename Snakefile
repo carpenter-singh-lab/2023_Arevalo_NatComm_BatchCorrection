@@ -1,11 +1,14 @@
 configfile: "snake_params.json"
 
 import quality_control as qc
-scenarios = glob_wildcards("inputs/conf/{scenario}.json").scenario
+#scenarios = glob_wildcards("inputs/conf/{scenario}.json").scenario
+target2_scenarios = ['scenario_2', 'scenario_3', 'scenario_4', 'scenario_5', 'scenario_7']
+prod_scenarios = ['scenario_3', 'scenario_5', 'scenario_7']
 
 rule all:
     input:
-        expand('outputs/{scenario}/map_{plate_type}_drop_iqr.parquet', scenario=scenarios, plate_type=['prod', 'target2'])
+        expand('outputs/{scenario}/map_target2_drop_iqr.parquet', scenario=target2_scenarios),
+        expand('outputs/{scenario}/map_prod_drop_iqr.parquet', scenario=prod_scenarios)
 
 rule write_parquet:
     input: 'inputs/conf/{scenario}.json'

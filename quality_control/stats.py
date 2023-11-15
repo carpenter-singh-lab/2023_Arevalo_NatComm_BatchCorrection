@@ -103,7 +103,6 @@ def select_variant_features(parquet_path, neg_stats_path, variant_feats_path):
     Filtered out features that have mad == 0 or abs_coef_var>1e-3 in any plate.
     stats are computed using negative controls only
     '''
-    import ipdb; ipdb.set_trace() # BREAKPOINT
     dframe = pd.read_parquet(parquet_path)
     neg_stats = pd.read_parquet(neg_stats_path)
 

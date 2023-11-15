@@ -27,7 +27,6 @@ def drop_cols(normalized_path, outlier_path, drop_outliers_path):
     '''
     Compute mAP dropping the columns with at least one outlier. It ignores DMSO
     '''
-    import ipdb; ipdb.set_trace() # BREAKPOINT
     meta, vals, features = split_parquet(normalized_path)
     mask = pd.read_parquet(outlier_path)[features].values
     no_outlier_cols = mask.sum(axis=0) == 0
