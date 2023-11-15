@@ -76,6 +76,8 @@ rule map_production_drop_iqr_outliers:
         'outputs/{scenario}/ap_prod_drop_iqr.parquet'
     output:
         'outputs/{scenario}/map_prod_drop_iqr.parquet'
+    run:
+        qc.evaluation.mean_average_precision(*input, *output)
 
 rule ap_target2_drop_iqr_outliers:
     input:
@@ -96,3 +98,12 @@ rule map_target2_drop_iqr_outliers:
         'outputs/{scenario}/map_target2_drop_iqr.parquet'
     run:
         qc.evaluation.mean_average_precision(*input, *output)
+
+
+rule rank_int:
+    input:
+        'outputs/{scenario}/mad.parquet',
+    output:
+        'outputs/{scenario}/mad_rank_int.parquet'
+    run:
+        qc.transform.rank_int(*input, *output)

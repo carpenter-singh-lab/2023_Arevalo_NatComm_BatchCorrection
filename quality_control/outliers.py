@@ -35,8 +35,7 @@ def drop_cols(normalized_path, outlier_path, drop_outliers_path):
     merge_parquet(meta, vals, features, drop_outliers_path)
 
 
-def write_clip_outlier_cols(normalized_path, outlier_path, clip_value,
-                            clip_outliers_path):
+def clip_cols(normalized_path, outlier_path, clip_value, clip_outliers_path):
     '''
     Compute mAP clipping values to a given magnitude. It ignores DMSO
     '''
