@@ -1,4 +1,16 @@
 {
     "iqr_scale": 100,
-    "clip_value": 500
+    "clip_value": 500,
+    "target2_scenarios": [
+        "scenario_2",
+        "scenario_3",
+        "scenario_4",
+        "scenario_5",
+        "scenario_7"
+    ],
+    "prod_scenarios": [
+        "scenario_3",
+        "scenario_5",
+        "scenario_7"
+    ]
 }

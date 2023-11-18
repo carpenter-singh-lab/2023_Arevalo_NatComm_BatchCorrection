@@ -3,33 +3,23 @@ configfile: "snake_params.json"
 
 import quality_control as qc
 
-target2_scenarios = [
-    "scenario_2",
-    "scenario_3",
-    "scenario_4",
-    "scenario_5",
-    "scenario_7",
-]
-prod_scenarios = ["scenario_3", "scenario_5", "scenario_7"]
-
-
 rule all:
     input:
         expand(
             "outputs/{scenario}/map_target2_mad.parquet",
-            scenario=target2_scenarios,
+            scenario=config['target2_scenarios'],
         ),
         expand(
             "outputs/{scenario}/map_prod_mad.parquet",
-            scenario=prod_scenarios,
+            scenario=config['prod_scenarios'],
         ),
         expand(
             "outputs/{scenario}/map_target2_mad_drop_int.parquet",
-            scenario=target2_scenarios,
+            scenario=config['target2_scenarios'],
         ),
         expand(
             "outputs/{scenario}/map_prod_mad_drop_int.parquet",
-            scenario=prod_scenarios,
+            scenario=config['prod_scenarios'],
         ),
 
 
