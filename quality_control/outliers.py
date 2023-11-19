@@ -45,10 +45,9 @@ def clip_cols(normalized_path, outlier_path, clip_value, clip_outliers_path):
     merge_parquet(meta, vals, features, clip_outliers_path)
 
 
-def write_impute_median_outlier_cols(normalized_path, outlier_path,
-                                     impute_median_outlier_path):
+def impute_median(normalized_path, outlier_path, impute_median_path):
     '''
-    Compute mAP clipping values to a given magnitude. It ignores DMSO
+    Impute outliers using median
     '''
     meta, vals, features = split_parquet(normalized_path)
     mask = pd.read_parquet(outlier_path)[features].values
@@ -57,13 +56,12 @@ def write_impute_median_outlier_cols(normalized_path, outlier_path,
     imputer = SimpleImputer(copy=False, strategy='median')
     imputer.fit_transform(vals)
 
-    merge_parquet(meta, vals, features, impute_median_outlier_path)
+    merge_parquet(meta, vals, features, impute_median_path)
 
 
-def write_impute_knn_outlier_cols(normalized_path, outlier_path,
-                                  impute_knn_outlier_path):
+def impute_knn(normalized_path, outlier_path, impute_knn_path):
     '''
-    Compute mAP clipping values to a given magnitude. It ignores DMSO
+    Impute outliers using kNN.
     '''
     meta, vals, features = split_parquet(normalized_path)
     mask = pd.read_parquet(outlier_path)[features].values
@@ -72,4 +70,4 @@ def write_impute_knn_outlier_cols(normalized_path, outlier_path,
     imputer = KNNImputer(copy=False)
     imputer.fit_transform(vals)
 
-    merge_parquet(meta, vals, features, impute_knn_outlier_path)
+    merge_parquet(meta, vals, features, impute_knn_path)

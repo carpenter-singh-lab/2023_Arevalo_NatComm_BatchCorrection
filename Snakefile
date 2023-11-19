@@ -9,6 +9,8 @@ include: 'rules/mad.smk'
 include: 'rules/mad_clip.smk'
 include: 'rules/mad_drop.smk'
 include: 'rules/mad_int.smk'
+include: 'rules/mad_imputemedian.smk'
+include: 'rules/mad_imputeknn.smk'
 include: 'rules/mad_drop_int.smk'
 
 rule all:
@@ -21,6 +23,52 @@ rule all:
             "outputs/{scenario}/map_prod_mad.parquet",
             scenario=config['prod_scenarios'],
         ),
+
+        expand(
+            "outputs/{scenario}/map_target2_mad_drop.parquet",
+            scenario=config['target2_scenarios'],
+        ),
+        expand(
+            "outputs/{scenario}/map_prod_mad_drop.parquet",
+            scenario=config['prod_scenarios'],
+        ),
+
+        expand(
+            "outputs/{scenario}/map_target2_mad_clip.parquet",
+            scenario=config['target2_scenarios'],
+        ),
+        expand(
+            "outputs/{scenario}/map_prod_mad_clip.parquet",
+            scenario=config['prod_scenarios'],
+        ),
+
+        expand(
+            "outputs/{scenario}/map_target2_mad_imputemedian.parquet",
+            scenario=config['target2_scenarios'],
+        ),
+        expand(
+            "outputs/{scenario}/map_prod_mad_imputemedian.parquet",
+            scenario=config['prod_scenarios'],
+        ),
+
+        expand(
+            "outputs/{scenario}/map_target2_mad_imputeknn.parquet",
+            scenario=config['target2_scenarios'],
+        ),
+        expand(
+            "outputs/{scenario}/map_prod_mad_imputeknn.parquet",
+            scenario=config['prod_scenarios'],
+        ),
+
+        expand(
+            "outputs/{scenario}/map_target2_mad_int.parquet",
+            scenario=config['target2_scenarios'],
+        ),
+        expand(
+            "outputs/{scenario}/map_prod_mad_int.parquet",
+            scenario=config['prod_scenarios'],
+        ),
+
         expand(
             "outputs/{scenario}/map_target2_mad_drop_int.parquet",
             scenario=config['target2_scenarios'],
