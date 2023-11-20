@@ -8,10 +8,13 @@ include: 'rules/common.smk'
 include: 'rules/mad.smk'
 include: 'rules/mad_clip.smk'
 include: 'rules/mad_drop.smk'
-include: 'rules/mad_int.smk'
 include: 'rules/mad_imputemedian.smk'
 include: 'rules/mad_imputeknn.smk'
+include: 'rules/mad_int.smk'
+include: 'rules/mad_featselect.smk'
+include: 'rules/mad_int_featselect.smk'
 include: 'rules/mad_drop_int.smk'
+include: 'rules/mad_drop_int_featselect.smk'
 
 rule all:
     input:
@@ -43,6 +46,15 @@ rule all:
         ),
 
         expand(
+            "outputs/{scenario}/map_target2_mad_featselect.parquet",
+            scenario=config['target2_scenarios'],
+        ),
+        expand(
+            "outputs/{scenario}/map_prod_mad_featselect.parquet",
+            scenario=config['prod_scenarios'],
+        ),
+
+        expand(
             "outputs/{scenario}/map_target2_mad_imputemedian.parquet",
             scenario=config['target2_scenarios'],
         ),
@@ -70,10 +82,28 @@ rule all:
         ),
 
         expand(
+            "outputs/{scenario}/map_target2_mad_int_featselect.parquet",
+            scenario=config['target2_scenarios'],
+        ),
+        expand(
+            "outputs/{scenario}/map_prod_mad_int_featselect.parquet",
+            scenario=config['prod_scenarios'],
+        ),
+
+        expand(
             "outputs/{scenario}/map_target2_mad_drop_int.parquet",
             scenario=config['target2_scenarios'],
         ),
         expand(
             "outputs/{scenario}/map_prod_mad_drop_int.parquet",
+            scenario=config['prod_scenarios'],
+        ),
+
+        expand(
+            "outputs/{scenario}/map_target2_mad_drop_int_featselect.parquet",
+            scenario=config['target2_scenarios'],
+        ),
+        expand(
+            "outputs/{scenario}/map_prod_mad_drop_int_featselect.parquet",
             scenario=config['prod_scenarios'],
         ),

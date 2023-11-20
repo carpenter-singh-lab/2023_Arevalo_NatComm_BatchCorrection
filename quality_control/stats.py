@@ -25,6 +25,9 @@ def get_feat_stats(dframe: pd.DataFrame, features=None):
 
 def get_plate_stats(dframe: pd.DataFrame):
     mad_fn = partial(median_abs_deviation, nan_policy="omit", axis=0)
+    # scale param reproduces pycytominer output. Differences in mAP for
+    # Target 2 in scenario 2 are negligible.
+    # mad_fn = partial(median_abs_deviation, nan_policy="omit", axis=0, scale=1 / 1.4826)
 
     feat_cols = find_feat_cols(dframe)
     dframe = dframe[feat_cols + ['Metadata_Plate']]
