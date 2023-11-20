@@ -4,10 +4,6 @@ Evaluate compound replicability using mAP
 import argparse
 import logging
 
-logging.basicConfig(format='%(levelname)s:%(asctime)s:%(name)s:%(message)s',
-                    level=logging.INFO)
-import numpy as np
-
 import anndata as ad
 from copairs.map import run_pipeline
 
@@ -16,9 +12,7 @@ from utils import PathLocator
 logger = logging.getLogger(__name__)
 
 
-def evaluate_map(locator: PathLocator,
-                 corrected_data: ad.AnnData,
-                 max_per_label: int = 1000):
+def evaluate_map(locator: PathLocator, corrected_data: ad.AnnData):
     '''compute score based on mean average precision'''
     null_size, batch_size = 10000, 100000
     meta = corrected_data.obs
@@ -27,25 +21,6 @@ def evaluate_map(locator: PathLocator,
     pos_sameby = neg_diffby = locator.config['label_key']
     pos_diffby = locator.config['batch_key']
     neg_sameby = 'Metadata_Plate'
-
-    before = len(meta)
-    meta.reset_index(drop=True, inplace=True)
-    groups = meta.groupby(pos_sameby).groups
-    rng = np.random.default_rng(42)
-    index = []
-    for group in groups.values():
-        if max_per_label < len(group):
-            group = rng.choice(group, max_per_label, replace=False)
-        index.append(group)
-    index = np.concatenate(index)
-    meta = meta.loc[index]
-    feats = feats[index]
-    after = len(meta)
-    if after < before:
-        msg = (f'Ignoring {before - after} records by sampling '
-               f'{max_per_label} per {pos_sameby}')
-        logger.info(msg)
-
     result = run_pipeline(
         meta,
         feats,
