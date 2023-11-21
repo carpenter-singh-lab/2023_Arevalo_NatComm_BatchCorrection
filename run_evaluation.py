@@ -20,17 +20,15 @@ METRICS_SET = {
         'NMI_cluster/label', 'ARI_cluster/label', 'ASW_label',
         'ASW_label/batch', 'PCR_batch', 'isolated_label_F1',
         'isolated_label_silhouette', 'graph_conn', 'kBET', 'iLISI', 'cLISI',
-        'percent_repl'
     ],
     'FAST': [
         'NMI_cluster/label', 'ARI_cluster/label', 'ASW_label',
         'ASW_label/batch', 'PCR_batch', 'graph_conn', 'iLISI', 'cLISI',
-        'percent_repl'
     ],
     'COLUMN_AS_BATCH': [
         'NMI_cluster/label', 'ARI_cluster/label', 'ASW_label',
         'ASW_label/batch', 'PCR_batch', 'isolated_label_silhouette',
-        'graph_conn', 'iLISI', 'cLISI', 'percent_repl'
+        'graph_conn', 'iLISI', 'cLISI'
     ],
 }
 
