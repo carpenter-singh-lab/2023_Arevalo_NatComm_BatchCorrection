@@ -80,6 +80,13 @@ def load_data(config):
     return dframe
 
 
+def add_pert_type(meta: pd.DataFrame, col: str = 'Metadata_PertType'):
+    meta[col] = 'trt'
+    meta.loc[~meta['Metadata_JCP2022'].str.startswith('JCP'), col] = 'poscon'
+    meta.loc[meta['Metadata_JCP2022'] == 'DMSO', col] = 'negcon'
+    meta[col] = meta[col].astype('category')
+
+
 def write_parquet(config_path, output_file):
     '''Write the parquet dataset given the config'''
     with open(config_path) as fread:
@@ -87,6 +94,7 @@ def write_parquet(config_path, output_file):
     dframe = load_data(config)
     # Efficient merge
     meta = load_metadata(config['sources'], config['plate_types'])
+    add_pert_type(meta)
     foreign_key = ['Metadata_Source', 'Metadata_Plate', 'Metadata_Well']
     meta = dframe[foreign_key].merge(meta, on=foreign_key, how='left')
     for c in meta:
