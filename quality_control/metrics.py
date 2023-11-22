@@ -4,42 +4,54 @@ import pandas as pd
 from quality_control.io import split_parquet
 
 
-def _index(meta,
-           plate_types,
-           min_replicates,
-           max_replicates,
-           ignore_dmso=True):
-    '''Select compounds to be used in mAP computation'''
+def _index(meta, plate_types):
+    '''Select samples to be used in mAP computation'''
     index = meta['Metadata_PlateType'].isin(plate_types)
+    index &= (meta['Metadata_PertType'] != 'poscon')
     valid_cmpd = meta.loc[index, 'Metadata_JCP2022'].value_counts()
-    if ignore_dmso:
-        valid_cmpd.drop('DMSO', inplace=True)
-    valid_cmpd = valid_cmpd[valid_cmpd.between(min_replicates, max_replicates)]
-    valid_cmpd = valid_cmpd.index
-    index = (index & meta['Metadata_JCP2022'].isin(valid_cmpd)).values
-    return index
+    valid_cmpd = valid_cmpd[valid_cmpd > 1].index
+    index &= meta['Metadata_JCP2022'].isin(valid_cmpd)
+    # TODO: This compound has many more replicates than any other. ignoring it
+    # for now. This filter should be done early on.
+    index &= (meta['Metadata_JCP2022'] != 'JCP2022_033954')
+    return index.values
 
 
-def average_precision(parquet_path,
-                      ap_path,
-                      plate_types,
-                      min_replicates,
-                      max_replicates,
-                      ignore_dmso=True):
+def _group_negcons(meta: pd.DataFrame):
+    '''
+    Hack to avoid mAP computation for negcons. Assign a unique id for every
+    negcon so that no pairs are found for such samples
+    '''
+    negcon_ix = (meta['Metadata_JCP2022'] == 'DMSO')
+    n_negcon = negcon_ix.sum()
+    negcon_ids = [f'DMSO_{i}' for i in range(n_negcon // 2)]
+    pert_id = meta['Metadata_JCP2022'].cat.add_categories(negcon_ids)
+    negcon_ids *= 2
+    if n_negcon % 2 == 1:
+        negcon_ids.append('DMSO_0')
+    pert_id[negcon_ix] = negcon_ids
+    meta['Metadata_JCP2022'] = pert_id
+
+
+def average_precision(parquet_path, ap_path, plate_types):
     meta, vals, _ = split_parquet(parquet_path)
-    ix = _index(meta, plate_types, min_replicates, max_replicates, ignore_dmso)
+    ix = _index(meta, plate_types)
+    meta = meta[ix].copy()
+    vals = vals[ix]
+    _group_negcons(meta)
     result = run_pipeline(
-        meta[ix],
-        vals[ix],
+        meta,
+        vals,
         pos_sameby=['Metadata_JCP2022'],
         pos_diffby=[],
         neg_sameby=['Metadata_Plate'],
-        neg_diffby=['Metadata_JCP2022'],
+        neg_diffby=['Metadata_PertType'],
         null_size=10000,
         batch_size=20000,
         seed=0,
     )
-    result.to_parquet(ap_path)
+    result = result.query('Metadata_PertType!="negcon"')
+    result.reset_index(drop=True).to_parquet(ap_path)
 
 
 def mean_average_precision(ap_path, map_path, threshold=0.05):
