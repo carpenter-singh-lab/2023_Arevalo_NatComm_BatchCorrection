@@ -1,10 +1,8 @@
 rule write_parquet:
-    input:
-        "inputs/conf/{scenario}.json",
     output:
         "outputs/{scenario}/raw.parquet",
     run:
-        qc.io.write_parquet(*input, *output)
+        qc.io.write_parquet(config['sources'], config['plate_types'], *output)
 
 
 rule compute_negcon_stats:

@@ -43,7 +43,7 @@ def average_precision(parquet_path, ap_path, plate_types):
         meta,
         vals,
         pos_sameby=['Metadata_JCP2022'],
-        pos_diffby=[],
+        pos_diffby=['Metadata_Well'],
         neg_sameby=['Metadata_Plate'],
         neg_diffby=['Metadata_PertType'],
         null_size=10000,

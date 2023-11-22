@@ -1,5 +1,3 @@
-import json
-
 import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
@@ -34,12 +32,12 @@ def get_num_rows(path) -> int:
         return file.metadata.num_rows
 
 
-def prealloc_params(config):
+def prealloc_params(sources, plate_types):
     '''
     Get a list of paths to the parquet files and the corresponding slices
     for further concatenation
     '''
-    meta = load_metadata(config['sources'], config['plate_types'])
+    meta = load_metadata(sources, plate_types)
     paths = (meta[['Metadata_Source', 'Metadata_Batch',
                    'Metadata_Plate']].drop_duplicates().apply(build_path,
                                                               axis=1)).values
@@ -51,9 +49,9 @@ def prealloc_params(config):
     return paths, slices
 
 
-def load_data(config):
-    '''Load all plates given the config file'''
-    paths, slices = prealloc_params(config)
+def load_data(sources, plate_types):
+    '''Load all plates given the params'''
+    paths, slices = prealloc_params(sources, plate_types)
     total = slices[-1, 1]
 
     with pq.ParquetFile(paths[0]) as f:
@@ -95,13 +93,11 @@ def add_row_col(meta: pd.DataFrame):
     meta['Metadata_Column'] = position['column'].astype('category')
 
 
-def write_parquet(config_path, output_file):
-    '''Write the parquet dataset given the config'''
-    with open(config_path) as fread:
-        config = json.load(fread)
-    dframe = load_data(config)
+def write_parquet(sources, plate_types, output_file):
+    '''Write the parquet dataset given the params'''
+    dframe = load_data(sources, plate_types)
     # Efficient merge
-    meta = load_metadata(config['sources'], config['plate_types'])
+    meta = load_metadata(sources, plate_types)
     add_pert_type(meta)
     add_row_col(meta)
     foreign_key = ['Metadata_Source', 'Metadata_Plate', 'Metadata_Well']
