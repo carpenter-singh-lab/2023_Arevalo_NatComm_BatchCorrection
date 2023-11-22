@@ -87,6 +87,14 @@ def add_pert_type(meta: pd.DataFrame, col: str = 'Metadata_PertType'):
     meta[col] = meta[col].astype('category')
 
 
+def add_row_col(meta: pd.DataFrame):
+    '''Add Metadata_Row and Metadata_Column to the DataFrame'''
+    well_regex = r'^(?P<row>[a-zA-Z]{1,2})(?P<column>[0-9]{1,2})$'
+    position = meta['Metadata_Well'].str.extract(well_regex)
+    meta['Metadata_Row'] = position['row'].astype('category')
+    meta['Metadata_Column'] = position['column'].astype('category')
+
+
 def write_parquet(config_path, output_file):
     '''Write the parquet dataset given the config'''
     with open(config_path) as fread:
@@ -95,6 +103,7 @@ def write_parquet(config_path, output_file):
     # Efficient merge
     meta = load_metadata(config['sources'], config['plate_types'])
     add_pert_type(meta)
+    add_row_col(meta)
     foreign_key = ['Metadata_Source', 'Metadata_Plate', 'Metadata_Well']
     meta = dframe[foreign_key].merge(meta, on=foreign_key, how='left')
     for c in meta:
