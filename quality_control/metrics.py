@@ -20,15 +20,12 @@ def _index(meta, plate_types):
 def _group_negcons(meta: pd.DataFrame):
     '''
     Hack to avoid mAP computation for negcons. Assign a unique id for every
-    negcon so that no pairs are found for such samples
+    negcon so that no pairs are found for such samples.
     '''
     negcon_ix = (meta['Metadata_JCP2022'] == 'DMSO')
     n_negcon = negcon_ix.sum()
-    negcon_ids = [f'DMSO_{i}' for i in range(n_negcon // 2)]
+    negcon_ids = [f'DMSO_{i}' for i in range(n_negcon)]
     pert_id = meta['Metadata_JCP2022'].cat.add_categories(negcon_ids)
-    negcon_ids *= 2
-    if n_negcon % 2 == 1:
-        negcon_ids.append('DMSO_0')
     pert_id[negcon_ix] = negcon_ids
     meta['Metadata_JCP2022'] = pert_id
 
