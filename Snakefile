@@ -1,5 +1,11 @@
 configfile: "./inputs/conf/scenario_2.json"
 
+wildcard_constraints:
+    criteria=r"target2|prod",
+    scenario=r"scenario_\d"
+
+import sphering
+import quality_control as qc
 
 scenario = config["scenario"]
 if "COMPOUND" in config["plate_types"]:
@@ -8,13 +14,9 @@ else:
     criteria = "target2"
 
 
-import sphering
-import quality_control as qc
-
-
 # Load rules
 include: "rules/common.smk"
-include: "rules/mad.smk"
+include: "rules/map.smk"
 include: "rules/mad_clip.smk"
 include: "rules/mad_drop.smk"
 include: "rules/mad_imputemedian.smk"
@@ -31,8 +33,8 @@ include: "rules/mad_featselect_sphering.smk"
 rule all:
     input:
         f"outputs/{scenario}/map_{criteria}_mad.parquet",
-        f"outputs/{scenario}/map_{criteria}_mad_drop.parquet",
         f"outputs/{scenario}/map_{criteria}_mad_clip.parquet",
+        f"outputs/{scenario}/map_{criteria}_mad_drop.parquet",
         f"outputs/{scenario}/map_{criteria}_mad_featselect.parquet",
         f"outputs/{scenario}/map_{criteria}_mad_imputeknn.parquet",
         f"outputs/{scenario}/map_{criteria}_mad_imputemedian.parquet",
