@@ -12,7 +12,7 @@ target2_scenarios = [
 prod_scenarios = []
 
 
-import correct
+import sphering
 import quality_control as qc
 
 
@@ -29,6 +29,7 @@ include: "rules/mad_int_featselect.smk"
 include: "rules/mad_drop_int.smk"
 include: "rules/mad_drop_int_featselect.smk"
 include: "rules/mad_int_featselect_sphering.smk"
+include: "rules/mad_featselect_sphering.smk"
 
 
 rule all:
@@ -104,4 +105,12 @@ rule all:
         expand(
             "outputs/{scenario}/map_prod_mad_drop_int_featselect.parquet",
             scenario=prod_scenarios,
+        ),
+        expand(
+            "outputs/{scenario}/map_target2_mad_int_featselect_sphering.parquet",
+            scenario=target2_scenarios,
+        ),
+        expand(
+            "outputs/{scenario}/map_target2_mad_featselect_sphering.parquet",
+            scenario=target2_scenarios,
         ),

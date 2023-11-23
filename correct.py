@@ -1,52 +1,15 @@
 '''Correction methods'''
-import shutil
 from functools import partial
 import logging
 
-import pandas as pd
 import anndata as ad
 from harmonypy import run_harmony
-import numpy as np
 import scanpy as sc
 from scvi.model import SCVI
 
-from quality_control.io import merge_parquet, split_parquet
 import scib
-from zca import ZCA, ZCA_corr
 
 logger = logging.getLogger(__name__)
-
-
-def log_uniform_sampling(min_=-6, max_=-1, size=25, seed=[6, 12, 2022]):
-    rng = np.random.default_rng(seed)
-    return 10.**rng.uniform(min_, max_, size=size)
-
-
-def sphering(dframe_path, mode, lambda_, column_norm, values_norm,
-             sphered_path, spherer_path):
-    if mode == 'corr':
-        spherer = ZCA_corr(regularization=lambda_)
-    elif mode == 'cov':
-        spherer = ZCA(regularization=lambda_)
-    else:
-        raise ValueError(f'mode should be "corr" or "cov"')
-
-    meta, vals, features = split_parquet(dframe_path)
-    train_ix = meta[column_norm].isin(values_norm).values
-    spherer.fit(vals[train_ix])
-    vals = spherer.transform(vals).astype(np.float32)
-    merge_parquet(meta, vals, features, sphered_path)
-    np.savez_compressed(spherer_path, spherer=spherer)
-
-
-def select_best(map_files, parquet_files, best_path):
-    scores = pd.Series()
-    for map_file, parquet_file in zip(map_files, parquet_files):
-        mean_map = pd.read_parquet(map_file)['mean_average_precision'].mean()
-        scores[parquet_file] = mean_map
-
-    best_parquet = scores.sort_values().index[-1]
-    shutil.copy(str(best_parquet), best_path)
 
 
 def harmony(adata: ad.AnnData, batch_key: str | list[str],
