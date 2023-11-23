@@ -1,4 +1,5 @@
 {
+    "scenario": "scenario_2",
     "iqr_scale": 100,
     "clip_value": 500,
     "sources": [
