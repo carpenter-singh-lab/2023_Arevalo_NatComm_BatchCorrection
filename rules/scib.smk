@@ -1,4 +1,4 @@
-METRICS = ["nmi", "ari", "asw", "silhouette_batch", "pcr_batch"]
+METRICS = ["nmi", "ari", "asw", "silhouette_batch", "pcr_batch", "il_asw"]
 
 
 rule scib_all:
@@ -75,3 +75,15 @@ rule scib_pcr_batch:
         batch_key=config["batch_key"],
     run:
         scib_metrics.pcr_batch(*input, *params, *output)
+
+
+rule scib_il_asw:
+    input:
+        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+    output:
+        "outputs/{prefix}/scib/{pipeline}_il_asw.bin",
+    params:
+        label_key=config["label_key"],
+        batch_key=config["batch_key"],
+    run:
+        scib_metrics.isolated_labels_asw(*input, *params, *output)
