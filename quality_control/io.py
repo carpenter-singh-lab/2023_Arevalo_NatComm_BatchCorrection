@@ -2,9 +2,18 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 from tqdm.contrib.concurrent import thread_map
+import anndata as ad
 
 from loader import build_path, load_metadata
 from utils import find_feat_cols, find_meta_cols
+
+
+def to_anndata(parquet_path):
+    meta, feats, features = split_parquet(parquet_path)
+    meta.index = meta.index.astype(str)
+    adata = ad.AnnData(feats, meta)
+    adata.var_names = features
+    return adata
 
 
 def split_parquet(dframe_path, features=None):

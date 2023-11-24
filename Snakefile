@@ -1,10 +1,14 @@
-configfile: "./inputs/conf/scenario_2.json"
+configfile: "./inputs/conf/scenario_1.json"
 
 wildcard_constraints:
     criteria=r"target2|prod",
     scenario=r"scenario_\d"
 
+# Init config
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import correct
+import scib_metrics
 from correct import sphering
 import quality_control as qc
 
@@ -18,6 +22,7 @@ else:
 # Load rules
 include: "rules/common.smk"
 include: "rules/map.smk"
+include: "rules/scib.smk"
 include: "rules/mad_clip.smk"
 include: "rules/mad_drop.smk"
 include: "rules/mad_imputemedian.smk"
@@ -47,3 +52,4 @@ rule all:
         f"outputs/{scenario}/map_{criteria}_mad_int_featselect_sphering.parquet",
         f"outputs/{scenario}/map_{criteria}_mad_featselect_sphering.parquet",
         f"outputs/{scenario}/map_{criteria}_mad_featselect_sphering_harmony.parquet"
+        f"outputs/{scenario}/scib/mad_featselect_sphering_harmony_clusters.h5ad"
