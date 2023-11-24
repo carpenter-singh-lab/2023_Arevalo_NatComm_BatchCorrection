@@ -4,7 +4,8 @@ wildcard_constraints:
     criteria=r"target2|prod",
     scenario=r"scenario_\d"
 
-import sphering
+import correct
+from correct import sphering
 import quality_control as qc
 
 scenario = config["scenario"]
@@ -28,6 +29,7 @@ include: "rules/mad_drop_int.smk"
 include: "rules/mad_drop_int_featselect.smk"
 include: "rules/mad_int_featselect_sphering.smk"
 include: "rules/mad_featselect_sphering.smk"
+include: "rules/mad_featselect_sphering_harmony.smk"
 
 
 rule all:
@@ -43,4 +45,5 @@ rule all:
         f"outputs/{scenario}/map_{criteria}_mad_int_featselect.parquet",
         f"outputs/{scenario}/map_{criteria}_mad_drop_int_featselect.parquet",
         f"outputs/{scenario}/map_{criteria}_mad_int_featselect_sphering.parquet",
-        f"outputs/{scenario}/map_{criteria}_mad_featselect_sphering.parquet"
+        f"outputs/{scenario}/map_{criteria}_mad_featselect_sphering.parquet",
+        f"outputs/{scenario}/map_{criteria}_mad_featselect_sphering_harmony.parquet"

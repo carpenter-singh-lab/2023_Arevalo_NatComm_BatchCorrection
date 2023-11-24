@@ -1,4 +1,4 @@
-'''Correction methods'''
+'''Sphering correction'''
 import shutil
 
 import pandas as pd

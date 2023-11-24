@@ -1,8 +1,11 @@
+import logging
+
 from copairs.map import aggregate, run_pipeline
 import pandas as pd
 
 from quality_control.io import split_parquet
 
+logging.getLogger('copairs').setLevel('INFO')
 
 def _index(meta, plate_types):
     '''Select samples to be used in mAP computation'''
