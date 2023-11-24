@@ -51,5 +51,5 @@ rule all:
         f"outputs/{scenario}/map_{criteria}_mad_drop_int_featselect.parquet",
         f"outputs/{scenario}/map_{criteria}_mad_int_featselect_sphering.parquet",
         f"outputs/{scenario}/map_{criteria}_mad_featselect_sphering.parquet",
-        f"outputs/{scenario}/map_{criteria}_mad_featselect_sphering_harmony.parquet"
+        f"outputs/{scenario}/map_{criteria}_mad_featselect_sphering_harmony.parquet",
         f"outputs/{scenario}/scib/mad_featselect_sphering_harmony_clusters.h5ad"
