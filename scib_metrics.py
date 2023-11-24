@@ -127,7 +127,7 @@ def kbet(adata_path, label_key, batch_key, kbet_path):
         np.array(kbet_score).tofile(kbet_path)
 
 
-def lisi_label(adata_path, label_key, clisi_path):
+def lisi_label(adata_path, label_key, lisi_label_path):
     adata = ad.read_h5ad(adata_path)
     clisi = metrics.clisi_graph(
         adata,
@@ -138,10 +138,10 @@ def lisi_label(adata_path, label_key, clisi_path):
         n_cores=8,
         verbose=True,
     )
-    np.array(clisi).tofile(clisi_path)
+    np.array(clisi).tofile(lisi_label_path)
 
 
-def lisi_batch(adata_path, batch_key, ilisi_path):
+def lisi_batch(adata_path, batch_key, lisi_batch_path):
     adata = ad.read_h5ad(adata_path)
     ilisi = metrics.ilisi_graph(
         adata,
@@ -152,4 +152,4 @@ def lisi_batch(adata_path, batch_key, ilisi_path):
         n_cores=8,
         verbose=True,
     )
-    np.array(ilisi).tofile(ilisi_path)
+    np.array(ilisi).tofile(lisi_batch_path)

@@ -1,4 +1,16 @@
-METRICS = ["nmi", "ari", "asw", "silhouette_batch", "pcr_batch", "il_asw"]
+METRICS = [
+    "nmi",
+    "ari",
+    "asw",
+    "silhouette_batch",
+    "pcr_batch",
+    "il_asw",
+    "il_f1",
+    "graph_conn",
+    "kbet",
+    "lisi_label",
+    "lisi_batch",
+]
 
 
 rule scib_all:
@@ -87,3 +99,60 @@ rule scib_il_asw:
         batch_key=config["batch_key"],
     run:
         scib_metrics.isolated_labels_asw(*input, *params, *output)
+
+
+rule scib_il_f1:
+    input:
+        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+    output:
+        "outputs/{prefix}/scib/{pipeline}_il_f1.bin",
+    params:
+        label_key=config["label_key"],
+        batch_key=config["batch_key"],
+    run:
+        scib_metrics.isolated_labels_f1(*input, *params, *output)
+
+
+rule scib_graph_conn:
+    input:
+        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+    output:
+        "outputs/{prefix}/scib/{pipeline}_graph_conn.bin",
+    params:
+        label_key=config["label_key"],
+    run:
+        scib_metrics.graph_connectivity(*input, *params, *output)
+
+
+rule scib_kbet:
+    input:
+        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+    output:
+        "outputs/{prefix}/scib/{pipeline}_kbet.bin",
+    params:
+        label_key=config["label_key"],
+        batch_key=config["batch_key"],
+    run:
+        scib_metrics.kbet(*input, *params, *output)
+
+
+rule scib_lisi_label:
+    input:
+        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+    output:
+        "outputs/{prefix}/scib/{pipeline}_lisi_label.bin",
+    params:
+        label_key=config["label_key"],
+    run:
+        scib_metrics.lisi_label(*input, *params, *output)
+
+
+rule scib_lisi_batch:
+    input:
+        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+    output:
+        "outputs/{prefix}/scib/{pipeline}_lisi_batch.bin",
+    params:
+        batch_key=config["batch_key"],
+    run:
+        scib_metrics.lisi_batch(*input, *params, *output)
