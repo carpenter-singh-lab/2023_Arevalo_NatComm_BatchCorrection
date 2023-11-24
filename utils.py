@@ -38,13 +38,13 @@ with open('feature_set.txt', 'r', encoding='utf8') as f_in:
 
 def find_feat_cols(cols: Iterable[str]):
     '''Find column names for features'''
-    feat_cols = [c for c in cols if c in FEATURE_SET]
+    feat_cols = [c for c in cols if not c.startswith('Meta')]
     return feat_cols
 
 
 def find_meta_cols(cols: Iterable[str]):
     '''Find column names for metadata'''
-    meta_cols = [c for c in cols if c not in FEATURE_SET]
+    meta_cols = [c for c in cols if c.startswith('Meta')]
     return meta_cols
 
 

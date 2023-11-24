@@ -1,4 +1,7 @@
 {
+    "scenario": "scenario_1",
+    "iqr_scale": 100,
+    "clip_value": 500,
     "sources": [
         "source_6"
     ],
@@ -11,12 +14,6 @@
     "values_norm": [
         "DMSO"
     ],
-    "epsilon_mad": 0.006703388296387707,
-    "mad_norm": false,
-    "outlier_removal": true,
-    "nan_removal": true,
-    "feature_selection": true,
-    "sphering": true,
     "sphering_mode": "corr",
-    "sphering_lambda": 3.8180554580690873
+    "sphering_n_opts": 25
 }
