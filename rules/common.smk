@@ -1,3 +1,22 @@
+wildcard_constraints:
+    criteria=r"target2|prod",
+    scenario=r"scenario_\d",
+    pipeline=r"[_a-zA-Z.~0-9\-]*"
+
+# Init config
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import correct
+import scib_metrics
+from correct import sphering
+import quality_control as qc
+
+scenario = config["scenario"]
+if "COMPOUND" in config["plate_types"]:
+    criteria = "prod"
+else:
+    criteria = "target2"
+
 rule write_parquet:
     output:
         "outputs/{scenario}/raw.parquet",

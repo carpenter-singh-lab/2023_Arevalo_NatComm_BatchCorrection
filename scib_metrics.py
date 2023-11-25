@@ -1,7 +1,9 @@
+import os
 import logging
 import warnings
 
 import anndata as ad
+import pandas as pd
 import numpy as np
 import scanpy as sc
 from scib import metrics
@@ -153,3 +155,12 @@ def lisi_batch(adata_path, batch_key, lisi_batch_path):
         verbose=True,
     )
     np.array(ilisi).tofile(lisi_batch_path)
+
+
+def concat(*metric_paths, output_path):
+    start = len(os.path.commonprefix(metric_paths))
+    end = -len('.bin')
+    scores = map(np.fromfile, metric_paths)
+    metrics = map(lambda x: x[start:end], metric_paths)
+    dframe = pd.DataFrame({'metric': metrics, 'score': scores})
+    dframe.to_parquet(output_path)

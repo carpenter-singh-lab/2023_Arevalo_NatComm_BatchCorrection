@@ -30,7 +30,7 @@ def sphering(dframe_path, mode, lambda_, column_norm, values_norm,
     np.savez_compressed(spherer_path, spherer=spherer)
 
 
-def select_best(map_files, parquet_files, parquet_path, map_path):
+def select_best(parquet_files, map_files, parquet_path, map_path):
     scores = []
     for map_file, parquet_file in zip(map_files, parquet_files):
         score = pd.read_parquet(map_file)['mean_average_precision'].mean()

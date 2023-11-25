@@ -16,64 +16,64 @@ METRICS = [
 rule scib_all:
     input:
         expand(
-            "outputs/{{scenario}}/scib/mad_featselect_sphering_harmony_{metric}.bin",
+            "outputs/{{scenario}}/metrics/scib/{{pipeline}}_{metric}.bin",
             metric=METRICS,
         ),
     output:
-        "outputs/{scenario}/mad_featselect_sphering_harmony_sc_metrics.parquet",
+        output_path="outputs/{scenario}/metrics/{pipeline}_scib.parquet",
     run:
-        import ipdb; ipdb.set_trace() # BREAKPOINT
+        scib_metrics.concat(*input, **output)
 
 
-rule scib_clustering:
+rule clustering:
     input:
         "outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
     params:
         label_key=config["label_key"],
     run:
         scib_metrics.cluster(*input, *params, *output)
 
 
-rule scib_nmi:
+rule nmi:
     input:
-        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/scib/{pipeline}_nmi.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_nmi.bin",
     params:
         label_key=config["label_key"],
     run:
         scib_metrics.nmi(*input, *params, *output)
 
 
-rule scib_ari:
+rule ari:
     input:
-        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/scib/{pipeline}_ari.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_ari.bin",
     params:
         label_key=config["label_key"],
     run:
         scib_metrics.ari(*input, *params, *output)
 
 
-rule scib_asw:
+rule asw:
     input:
         "outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/scib/{pipeline}_asw.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_asw.bin",
     params:
         label_key=config["label_key"],
     run:
         scib_metrics.asw(*input, *params, *output)
 
 
-rule scib_silhouette_batch:
+rule silhouette_batch:
     input:
         "outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/scib/{pipeline}_silhouette_batch.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_silhouette_batch.bin",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
@@ -81,23 +81,23 @@ rule scib_silhouette_batch:
         scib_metrics.silhouette_batch(*input, *params, *output)
 
 
-rule scib_pcr_batch:
+rule pcr_batch:
     input:
         pre_parquet_path="outputs/{prefix}/mad.parquet",
         post_parquet_path="outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/scib/{pipeline}_pcr_batch.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_pcr_batch.bin",
     params:
         batch_key=config["batch_key"],
     run:
         scib_metrics.pcr_batch(*input, *params, *output)
 
 
-rule scib_il_asw:
+rule il_asw:
     input:
-        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/scib/{pipeline}_il_asw.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_il_asw.bin",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
@@ -105,11 +105,11 @@ rule scib_il_asw:
         scib_metrics.isolated_labels_asw(*input, *params, *output)
 
 
-rule scib_il_f1:
+rule il_f1:
     input:
-        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/scib/{pipeline}_il_f1.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_il_f1.bin",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
@@ -117,22 +117,22 @@ rule scib_il_f1:
         scib_metrics.isolated_labels_f1(*input, *params, *output)
 
 
-rule scib_graph_conn:
+rule graph_conn:
     input:
-        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/scib/{pipeline}_graph_conn.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_graph_conn.bin",
     params:
         label_key=config["label_key"],
     run:
         scib_metrics.graph_connectivity(*input, *params, *output)
 
 
-rule scib_kbet:
+rule kbet:
     input:
-        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/scib/{pipeline}_kbet.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_kbet.bin",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
@@ -140,22 +140,22 @@ rule scib_kbet:
         scib_metrics.kbet(*input, *params, *output)
 
 
-rule scib_lisi_label:
+rule lisi_label:
     input:
-        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/scib/{pipeline}_lisi_label.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_lisi_label.bin",
     params:
         label_key=config["label_key"],
     run:
         scib_metrics.lisi_label(*input, *params, *output)
 
 
-rule scib_lisi_batch:
+rule lisi_batch:
     input:
-        "outputs/{prefix}/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/scib/{pipeline}_lisi_batch.bin",
+        "outputs/{prefix}/metrics/scib/{pipeline}_lisi_batch.bin",
     params:
         batch_key=config["batch_key"],
     run:

@@ -27,12 +27,10 @@ rule select_best_sphering:
             reg=reg_opts,
         ),
     output:
-        map_path="outputs/{scenario}/metrics/{criteria}/{pipeline}_sphering_map.parquet",
         parquet_path="outputs/{scenario}/{pipeline}_sphering_{criteria}.parquet",
+        map_path="outputs/{scenario}/metrics/{criteria}/{pipeline}_sphering_map.parquet",
     run:
-        sphering.select_best(
-            input.map_files, input.parquet_files, params.parquet_path, output.map_path
-        )
+        sphering.select_best(input.parquet_files, input.map_files, *output)
 
 
 # Avoid mAP recomputation
