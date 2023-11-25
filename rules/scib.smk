@@ -16,9 +16,13 @@ METRICS = [
 rule scib_all:
     input:
         expand(
-            "outputs/scenario_1/scib/mad_featselect_sphering_harmony_{metric}.bin",
+            "outputs/{{scenario}}/scib/mad_featselect_sphering_harmony_{metric}.bin",
             metric=METRICS,
         ),
+    output:
+        "outputs/{scenario}/mad_featselect_sphering_harmony_sc_metrics.parquet",
+    run:
+        import ipdb; ipdb.set_trace() # BREAKPOINT
 
 
 rule scib_clustering:
