@@ -13,4 +13,4 @@ include: "rules/scib.smk"
 rule all:
     input:
         f"outputs/{scenario}/metrics/{criteria}/mad_featselect_sphering_{criteria}_harmony_map.parquet",
-        f"outputs/{scenario}/metrics/mad_featselect_sphering_{criteria}_harmony_scib.parquet"
+        f"outputs/{scenario}/metrics/mad_featselect_sphering_{criteria}_harmony_scib.parquet",

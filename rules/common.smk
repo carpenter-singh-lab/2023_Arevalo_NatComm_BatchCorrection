@@ -1,11 +1,13 @@
 wildcard_constraints:
     criteria=r"target2|prod",
     scenario=r"scenario_\d",
-    pipeline=r"[_a-zA-Z.~0-9\-]*"
+    pipeline=r"[_a-zA-Z.~0-9\-]*",
+
 
 # Init config
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import correct
 import scib_metrics
 from correct import sphering
@@ -17,11 +19,12 @@ if "COMPOUND" in config["plate_types"]:
 else:
     criteria = "target2"
 
+
 rule write_parquet:
     output:
         "outputs/{scenario}/raw.parquet",
     run:
-        qc.io.write_parquet(config['sources'], config['plate_types'], *output)
+        qc.io.write_parquet(config["sources"], config["plate_types"], *output)
 
 
 rule compute_negcon_stats:

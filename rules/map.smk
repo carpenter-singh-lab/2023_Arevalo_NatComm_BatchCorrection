@@ -4,14 +4,14 @@ rule average_precision:
     output:
         "outputs/{prefix}/metrics/{criteria}/{pipeline}_ap.parquet",
     params:
-        plate_types = lambda wc: ["TARGET2"] if wc.criteria == "target2" else ["COMPOUND"]
+        plate_types=lambda wc: ["TARGET2"] if wc.criteria == "target2" else ["COMPOUND"],
     run:
         qc.metrics.average_precision(*input, *output, **params)
 
 
 rule mean_average_precision:
     input:
-        "outputs/{prefix}/metrics/{criteria}/{pipeline}_ap.parquet"
+        "outputs/{prefix}/metrics/{criteria}/{pipeline}_ap.parquet",
     output:
         "outputs/{prefix}/metrics/{criteria}/{pipeline}_map.parquet",
     run:
