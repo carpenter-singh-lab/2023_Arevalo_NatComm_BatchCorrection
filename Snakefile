@@ -3,7 +3,7 @@ configfile: "./inputs/conf/scenario_1.json"
 wildcard_constraints:
     criteria=r"target2|prod",
     scenario=r"scenario_\d",
-    pipeline=r"[_a-zA-Z.~1-9]*"
+    pipeline=r"[_a-zA-Z.~0-9\-]*"
 
 # Init config
 import os
@@ -24,6 +24,7 @@ else:
 include: "rules/common.smk"
 include: "rules/processing.smk"
 include: "rules/map.smk"
+include: "rules/sphering.smk"
 include: "rules/correct.smk"
 
 
@@ -42,4 +43,5 @@ rule all:
         #f"outputs/{scenario}/metrics/{criteria}/mad_int_featselect_sphering_map.parquet",
         #f"outputs/{scenario}/metrics/{criteria}/mad_featselect_sphering_map.parquet",
         #f"outputs/{scenario}/metrics/{criteria}/mad_featselect_sphering_harmony_map.parquet",
+        f"outputs/{scenario}/metrics/{criteria}/mad_featselect_sphering_map.parquet",
         #f"outputs/{scenario}/scib/mad_featselect_sphering_harmony_clusters.h5ad"
