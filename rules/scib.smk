@@ -16,11 +16,11 @@ METRICS = [
 rule scib_all:
     input:
         expand(
-            "outputs/{{scenario}}/metrics/scib/{{pipeline}}_{metric}.bin",
+            "outputs/{{scenario}}/metrics/{{criteria}}/scib/{{pipeline}}_{metric}.bin",
             metric=METRICS,
         ),
     output:
-        output_path="outputs/{scenario}/metrics/{pipeline}_scib.parquet",
+        output_path="outputs/{scenario}/metrics/{criteria}/{pipeline}_scib.parquet",
     run:
         scib_metrics.concat(*input, **output)
 
@@ -29,7 +29,7 @@ rule clustering:
     input:
         "outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     params:
         label_key=config["label_key"],
     run:
@@ -38,9 +38,9 @@ rule clustering:
 
 rule nmi:
     input:
-        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_nmi.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_nmi.bin",
     params:
         label_key=config["label_key"],
     run:
@@ -49,9 +49,9 @@ rule nmi:
 
 rule ari:
     input:
-        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_ari.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_ari.bin",
     params:
         label_key=config["label_key"],
     run:
@@ -62,7 +62,7 @@ rule asw:
     input:
         "outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_asw.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_asw.bin",
     params:
         label_key=config["label_key"],
     run:
@@ -73,7 +73,7 @@ rule silhouette_batch:
     input:
         "outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_silhouette_batch.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_silhouette_batch.bin",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
@@ -86,7 +86,7 @@ rule pcr_batch:
         pre_parquet_path="outputs/{prefix}/mad.parquet",
         post_parquet_path="outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_pcr_batch.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_pcr_batch.bin",
     params:
         batch_key=config["batch_key"],
     run:
@@ -95,9 +95,9 @@ rule pcr_batch:
 
 rule il_asw:
     input:
-        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_il_asw.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_il_asw.bin",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
@@ -107,9 +107,9 @@ rule il_asw:
 
 rule il_f1:
     input:
-        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_il_f1.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_il_f1.bin",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
@@ -119,9 +119,9 @@ rule il_f1:
 
 rule graph_conn:
     input:
-        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_graph_conn.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_graph_conn.bin",
     params:
         label_key=config["label_key"],
     run:
@@ -130,9 +130,9 @@ rule graph_conn:
 
 rule kbet:
     input:
-        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_kbet.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_kbet.bin",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
@@ -142,9 +142,9 @@ rule kbet:
 
 rule lisi_label:
     input:
-        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_lisi_label.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_label.bin",
     params:
         label_key=config["label_key"],
     run:
@@ -153,9 +153,9 @@ rule lisi_label:
 
 rule lisi_batch:
     input:
-        "outputs/{prefix}/metrics/scib/{pipeline}_clusters.h5ad",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/scib/{pipeline}_lisi_batch.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_batch.bin",
     params:
         batch_key=config["batch_key"],
     run:

@@ -101,7 +101,7 @@ def isolated_labels_f1(adata_path, label_key, batch_key, il_f1_path):
         cluster=True,
         # max number of batches a label should be present to be considered isolated
         iso_threshold=None,
-        verbose=True,
+        verbose=False,
     )
     np.array(il_score_f1).tofile(il_f1_path)
 
@@ -138,7 +138,7 @@ def lisi_label(adata_path, label_key, lisi_label_path):
         subsample=100,  # Use all data
         scale=True,
         n_cores=8,
-        verbose=True,
+        verbose=False,
     )
     np.array(clisi).tofile(lisi_label_path)
 
@@ -152,7 +152,7 @@ def lisi_batch(adata_path, batch_key, lisi_batch_path):
         subsample=100,  # Use all data
         scale=True,
         n_cores=8,
-        verbose=True,
+        verbose=False,
     )
     np.array(ilisi).tofile(lisi_batch_path)
 
