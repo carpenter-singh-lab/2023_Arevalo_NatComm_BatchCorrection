@@ -158,9 +158,13 @@ def lisi_batch(adata_path, batch_key, lisi_batch_path):
 
 
 def concat(*metric_paths, output_path):
+    '''Concatenate scib metrics in a single file'''
+    # Extract metric names from path
     start = len(os.path.commonprefix(metric_paths))
     end = -len('.bin')
-    scores = map(np.fromfile, metric_paths)
     metrics = map(lambda x: x[start:end], metric_paths)
+
+    # Concat metric values
+    scores = np.fromiter(map(np.fromfile, metric_paths), dtype=np.float32)
     dframe = pd.DataFrame({'metric': metrics, 'score': scores})
     dframe.to_parquet(output_path)

@@ -27,7 +27,6 @@ def umap(parquet_path, umap_path):
     adata = io.to_anndata(parquet_path)
     sc.pp.neighbors(adata, use_rep='X')
     sc.tl.umap(adata)  # Generates X_umap
-    import ipdb; ipdb.set_trace() # BREAKPOINT
     meta = adata.obs
     meta.reset_index(drop=True, inplace=True)
     meta['x'] = adata.obsm['X_umap'][:, 0]

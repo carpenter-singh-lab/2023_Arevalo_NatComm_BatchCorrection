@@ -1,4 +1,3 @@
-from scanorama import assemble
 import numpy as np
 import scanpy as sc
 from quality_control import io
@@ -24,6 +23,7 @@ def pca_scanorama(parquet_path, batch_key, output_path):
 
 def scanorama(parquet_path, batch_key, output_path):
     '''Scanorama correction without pca'''
+    from scanorama import assemble
     meta, vals, features = io.split_parquet(parquet_path)
     indices = reverse_index(meta[batch_key])
     vals = [vals[ix] for ix in indices.values]
