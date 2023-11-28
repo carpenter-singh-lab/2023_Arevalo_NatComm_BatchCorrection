@@ -1,13 +1,29 @@
-import numpy as np
-import anndata as ad
+import warnings
+
 import scanpy as sc
-from scvi.model.utils import mde as scvi_mde
+
 from quality_control import io
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore',
+                            category=UserWarning,
+                            message='Failed to load image Python extension')
+    import pymde
+
 
 
 def mde(parquet_path, mde_path):
     meta, vals, _ = io.split_parquet(parquet_path)
-    embd = scvi_mde(vals)
+    # params taken from scvi.model.utils.mde
+    mde_params = {
+        "embedding_dim": 2,
+        "constraint": pymde.Standardized(),
+        "repulsive_fraction": 0.7,
+        "verbose": False,
+        "n_neighbors": 15,
+    }
+
+    embd = pymde.preserve_neighbors(vals, **mde_params).embed()
+
     meta['x'] = embd[:, 0]
     meta['y'] = embd[:, 1]
     meta.to_parquet(mde_path)

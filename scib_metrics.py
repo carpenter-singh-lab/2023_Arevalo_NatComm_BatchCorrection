@@ -1,16 +1,22 @@
-import os
 import logging
+import os
 import warnings
 
 import anndata as ad
-import pandas as pd
 import numpy as np
+import pandas as pd
 import scanpy as sc
-from scib import metrics
-from scib.metrics.pcr import pc_regression
 from sklearn.metrics import silhouette_score
 
 from quality_control.io import split_parquet, to_anndata
+
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore',
+                            category=ResourceWarning,
+                            message='Implicitly cleaning up')
+    from scib import metrics
+    from scib.metrics.pcr import pc_regression
+
 
 logger = logging.getLogger(__name__)
 
