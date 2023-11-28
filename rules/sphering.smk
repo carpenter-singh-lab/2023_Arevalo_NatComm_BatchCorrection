@@ -21,17 +21,17 @@ rule select_best_sphering:
         parquet_files=expand(
             f"outputs/{scenario}/sphering/exploration/{{pipeline}}_reg~{{reg}}.parquet",
             reg=reg_opts,
-            allow_missing=True
+            allow_missing=True,
         ),
         map_negcon_files=expand(
             f"outputs/{scenario}/sphering/exploration/metrics/{criteria}/{{pipeline}}_reg~{{reg}}_map_negcon.parquet",
             reg=reg_opts,
-            allow_missing=True
+            allow_missing=True,
         ),
         map_nonrep_files=expand(
             f"outputs/{scenario}/sphering/exploration/metrics/{criteria}/{{pipeline}}_reg~{{reg}}_map_nonrep.parquet",
             reg=reg_opts,
-            allow_missing=True
+            allow_missing=True,
         ),
     output:
         parquet_path=f"outputs/{scenario}/{{pipeline}}_sphering.parquet",
@@ -44,9 +44,9 @@ rule select_best_sphering:
             input.map_nonrep_files,
             output.parquet_path,
             output.map_negcon_path,
-            output.map_nonrep_path
+            output.map_nonrep_path,
         )
 
 
-# Because map files 
+# Because map files
 ruleorder: select_best_sphering > mean_average_precision

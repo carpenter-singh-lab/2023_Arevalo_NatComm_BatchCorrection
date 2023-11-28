@@ -19,6 +19,7 @@ rule average_precision_nonrep:
     run:
         qc.metrics.average_precision_nonrep(*input, *output, **params)
 
+
 rule mean_average_precision:
     input:
         "outputs/{prefix}/metrics/{criteria}/{pipeline}_ap_{reftype}.parquet",

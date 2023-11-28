@@ -1,8 +1,8 @@
 '''Sphering correction'''
 import shutil
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from quality_control.io import merge_parquet, split_parquet
 from zca import ZCA, ZCA_corr
@@ -30,17 +30,25 @@ def sphering(dframe_path, mode, lambda_, column_norm, values_norm,
     np.savez_compressed(spherer_path, spherer=spherer)
 
 
-def select_best(parquet_files, map_files, parquet_path, map_path):
+def select_best(parquet_files, map_negcon_files, map_nonrep_files,
+                parquet_path, map_negcon_path, map_nonrep_path):
     scores = []
-    for map_file, parquet_file in zip(map_files, parquet_files):
-        score = pd.read_parquet(map_file)['mean_average_precision'].mean()
+    for negcon_file, nonrep_file, parquet_file in zip(map_negcon_files,
+                                                      map_nonrep_files,
+                                                      parquet_files):
+        negcon_score = pd.read_parquet(
+            negcon_file)['mean_average_precision'].dropna().mean()
+        nonrep_score = pd.read_parquet(
+            nonrep_file)['mean_average_precision'].dropna().mean()
         scores.append({
             'parquet_file': parquet_file,
-            'map_file': map_file,
-            'score': score
+            'negcon_file': negcon_file,
+            'nonrep_file': nonrep_file,
+            'score': (negcon_score + nonrep_score) / 2
         })
 
     scores = pd.DataFrame(scores)
     best = scores.sort_values(by='score').iloc[-1]
-    shutil.copy(best.parquet_file, parquet_path)
-    shutil.copy(best.map_file, map_path)
+    shutil.copy(best['parquet_file'], parquet_path)
+    shutil.copy(best['negcon_file'], map_negcon_path)
+    shutil.copy(best['nonrep_file'], map_nonrep_path)
