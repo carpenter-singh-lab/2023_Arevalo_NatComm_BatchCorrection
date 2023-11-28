@@ -4,6 +4,7 @@ METRICS = [
     "asw",
     "silhouette_batch",
     "pcr_batch",
+    "pcr",
     "il_asw",
     "il_f1",
     "graph_conn",
@@ -91,6 +92,17 @@ rule pcr_batch:
         batch_key=config["batch_key"],
     run:
         scib_metrics.pcr_batch(*input, *params, *output)
+
+
+rule pcr:
+    input:
+        "outputs/{prefix}/{pipeline}.parquet",
+    output:
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_pcr.bin",
+    params:
+        batch_key=config["batch_key"],
+    run:
+        scib_metrics.pcr(*input, *params, *output)
 
 
 rule il_asw:

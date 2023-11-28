@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import scanpy as sc
 from scib import metrics
+from scib.metrics.pcr import pc_regression
 from sklearn.metrics import silhouette_score
 
 from quality_control.io import split_parquet, to_anndata
@@ -72,6 +73,13 @@ def pcr_batch(pre_parquet_path, post_parquet_path, batch_key, pcr_batch_path):
                                        covariate=batch_key,
                                        verbose=False)
     np.array(pcr_score).tofile(pcr_batch_path)
+
+
+def pcr(parquet_path, batch_key, pcr_path):
+    meta, vals, _ = split_parquet(parquet_path)
+    # 1 - pcr to make it 0 worst 1 best
+    pcr_score = 1 - pc_regression(vals, meta[batch_key].values)
+    np.array(pcr_score).tofile(pcr_path)
 
 
 def isolated_labels_asw(adata_path, label_key, batch_key, il_asw_path):
