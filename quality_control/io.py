@@ -113,4 +113,7 @@ def write_parquet(sources, plate_types, output_file):
     meta = dframe[foreign_key].merge(meta, on=foreign_key, how='left')
     for c in meta:
         dframe[c] = meta[c].astype('category')
+    # Dropping samples with no metadata
+    dframe.dropna(subset=['Metadata_JCP2022'], inplace=True)
+    dframe.reset_index(drop=True, inplace=True)
     dframe.to_parquet(output_file)
