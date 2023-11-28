@@ -19,19 +19,34 @@ rule sphering_explore:
 rule select_best_sphering:
     input:
         parquet_files=expand(
-            "outputs/{{scenario}}/sphering/exploration/{{pipeline}}_reg~{reg}.parquet",
+            f"outputs/{scenario}/sphering/exploration/{{pipeline}}_reg~{{reg}}.parquet",
             reg=reg_opts,
+            allow_missing=True
         ),
-        map_files=expand(
-            "outputs/{{scenario}}/sphering/exploration/metrics/{{criteria}}/{{pipeline}}_reg~{reg}_map.parquet",
+        map_negcon_files=expand(
+            f"outputs/{scenario}/sphering/exploration/metrics/{criteria}/{{pipeline}}_reg~{{reg}}_map_negcon.parquet",
             reg=reg_opts,
+            allow_missing=True
+        ),
+        map_nonrep_files=expand(
+            f"outputs/{scenario}/sphering/exploration/metrics/{criteria}/{{pipeline}}_reg~{{reg}}_map_nonrep.parquet",
+            reg=reg_opts,
+            allow_missing=True
         ),
     output:
-        parquet_path="outputs/{scenario}/{pipeline}_sphering_{criteria}.parquet",
-        map_path="outputs/{scenario}/metrics/{criteria}/{pipeline}_sphering_map.parquet",
+        parquet_path=f"outputs/{scenario}/{{pipeline}}_sphering.parquet",
+        map_negcon_path=f"outputs/{scenario}/metrics/{criteria}/{{pipeline}}_sphering_map_negcon.parquet",
+        map_nonrep_path=f"outputs/{scenario}/metrics/{criteria}/{{pipeline}}_sphering_map_nonrep.parquet",
     run:
-        sphering.select_best(input.parquet_files, input.map_files, *output)
+        sphering.select_best(
+            input.parquet_files,
+            input.map_negcon_files,
+            input.map_nonrep_files,
+            output.parquet_path,
+            output.map_negcon_path,
+            output.map_nonrep_path
+        )
 
 
-# Avoid mAP recomputation
+# Because map files 
 ruleorder: select_best_sphering > mean_average_precision

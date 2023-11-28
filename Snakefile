@@ -12,19 +12,34 @@ include: "rules/projection.smk"
 
 
 METHODS = [
-        # "scanorama",
-    "pca_scanorama",
-    "mnn",
-    "harmony",
-    "pca_harmony",
+    # "scanorama",
+    # "pca_scanorama",
+    # "mnn",
+    # "harmony",
+    # "pca_harmony",
+    "sphering"
 ]
-map_pattern = f"outputs/{scenario}/metrics/{criteria}/mad_featselect_sphering_{criteria}_{{method}}_map.parquet"
-scib_pattern = f"outputs/{scenario}/metrics/{criteria}/mad_featselect_sphering_{criteria}_{{method}}_scib.parquet"
-mde_pattern = f"outputs/{scenario}/projection/mad_featselect_sphering_{criteria}_{{method}}_mde.parquet"
 
+WORKFLOWS = [
+    "mad",
+    "mad_clip",
+    "mad_featselect",
+    "mad_int",
+    "mad_int_featselect",
+    "mad_drop",
+    "mad_drop_featselect",
+    "mad_drop",
+    "mad_drop_int",
+    "mad_drop_int_featselect",
+]
+
+WORKFLOWS = [f"mad_featselect_sphering"]
+REF_TYPE = ['negcon', 'nonrep']
+map_pattern = f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_{{method}}_map_{{reftype}}.parquet"
+scib_pattern = f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_{{method}}_scib.parquet"
+mde_pattern = f"outputs/{scenario}/projection/{{workflow}}_{{method}}_mde.parquet"
 
 rule all:
     input:
-        expand(map_pattern, method=METHODS),
-        expand(scib_pattern, method=METHODS),
-        expand(mde_pattern, method=METHODS),
+        expand(map_pattern, workflow=WORKFLOWS, reftype=REF_TYPE, method=METHODS),
+        # expand(scib_pattern, workflow=WORKFLOWS, method=METHODS),

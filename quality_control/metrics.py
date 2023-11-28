@@ -7,7 +7,8 @@ from quality_control.io import split_parquet
 
 logging.getLogger('copairs').setLevel('INFO')
 
-def _index(meta, plate_types):
+
+def _index(meta, plate_types, ignore_dmso=False):
     '''Select samples to be used in mAP computation'''
     index = meta['Metadata_PlateType'].isin(plate_types)
     index &= (meta['Metadata_PertType'] != 'poscon')
@@ -17,6 +18,8 @@ def _index(meta, plate_types):
     # TODO: This compound has many more replicates than any other. ignoring it
     # for now. This filter should be done early on.
     index &= (meta['Metadata_JCP2022'] != 'JCP2022_033954')
+    if ignore_dmso:
+        index &= (meta['Metadata_JCP2022'] != 'DMSO')
     return index.values
 
 
@@ -33,7 +36,7 @@ def _group_negcons(meta: pd.DataFrame):
     meta['Metadata_JCP2022'] = pert_id
 
 
-def average_precision(parquet_path, ap_path, plate_types):
+def average_precision_negcon(parquet_path, ap_path, plate_types):
     meta, vals, _ = split_parquet(parquet_path)
     ix = _index(meta, plate_types)
     meta = meta[ix].copy()
@@ -51,6 +54,25 @@ def average_precision(parquet_path, ap_path, plate_types):
         seed=0,
     )
     result = result.query('Metadata_PertType!="negcon"')
+    result.reset_index(drop=True).to_parquet(ap_path)
+
+
+def average_precision_nonrep(parquet_path, ap_path, plate_types):
+    meta, vals, _ = split_parquet(parquet_path)
+    ix = _index(meta, plate_types, ignore_dmso=True)
+    meta = meta[ix].copy()
+    vals = vals[ix]
+    result = run_pipeline(
+        meta,
+        vals,
+        pos_sameby=['Metadata_JCP2022'],
+        pos_diffby=[],
+        neg_sameby=['Metadata_Plate'],
+        neg_diffby=['Metadata_JCP2022'],
+        null_size=10000,
+        batch_size=20000,
+        seed=0,
+    )
     result.reset_index(drop=True).to_parquet(ap_path)
 
 
