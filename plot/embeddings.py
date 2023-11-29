@@ -1,5 +1,6 @@
 '''Plot all figures'''
 import logging
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -47,13 +48,17 @@ def label_sort(embds: pd.DataFrame, label: str):
     return pd.Series(medians).sort_values().index.values
 
 
-def load_embeddings(embd_paths: list[str], vis='mde', verbose=False, anon=True):
+def load_embeddings(embd_paths: list[str],
+                    vis='mde',
+                    verbose=False,
+                    anon=True):
     embds = []
     for path in embd_paths:
         try:
             embd = pd.read_csv(path, dtype={'Metadata_Plate': str})
             # Capitalize first letter
-            embd['Metadata_JCP2022'] = embd['Metadata_JCP2022'].str[0].str.upper() + embd['Metadata_JCP2022'].str[1:]
+            embd['Metadata_JCP2022'] = embd['Metadata_JCP2022'].str[
+                0].str.upper() + embd['Metadata_JCP2022'].str[1:]
         except FileNotFoundError as exc:
             if verbose:
                 logger.warning(f'Embeddings not ready: {exc.filename}')
