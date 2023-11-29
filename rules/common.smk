@@ -9,7 +9,7 @@ import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import correct
-import scib_metrics
+import metrics
 from correct import sphering
 import quality_control as qc
 

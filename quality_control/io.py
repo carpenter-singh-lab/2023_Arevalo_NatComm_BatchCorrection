@@ -104,7 +104,7 @@ def add_row_col(meta: pd.DataFrame):
 
 def add_microscopy_info(meta: pd.DataFrame):
     configs = meta['Metadata_Source'].map(MICRO_CONFIG).astype('category')
-    meta['Microscope'] = configs
+    meta['Metadata_Microscope'] = configs
 
 def write_parquet(sources, plate_types, output_file):
     '''Write the parquet dataset given the params'''

@@ -1,4 +1,4 @@
-METRICS = [
+SCIB_METRICS = [
     "nmi",
     "ari",
     "asw",
@@ -18,12 +18,12 @@ rule scib_all:
     input:
         expand(
             "outputs/{{scenario}}/metrics/{{criteria}}/scib/{{pipeline}}_{metric}.bin",
-            metric=METRICS,
+            metric=SCIB_METRICS,
         ),
     output:
         output_path="outputs/{scenario}/metrics/{criteria}/{pipeline}_scib.parquet",
     run:
-        scib_metrics.concat(*input, **output)
+        metrics.scib.concat(*input, **output)
 
 
 rule clustering:
@@ -34,7 +34,7 @@ rule clustering:
     params:
         label_key=config["label_key"],
     run:
-        scib_metrics.cluster(*input, *params, *output)
+        metrics.scib.cluster(*input, *params, *output)
 
 
 rule nmi:
@@ -45,7 +45,7 @@ rule nmi:
     params:
         label_key=config["label_key"],
     run:
-        scib_metrics.nmi(*input, *params, *output)
+        metrics.scib.nmi(*input, *params, *output)
 
 
 rule ari:
@@ -56,7 +56,7 @@ rule ari:
     params:
         label_key=config["label_key"],
     run:
-        scib_metrics.ari(*input, *params, *output)
+        metrics.scib.ari(*input, *params, *output)
 
 
 rule asw:
@@ -67,7 +67,7 @@ rule asw:
     params:
         label_key=config["label_key"],
     run:
-        scib_metrics.asw(*input, *params, *output)
+        metrics.scib.asw(*input, *params, *output)
 
 
 rule silhouette_batch:
@@ -79,7 +79,7 @@ rule silhouette_batch:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
     run:
-        scib_metrics.silhouette_batch(*input, *params, *output)
+        metrics.scib.silhouette_batch(*input, *params, *output)
 
 
 rule pcr_batch:
@@ -91,7 +91,7 @@ rule pcr_batch:
     params:
         batch_key=config["batch_key"],
     run:
-        scib_metrics.pcr_batch(*input, *params, *output)
+        metrics.scib.pcr_batch(*input, *params, *output)
 
 
 rule pcr:
@@ -102,7 +102,7 @@ rule pcr:
     params:
         batch_key=config["batch_key"],
     run:
-        scib_metrics.pcr(*input, *params, *output)
+        metrics.scib.pcr(*input, *params, *output)
 
 
 rule il_asw:
@@ -114,7 +114,7 @@ rule il_asw:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
     run:
-        scib_metrics.isolated_labels_asw(*input, *params, *output)
+        metrics.scib.isolated_labels_asw(*input, *params, *output)
 
 
 rule il_f1:
@@ -126,7 +126,7 @@ rule il_f1:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
     run:
-        scib_metrics.isolated_labels_f1(*input, *params, *output)
+        metrics.scib.isolated_labels_f1(*input, *params, *output)
 
 
 rule graph_conn:
@@ -137,7 +137,7 @@ rule graph_conn:
     params:
         label_key=config["label_key"],
     run:
-        scib_metrics.graph_connectivity(*input, *params, *output)
+        metrics.scib.graph_connectivity(*input, *params, *output)
 
 
 rule kbet:
@@ -149,7 +149,7 @@ rule kbet:
         label_key=config["label_key"],
         batch_key=config["batch_key"],
     run:
-        scib_metrics.kbet(*input, *params, *output)
+        metrics.scib.kbet(*input, *params, *output)
 
 
 rule lisi_label:
@@ -160,7 +160,7 @@ rule lisi_label:
     params:
         label_key=config["label_key"],
     run:
-        scib_metrics.lisi_label(*input, *params, *output)
+        metrics.scib.lisi_label(*input, *params, *output)
 
 
 rule lisi_batch:
@@ -171,4 +171,4 @@ rule lisi_batch:
     params:
         batch_key=config["batch_key"],
     run:
-        scib_metrics.lisi_batch(*input, *params, *output)
+        metrics.scib.lisi_batch(*input, *params, *output)

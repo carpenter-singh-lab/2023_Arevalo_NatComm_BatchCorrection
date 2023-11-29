@@ -6,7 +6,7 @@ rule average_precision_negcon:
     params:
         plate_types=lambda wc: ["TARGET2"] if wc.criteria == "target2" else ["COMPOUND"],
     run:
-        qc.metrics.average_precision_negcon(*input, *output, **params)
+        metrics.average_precision_negcon(*input, *output, **params)
 
 
 rule average_precision_nonrep:
@@ -17,7 +17,7 @@ rule average_precision_nonrep:
     params:
         plate_types=lambda wc: ["TARGET2"] if wc.criteria == "target2" else ["COMPOUND"],
     run:
-        qc.metrics.average_precision_nonrep(*input, *output, **params)
+        metrics.average_precision_nonrep(*input, *output, **params)
 
 
 rule mean_average_precision:
@@ -26,4 +26,4 @@ rule mean_average_precision:
     output:
         "outputs/{prefix}/metrics/{criteria}/{pipeline}_map_{reftype}.parquet",
     run:
-        qc.metrics.mean_average_precision(*input, *output)
+        metrics.mean_average_precision(*input, *output)

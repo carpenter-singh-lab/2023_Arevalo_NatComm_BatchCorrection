@@ -4,10 +4,9 @@ configfile: "./inputs/conf/scenario_1.json"
 # Load rules
 include: "rules/common.smk"
 include: "rules/processing.smk"
-include: "rules/map.smk"
+include: "rules/metrics.smk"
 include: "rules/sphering.smk"
 include: "rules/correct.smk"
-include: "rules/scib.smk"
 include: "rules/projection.smk"
 
 
@@ -34,16 +33,15 @@ WORKFLOWS = [
     "mad_drop_int_featselect_sphering",
 ]
 
-REF_TYPE = ['negcon', 'nonrep']
-map_pattern = f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_{{method}}_map_{{reftype}}.parquet"
-map_baseline_pattern = f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_map_{{reftype}}.parquet"
-scib_baseline_pattern = f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_scib.parquet"
-scib_pattern = f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_{{method}}_scib.parquet"
 umap_pattern = f"outputs/{scenario}/projection/{{workflow}}_{{method}}_umap.parquet"
+metrics_baseline_pattern = (
+    f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_all_metrics.parquet"
+)
+metrics_pattern = (
+    f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_{{method}}_all_metrics.parquet"
+)
 
 rule all:
     input:
-        expand(map_pattern, workflow=WORKFLOWS, reftype=REF_TYPE, method=METHODS),
-        expand(scib_pattern, workflow=WORKFLOWS, method=METHODS),
-        expand(map_baseline_pattern, workflow=WORKFLOWS, reftype=REF_TYPE),
-        expand(scib_baseline_pattern, workflow=WORKFLOWS),
+        expand(metrics_pattern, workflow=WORKFLOWS, method=METHODS),
+        expand(metrics_baseline_pattern, workflow=WORKFLOWS),
