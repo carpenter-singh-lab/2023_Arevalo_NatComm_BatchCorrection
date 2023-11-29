@@ -8,31 +8,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from copairs.replicating import CorrelationTestResult
-from copairs.map import aggregate
 from utils import METRIC_MAP, PathLocator, preprocessing_model_name
 
 logger = logging.getLogger(__name__)
-
-
-def load_percent_matching(locator: PathLocator):
-    corr_df = pd.read_csv(locator.corr_dist_matching_path)
-    null_dist = pd.read_csv(locator.null_dist_matching_path).iloc[:, 0]
-    result = CorrelationTestResult(corr_df, null_dist)
-    return result
-
-
-def load_map_compound(locator: PathLocator, threshold=0.05):
-    '''Compute fraction positives based on p and q values'''
-    ap = pd.read_csv(locator.average_precision_path, low_memory=False)
-    ap = aggregate(ap, locator.config['label_key'], threshold=threshold)
-    p_frac = ap['above_p_threshold'].value_counts(normalize=True)
-    q_frac = ap['above_q_threshold'].value_counts(normalize=True)
-    return {
-        'mean_average_precision': ap['mean_average_precision'].mean(),
-        'fraction_positive_p': p_frac[True],
-        'fraction_positive_q': q_frac[True]
-    }
 
 
 def load_scores(locator: PathLocator,
@@ -45,17 +23,6 @@ def load_scores(locator: PathLocator,
         logger.warning(f'single-cell scores not found for {locator.hashid}.{locator.model}')
         scores = pd.Series(name='score', dtype=np.float32)
         scores.index.name = 'metric'
-    try:
-        corr_df = pd.read_csv(locator.corr_dist_path)
-        null_dist = pd.read_csv(locator.null_dist_path).iloc[:, 0]
-        corr_result = CorrelationTestResult(corr_df, null_dist)
-        repl, th_repl = corr_result.percent_score_right()
-        wdist = corr_result.wasserstein_distance()
-        scores['percent_repl'] = repl
-        scores['null_th_repl'] = th_repl
-        scores['wasserstein_distance'] = wdist
-    except FileNotFoundError:
-        logger.warning(f'percent_repl scores not found for {locator.hashid}.{locator.model}')
 
     try:
         for key, val in load_map_compound(locator).items():

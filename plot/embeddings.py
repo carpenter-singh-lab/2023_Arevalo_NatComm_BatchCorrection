@@ -7,9 +7,7 @@ import plotly.graph_objs as go
 from scipy.spatial.distance import pdist
 from sklearn.preprocessing import minmax_scale
 
-from utils import PathLocator, preprocessing_model_name
-from preprocessing import add_row_col
-from loader import MICRO_CONFIG
+from utils import preprocessing_model_name
 
 logger = logging.getLogger(__name__)
 
@@ -49,12 +47,10 @@ def label_sort(embds: pd.DataFrame, label: str):
     return pd.Series(medians).sort_values().index.values
 
 
-def load_embeddings(locators: list[PathLocator], vis='mde', verbose=False, anon=True):
+def load_embeddings(embd_paths: list[str], vis='mde', verbose=False, anon=True):
     embds = []
-    for loc in locators:
+    for path in embd_paths:
         try:
-            vmap = {'umap': loc.umap_path, 'mde': loc.mde_path, 'pca': loc.pca_path}
-            path = vmap[vis]
             embd = pd.read_csv(path, dtype={'Metadata_Plate': str})
             # Capitalize first letter
             embd['Metadata_JCP2022'] = embd['Metadata_JCP2022'].str[0].str.upper() + embd['Metadata_JCP2022'].str[1:]
@@ -68,8 +64,6 @@ def load_embeddings(locators: list[PathLocator], vis='mde', verbose=False, anon=
             embd[['x', 'y']])  # hack to make plotly happy in ranges
         embds.append(embd)
     embds = pd.concat(embds)
-    add_row_col(embds)
-    embds['Microscope'] = embds['Metadata_Source'].map(MICRO_CONFIG)
 
     if anon:
         # Make batches and sources annonymous
