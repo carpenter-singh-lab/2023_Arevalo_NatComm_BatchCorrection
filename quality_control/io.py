@@ -16,7 +16,8 @@ def to_anndata(parquet_path):
     return adata
 
 
-def split_parquet(dframe_path, features=None):
+def split_parquet(dframe_path,
+                  features=None) -> tuple[pd.DataFrame, np.ndarray, list[str]]:
     dframe = pd.read_parquet(dframe_path)
     if features is None:
         features = find_feat_cols(dframe)

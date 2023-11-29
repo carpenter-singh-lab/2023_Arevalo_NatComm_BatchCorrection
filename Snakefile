@@ -12,11 +12,11 @@ include: "rules/projection.smk"
 
 
 METHODS = [
-    # "scanorama",
-    # "pca_scanorama",
-    # "mnn",
-    # "harmony",
-    # "pca_harmony",
+    "scanorama",
+    "pca_scanorama",
+    "mnn",
+    "harmony",
+    "pca_harmony",
     "sphering"
 ]
 
@@ -33,7 +33,6 @@ WORKFLOWS = [
     "mad_drop_int_featselect",
 ]
 
-WORKFLOWS = [f"mad_featselect_sphering"]
 REF_TYPE = ['negcon', 'nonrep']
 map_pattern = f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_{{method}}_map_{{reftype}}.parquet"
 scib_pattern = f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_{{method}}_scib.parquet"
@@ -42,4 +41,4 @@ mde_pattern = f"outputs/{scenario}/projection/{{workflow}}_{{method}}_mde.parque
 rule all:
     input:
         expand(map_pattern, workflow=WORKFLOWS, reftype=REF_TYPE, method=METHODS),
-        # expand(scib_pattern, workflow=WORKFLOWS, method=METHODS),
+        expand(scib_pattern, workflow=WORKFLOWS, method=METHODS),

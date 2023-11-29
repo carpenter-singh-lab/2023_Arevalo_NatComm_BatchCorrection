@@ -17,15 +17,27 @@ with warnings.catch_warnings():
     from scib import metrics
     from scib.metrics.pcr import pc_regression
 
-
 logger = logging.getLogger(__name__)
-
 CLUSTER_KEY = 'Metadata_Cluster'
 
 
-def cluster(parquet_path, label_key, adata_path):
+def filter_dmso_anndata(parquet_path):
     adata = to_anndata(parquet_path)
+    non_dmso_ix = adata.obs['Metadata_JCP2022'] != 'DMSO'
+    return adata[non_dmso_ix].copy()
+
+
+def filter_dmso(parquet_path):
+    meta, feats, features = split_parquet(parquet_path)
+    non_dmso_ix = meta['Metadata_JCP2022'] != 'DMSO'
+    meta = meta[non_dmso_ix].reset_index(drop=True).copy()
+    feats = feats[non_dmso_ix]
+    return meta, feats, features
+
+
+def cluster(parquet_path, label_key, adata_path):
     logger.info('compute neighbors')
+    adata = filter_dmso_anndata(parquet_path)
     sc.pp.neighbors(adata, use_rep='X', n_neighbors=15, metric='cosine')
     # Get cluster and neighbors
     logger.info('run clustering')
@@ -50,14 +62,14 @@ def ari(adata_path, label_key, ari_path):
 
 
 def asw(parquet_path, label_key, asw_path):
-    meta, feats, _ = split_parquet(parquet_path)
+    meta, feats, _ = filter_dmso(parquet_path)
     asw = silhouette_score(feats, meta[label_key], metric='cosine')
     asw = (asw + 1) / 2
     np.array(asw).tofile(asw_path)
 
 
 def silhouette_batch(parquet_path, label_key, batch_key, asw_batch_path):
-    adata = to_anndata(parquet_path)
+    adata = filter_dmso_anndata(parquet_path)
     adata.obsm['X_sphe'] = adata.X
     asw_batch = metrics.silhouette_batch(
         adata,
@@ -71,8 +83,8 @@ def silhouette_batch(parquet_path, label_key, batch_key, asw_batch_path):
 
 
 def pcr_batch(pre_parquet_path, post_parquet_path, batch_key, pcr_batch_path):
-    adata = to_anndata(pre_parquet_path)
-    adata_int = to_anndata(post_parquet_path)
+    adata = filter_dmso_anndata(pre_parquet_path)
+    adata_int = filter_dmso_anndata(post_parquet_path)
     pcr_score = metrics.pcr_comparison(adata,
                                        adata_int,
                                        embed=None,
@@ -82,7 +94,7 @@ def pcr_batch(pre_parquet_path, post_parquet_path, batch_key, pcr_batch_path):
 
 
 def pcr(parquet_path, batch_key, pcr_path):
-    meta, vals, _ = split_parquet(parquet_path)
+    meta, vals, _ = filter_dmso(parquet_path)
     # 1 - pcr to make it 0 worst 1 best
     pcr_score = 1 - pc_regression(vals, meta[batch_key].values)
     np.array(pcr_score).tofile(pcr_path)
