@@ -7,6 +7,27 @@ from .map import (
     mean_average_precision,
 )
 
+DIMENSION_MAP = {
+    'silhouette_batch': 'batch',
+    'pcr_batch': 'batch',
+    'pcr': 'batch',
+    'graph_conn': 'batch',
+    'kbet': 'batch',
+    'lisi_batch': 'batch',
+    'lisi_label': 'bio',
+    'negcon_mean_map': 'bio',
+    'negcon_fraction_positive_p': 'bio',
+    'negcon_fraction_positive_q': 'bio',
+    'nonrep_mean_map': 'bio',
+    'nonrep_fraction_positive_p': 'bio',
+    'nonrep_fraction_positive_q': 'bio',
+    'nmi': 'bio',
+    'ari': 'bio',
+    'asw': 'bio',
+    'il_f1': 'bio',
+    'il_asw': 'bio',
+}
+
 
 def concat(scib_path, negcon_path, nonrep_path, output_path):
     scores = pd.read_parquet(scib_path).set_index('metric')['score']
@@ -24,4 +45,6 @@ def concat(scib_path, negcon_path, nonrep_path, output_path):
     map_summary(negcon_path, 'negcon')
     map_summary(nonrep_path, 'nonrep')
 
-    scores.reset_index().to_parquet(output_path)
+    scores = scores.reset_index()
+    scores['dimension'] = scores['metric'].map(DIMENSION_MAP)
+    scores.to_parquet(output_path)

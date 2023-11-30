@@ -41,6 +41,7 @@ metrics_pattern = (
     f"outputs/{scenario}/metrics/{criteria}/{{workflow}}_{{method}}_all_metrics.parquet"
 )
 
+
 rule all:
     input:
         expand(metrics_pattern, workflow=WORKFLOWS, method=METHODS),
