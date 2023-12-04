@@ -30,8 +30,15 @@ def sphering(dframe_path, mode, lambda_, column_norm, values_norm,
     np.savez_compressed(spherer_path, spherer=spherer)
 
 
-def select_best(parquet_files, map_negcon_files, map_nonrep_files,
-                parquet_path, map_negcon_path, map_nonrep_path):
+def select_best(parquet_files,
+                map_negcon_files,
+                map_nonrep_files,
+                ap_negcon_path,
+                ap_nonrep_path,
+                map_negcon_path,
+                map_nonrep_path,
+                parquet_path,
+                ):
     scores = []
     for negcon_file, nonrep_file, parquet_file in zip(map_negcon_files,
                                                       map_nonrep_files,
@@ -52,3 +59,8 @@ def select_best(parquet_files, map_negcon_files, map_nonrep_files,
     shutil.copy(best['parquet_file'], parquet_path)
     shutil.copy(best['negcon_file'], map_negcon_path)
     shutil.copy(best['nonrep_file'], map_nonrep_path)
+
+    ap_negcon = best['negcon_file'].replace('_map_negcon.parquet','_ap_negcon.parquet')
+    ap_nonrep = best['nonrep_file'].replace('_map_nonrep.parquet','_ap_nonrep.parquet')
+    shutil.copy(ap_negcon, ap_negcon_path)
+    shutil.copy(ap_nonrep, ap_nonrep_path)

@@ -35,6 +35,8 @@ rule select_best_sphering:
         ),
     output:
         parquet_path=f"outputs/{scenario}/{{pipeline}}_sphering.parquet",
+        ap_negcon_path=f"outputs/{scenario}/metrics/{criteria}/{{pipeline}}_sphering_ap_negcon.parquet",
+        ap_nonrep_path=f"outputs/{scenario}/metrics/{criteria}/{{pipeline}}_sphering_ap_nonrep.parquet",
         map_negcon_path=f"outputs/{scenario}/metrics/{criteria}/{{pipeline}}_sphering_map_negcon.parquet",
         map_nonrep_path=f"outputs/{scenario}/metrics/{criteria}/{{pipeline}}_sphering_map_nonrep.parquet",
     run:
@@ -42,11 +44,15 @@ rule select_best_sphering:
             input.parquet_files,
             input.map_negcon_files,
             input.map_nonrep_files,
-            output.parquet_path,
+            output.ap_negcon_path,
+            output.ap_nonrep_path,
             output.map_negcon_path,
             output.map_nonrep_path,
+            output.parquet_path,
         )
 
 
 # Because map files
 ruleorder: select_best_sphering > mean_average_precision
+ruleorder: select_best_sphering > average_precision_nonrep
+ruleorder: select_best_sphering > average_precision_negcon
