@@ -22,9 +22,11 @@ BATCH_CMAP = {
     f'{i:02d}': color
     for i, color in enumerate(px.colors.qualitative.Light24, 1)
 }
+# Source in order of appearance in the scenarios
+SOURCES = [6, 2, 10, 3, 8]
 SOURCE_CMAP = {
-    f'{chr(i)}': color
-    for i, color in enumerate(px.colors.qualitative.Dark24, ord('A'))
+        f'{source:02d}': color
+    for source, color in zip(SOURCES, px.colors.qualitative.Dark24)
 }
 
 METHODS = [

@@ -1,14 +1,12 @@
 '''Plot all figures'''
 import logging
+import warnings
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
-from scipy.spatial.distance import pdist
 from sklearn.preprocessing import minmax_scale
-
-from utils import preprocessing_model_name
 
 logger = logging.getLogger(__name__)
 
@@ -40,34 +38,17 @@ def _jitter(trace, win_size=0.02):
     trace.y += np.random.uniform(-factor, factor, [len(trace.y)])
 
 
-def label_sort(embds: pd.DataFrame, label: str):
-    medians = {}
-    for label, embd in embds.groupby(label):
-        error = np.median(pdist(embd[['x', 'y']].values))
-        medians[label] = error
-    return pd.Series(medians).sort_values().index.values
-
-
-def load_embeddings(embd_paths: list[str],
-                    vis='mde',
-                    verbose=False,
-                    anon=True):
+def load_embeddings(embd_paths: list[str], anon=True):
     embds = []
     for path in embd_paths:
-        try:
-            embd = pd.read_csv(path, dtype={'Metadata_Plate': str})
-            # Capitalize first letter
-            embd['Metadata_JCP2022'] = embd['Metadata_JCP2022'].str[
-                0].str.upper() + embd['Metadata_JCP2022'].str[1:]
-        except FileNotFoundError as exc:
-            if verbose:
-                logger.warning(f'Embeddings not ready: {exc.filename}')
-            continue
-        embd['model'] = preprocessing_model_name(loc.model, loc.config)
+        embd = pd.read_parquet(path)
         _jitter(embd)
-        embd[['x', 'y']] = minmax_scale(
-            embd[['x', 'y']])  # hack to make plotly happy in ranges
+        with warnings.catch_warnings():
+            warnings.simplefilter(action='ignore', category=FutureWarning)
+            # hack to make plotly happy in ranges
+            embd[['x', 'y']] = minmax_scale(embd[['x', 'y']])
         embds.append(embd)
+        embd['path'] = path
     embds = pd.concat(embds)
 
     if anon:
@@ -79,9 +60,7 @@ def load_embeddings(embd_paths: list[str],
         embds['Metadata_Batch'] = embds['Metadata_Batch'].apply(renamer.get)
 
         renamer = {
-            batch: f'{chr(i)}'
-            for i, batch in enumerate(embds['Metadata_Source'].unique(),
-                                      ord('A'))
+                source: f'{int(source.split("_")[-1]):02d}' for source in embds['Metadata_Source'].unique()
         }
         embds['Metadata_Source'] = embds['Metadata_Source'].apply(renamer.get)
 
