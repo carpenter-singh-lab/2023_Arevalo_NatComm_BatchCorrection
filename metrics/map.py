@@ -45,7 +45,6 @@ def average_precision_negcon(parquet_path, ap_path, plate_types):
         pos_diffby=['Metadata_Well'],
         neg_sameby=['Metadata_Plate'],
         neg_diffby=['Metadata_PertType', 'Metadata_JCP2022'],
-        null_size=10000,
         batch_size=20000,
         seed=0,
     )
@@ -65,7 +64,6 @@ def average_precision_nonrep(parquet_path, ap_path, plate_types):
         pos_diffby=[],
         neg_sameby=['Metadata_Plate'],
         neg_diffby=['Metadata_JCP2022'],
-        null_size=10000,
         batch_size=20000,
         seed=0,
     )
@@ -74,5 +72,7 @@ def average_precision_nonrep(parquet_path, ap_path, plate_types):
 
 def mean_average_precision(ap_path, map_path, threshold=0.05):
     result = pd.read_parquet(ap_path)
-    agg_result = aggregate(result, 'Metadata_JCP2022', threshold=threshold)
+
+    agg_result = aggregate(result, 'Metadata_JCP2022', threshold=threshold,
+                           null_size=10000, seed=0)
     agg_result.to_parquet(map_path)

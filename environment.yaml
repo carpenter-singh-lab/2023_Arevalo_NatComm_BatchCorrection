@@ -36,5 +36,5 @@ dependencies:
       - python-igraph==0.10.4
       - scanorama==1.7.3
       - sqlalchemy==1.4.46
-      - git+https://github.com/cytomining/copairs.git@v0.3.3
+      - git+https://github.com/cytomining/copairs.git@v0.4.0-alpha
       - git+https://github.com/cytomining/pycytominer.git@b2c6cc4
