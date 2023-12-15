@@ -14,6 +14,6 @@
     "values_norm": [
         "DMSO"
     ],
-    "sphering_mode": "corr",
+    "sphering_method": "ZCA-cor",
     "sphering_n_opts": 25
 }

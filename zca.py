@@ -1,114 +1,177 @@
 """
-# From https://github.com/ltrottier/ZCA-Whitening-Python/blob/master/zca.py
-MIT License
-Copyright (c) 2018 Ludovic Trottier
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+From https://github.com/shntnu/pycytominer/blob/e7ef835daac20813bb92e4bad28b0e79a60d368b/pycytominer/operations/transform.py
+
+Transform observation variables by specified groups.
+
+References
+----------
+.. [1] Kessy et al. 2016 "Optimal Whitening and Decorrelation" arXiv: https://arxiv.org/abs/1512.00809
 """
-import kneed
-import scipy
+
 import numpy as np
-import pandas as pd
-from sklearn.utils import as_float_array
-from sklearn.base import TransformerMixin, BaseEstimator
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils import check_array, as_float_array
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import StandardScaler
 
 
-class ZCA(BaseEstimator, TransformerMixin):
+class Spherize(BaseEstimator, TransformerMixin):
+    """Class to apply a sphering transform (aka whitening) data in the base sklearn
+    transform API. Note, this implementation is modified/inspired from the following
+    sources:
+    1) A custom function written by Juan C. Caicedo
+    2) A custom ZCA function at https://github.com/mwv/zca
+    3) Notes from Niranj Chandrasekaran (https://github.com/cytomining/pycytominer/issues/90)
+    4) The R package "whitening" written by Strimmer et al (http://strimmerlab.org/software/whitening/)
+    5) Kessy et al. 2016 "Optimal Whitening and Decorrelation" [1]_
 
-    def __init__(self, copy=False, regularization=None, retain_variance=0.99):
-        self.regularization = regularization
-        self.eigenvals = None
-        self.retain_variance = retain_variance
-        self.copy = copy
+    Attributes
+    ----------
+    epsilon : float
+        fudge factor parameter
+    center : bool
+        option to center the input X matrix
+    method : str
+        a string indicating which class of sphering to perform
+    """
 
-    def fit(self, X, y=None):
-        X = as_float_array(X, copy=self.copy)
-        self.mean_ = np.mean(X, axis=0)
-        X = X - self.mean_
-        sigma = np.dot(X.T, X) / (X.shape[0] - 1)
-        U, S, V = np.linalg.svd(sigma)
-        self.eigenvals = S
-        if not self.regularization:
-            csum = S / S.sum()
-            csum = np.cumsum(csum)
-            threshold_loc = (csum < self.retain_variance).sum()
-            self.regularization = S[threshold_loc]
-        tmp = np.dot(U, np.diag(1 / np.sqrt(S + self.regularization)))
-        self.components_ = np.dot(tmp, U.T)
-        return self
-
-    def transform(self, X):
-        X_transformed = X - self.mean_
-        X_transformed = np.dot(X_transformed, self.components_.T)
-        return X_transformed
-
-
-class ZCA_corr(BaseEstimator, TransformerMixin):
-    def __init__(self, copy=False, regularization=None):
-        self.copy = copy
-        self.eigenvals = []
-        self.regularization = regularization
-
-    def estimate_regularization(self, eigenvalue):
-        x = [_ for _ in range(len(eigenvalue))]
-        kneedle = kneed.KneeLocator(
-            x, eigenvalue, S=1.0, curve='convex', direction='decreasing')
-        reg = eigenvalue[kneedle.elbow]/10.0
-        return reg  # The complex part of the eigenvalue is ignored
-
-    def fit(self, X, y=None):
+    def __init__(self, epsilon=1e-6, center=True, method="ZCA"):
         """
-        Compute the mean, sphering and desphering matrices.
         Parameters
         ----------
-        X : array-like with shape [n_samples, n_features]
-            The data used to compute the mean, sphering and desphering
-            matrices.
+        epsilon : float, default 1e-6
+            fudge factor parameter
+        center : bool, default True
+            option to center the input X matrix
+        method : str, default "ZCA"
+            a string indicating which class of sphering to perform
         """
-        X = check_array(X, accept_sparse=False, copy=self.copy, ensure_2d=True)
-        X = as_float_array(X, copy=self.copy)
-        self.mean_ = X.mean(axis=0)
-        X_ = X - self.mean_
-        cov = np.dot(X_.T, X_) / (X_.shape[0] - 1)
-        V = np.diag(cov)
-        df = pd.DataFrame(X_)
-        # replacing nan with 0 and inf with large values
-        corr = np.nan_to_num(np.corrcoef(X_.T))
-        G, T, _ = scipy.linalg.svd(corr)
-        self.eigenvals = T
-        if not self.regularization:
-            regularization = self.estimate_regularization(T.real)
-            self.regularization = regularization
+        avail_methods = ["PCA", "ZCA", "PCA-cor", "ZCA-cor"]
+
+        self.epsilon = epsilon
+        self.center = center
+
+        if method not in avail_methods:
+            raise ValueError(
+                f"Error {method} not supported. Select one of {avail_methods}")
+        self.method = method
+
+        # PCA-cor and ZCA-cor require center=True
+        if self.method in ["PCA-cor", "ZCA-cor"] and not self.center:
+            raise ValueError("PCA-cor and ZCA-cor require center=True")
+
+    def fit(self, X, y=None):
+        """Identify the sphering transform given self.X
+
+        Parameters
+        ----------
+        X : pandas.core.frame.DataFrame
+            dataframe to fit sphering transform
+
+        Returns
+        -------
+        self
+            With computed weights attribute
+        """
+
+        if self.method in ["PCA-cor", "ZCA-cor"]:
+            # The projection matrix for PCA-cor and ZCA-cor is the same as the
+            # projection matrix for PCA and ZCA, respectively, on the standardized
+            # data. So, we first standardize the data, then compute the projection
+
+            self.standard_scaler = StandardScaler().fit(X)
+            variances = self.standard_scaler.var_
+            if np.any(variances == 0):
+                raise ValueError(
+                    "Divide by zero error, make sure low variance columns are removed"
+                )
+
+            X = self.standard_scaler.transform(X)
         else:
-            regularization = self.regularization
-        t = np.sqrt(T.clip(regularization))
-        t_inv = np.diag(1.0 / t)
-        v_inv = np.diag(1.0/np.sqrt(V.clip(1e-3)))
-        self.sphere_ = np.dot(np.dot(np.dot(G, t_inv), G.T), v_inv)
+            if self.center:
+                self.mean_centerer = StandardScaler(with_mean=True,
+                                                    with_std=False).fit(X)
+                X = self.mean_centerer.transform(X)
+
+        # Get the number of observations and variables
+        n, d = X.shape
+
+        # compute the rank of the matrix X
+        r = np.linalg.matrix_rank(X)
+
+        # If n < d, then rank should be equal to n - 1 (if centered) or n (if not centered)
+        # If n >= d, then rank should be equal to d
+        if not ((r == d) | (self.center & (r == n - 1)) | (not self.center &
+                                                           (r == n))):
+            raise ValueError(
+                "Sphering is not supported when the data matrix X is not full rank."
+                "Check for linear dependencies in the data and remove them.")
+
+        # Get the eigenvalues and eigenvectors of the covariance matrix using SVD
+        _, Sigma, Vt = np.linalg.svd(X, full_matrices=True)
+
+        # if n <= d then Sigma has shape (n,) so it will need to be expanded to
+        # d filled with the value r'th element of Sigma
+        if n <= d:
+            # Do some error checking
+            if Sigma.shape[0] != n:
+                error_msg = f"When n <= d, Sigma should have shape (n,) i.e. ({n}, ) but it is {Sigma.shape}. the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
+                raise ValueError(error_msg)
+
+            if r != n - 1:
+                error_msg = (
+                    f"When n <= d, the rank should be n - 1 i.e. {n - 1} but it is {r}."
+                    "the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
+                )
+                raise ValueError(error_msg)
+
+            Sigma = np.concatenate((Sigma[0:r], np.repeat(Sigma[r - 1],
+                                                          d - r)))
+
+        Sigma = Sigma + self.epsilon
+
+        self.W = (Vt / Sigma[:, np.newaxis]).transpose() * np.sqrt(n - 1)
+
+        # If ZCA, perform additional rotation
+        if self.method in ["ZCA", "ZCA-cor"]:
+            # Note: There was previously a requirement r==d otherwise the
+            # ZCA transform would not be well defined. However, it later appeared
+            # that this requirement was not necessary.
+
+            self.W = self.W @ Vt
+
+        # number of columns of self.W should be equal to that of X
+        assert (
+            self.W.shape[1] == X.shape[1]
+        ), f"Error: W has {self.W.shape[1]} columns, X has {X.shape[1]} columns"
+
+        if self.W.shape[1] != X.shape[1]:
+            error_detail = (
+                f"The number of columns of W should be equal to that of X."
+                f"However, W has {self.W.shape[1]} columns, X has {X.shape[1]} columns."
+                f"the call to `np.linalg.svd` in `pycytominer.transform.Spherize`"
+            )
+            raise ValueError(error_detail)
+
         return self
 
-    def transform(self, X, y=None, copy=None):
-        """
+    def transform(self, X, y=None):
+        """Perform the sphering transform
+
         Parameters
         ----------
-        X : array-like with shape [n_samples, n_features]
-            The data to sphere along the features axis.
+        X : pd.core.frame.DataFrame
+            Profile dataframe to be transformed using the precompiled weights
+        y : None
+            Has no effect; only used for consistency in sklearn transform API
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+            Spherized dataframe
         """
-        check_is_fitted(self, "mean_")
-        X = as_float_array(X, copy=self.copy)
-        return np.dot(X - self.mean_, self.sphere_.T)
+        if self.method in ["PCA-cor", "ZCA-cor"]:
+            X = self.standard_scaler.transform(X)
+        else:
+            if self.center:
+                X = self.mean_centerer.transform(X)
+        XW = X @ self.W
+        return XW

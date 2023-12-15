@@ -5,23 +5,17 @@ import numpy as np
 import pandas as pd
 
 from quality_control.io import merge_parquet, split_parquet
-from zca import ZCA, ZCA_corr
+from zca import Spherize
 
 
-def log_uniform_sampling(min_=-5, max_=1, size=25, seed=[6, 12, 2022]):
+def log_uniform_sampling(min_=-5, max_=3, size=25, seed=[6, 12, 2022]):
     rng = np.random.default_rng(seed)
     return 10.**rng.uniform(min_, max_, size=size)
 
 
-def sphering(dframe_path, mode, lambda_, column_norm, values_norm,
+def sphering(dframe_path, method, epsilon, column_norm, values_norm,
              sphered_path, spherer_path):
-    if mode == 'corr':
-        spherer = ZCA_corr(regularization=lambda_)
-    elif mode == 'cov':
-        spherer = ZCA(regularization=lambda_)
-    else:
-        raise ValueError(f'mode should be "corr" or "cov"')
-
+    spherer = Spherize(epsilon=epsilon, method=method)
     meta, vals, features = split_parquet(dframe_path)
     train_ix = meta[column_norm].isin(values_norm).values
     spherer.fit(vals[train_ix])

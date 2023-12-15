@@ -1,4 +1,4 @@
-from copairs.map import aggregate, run_pipeline
+import copairs.map as copairs
 import pandas as pd
 
 from quality_control.io import split_parquet
@@ -38,16 +38,14 @@ def average_precision_negcon(parquet_path, ap_path, plate_types):
     meta = meta[ix].copy()
     vals = vals[ix]
     _group_negcons(meta)
-    result = run_pipeline(
+    result = copairs.average_precision(
         meta,
         vals,
         pos_sameby=['Metadata_JCP2022'],
         pos_diffby=['Metadata_Well'],
         neg_sameby=['Metadata_Plate'],
         neg_diffby=['Metadata_PertType', 'Metadata_JCP2022'],
-        batch_size=20000,
-        seed=0,
-    )
+        batch_size=20000)
     result = result.query('Metadata_PertType!="negcon"')
     result.reset_index(drop=True).to_parquet(ap_path)
 
@@ -57,7 +55,7 @@ def average_precision_nonrep(parquet_path, ap_path, plate_types):
     ix = _index(meta, plate_types, ignore_dmso=True)
     meta = meta[ix].copy()
     vals = vals[ix]
-    result = run_pipeline(
+    result = copairs.average_precision(
         meta,
         vals,
         pos_sameby=['Metadata_JCP2022'],
@@ -65,14 +63,16 @@ def average_precision_nonrep(parquet_path, ap_path, plate_types):
         neg_sameby=['Metadata_Plate'],
         neg_diffby=['Metadata_JCP2022'],
         batch_size=20000,
-        seed=0,
     )
     result.reset_index(drop=True).to_parquet(ap_path)
 
 
 def mean_average_precision(ap_path, map_path, threshold=0.05):
-    result = pd.read_parquet(ap_path)
+    ap_scores = pd.read_parquet(ap_path)
 
-    agg_result = aggregate(result, 'Metadata_JCP2022', threshold=threshold,
-                           null_size=10000, seed=0)
-    agg_result.to_parquet(map_path)
+    map_scores = copairs.mean_average_precision(ap_scores,
+                                                'Metadata_JCP2022',
+                                                threshold=threshold,
+                                                null_size=10000,
+                                                seed=0)
+    map_scores.to_parquet(map_path)
