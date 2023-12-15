@@ -21,7 +21,7 @@ rule pca:
 
 rule umap:
     input:
-        "outputs/{scenario}/{pipeline}.parquet",
+        f"outputs/{{scenario}}/metrics/{criteria}/scib/{{pipeline}}_clusters.h5ad",
     output:
         "outputs/{scenario}/projection/{pipeline}_umap.parquet",
     run:

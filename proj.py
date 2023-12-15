@@ -1,6 +1,7 @@
 import warnings
 
 import scanpy as sc
+import anndata as ad
 
 from quality_control import io
 with warnings.catch_warnings():
@@ -37,11 +38,8 @@ def pca(parquet_path, pca_path):
     meta.to_parquet(pca_path)
 
 
-def umap(parquet_path, umap_path):
-    # TODO: to avoid neighbors computation use instead in the smk rule
-    # input: f"outputs/{{scenario}}/metrics/{criteria}/scib/{{pipeline}}_clusters.h5ad",
-    adata = io.to_anndata(parquet_path)
-    sc.pp.neighbors(adata, use_rep='X')
+def umap(adata_path, umap_path):
+    adata = ad.read_h5ad(adata_path)
     sc.tl.umap(adata)  # Generates X_umap
     meta = adata.obs
     meta.reset_index(drop=True, inplace=True)

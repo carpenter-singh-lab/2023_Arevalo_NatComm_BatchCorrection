@@ -5,7 +5,6 @@ configfile: "./inputs/conf/scenario_1.json"
 include: "rules/common.smk"
 include: "rules/processing.smk"
 include: "rules/metrics.smk"
-include: "rules/sphering.smk"
 include: "rules/correct.smk"
 include: "rules/projection.smk"
 
@@ -19,18 +18,8 @@ METHODS = [
 ]
 
 WORKFLOWS = [
-    "mad",
-    "mad_clip",
-    "mad_featselect",
-    "mad_int",
     "mad_int_featselect",
-    "mad_int_featselect_sphering",
-    "mad_drop",
-    "mad_drop_featselect",
-    "mad_drop",
-    "mad_drop_int",
     "mad_drop_int_featselect",
-    "mad_drop_int_featselect_sphering",
 ]
 
 umap_pattern = f"outputs/{scenario}/projection/{{workflow}}_{{method}}_umap.parquet"
@@ -44,5 +33,6 @@ metrics_pattern = (
 
 rule all:
     input:
+        expand(umap_pattern, workflow=WORKFLOWS, method=METHODS),
         expand(metrics_pattern, workflow=WORKFLOWS, method=METHODS),
         expand(metrics_baseline_pattern, workflow=WORKFLOWS),
