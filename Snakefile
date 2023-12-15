@@ -15,6 +15,7 @@ METHODS = [
     "mnn",
     "harmony",
     "pca_harmony",
+    "combat",
 ]
 
 WORKFLOWS = [
