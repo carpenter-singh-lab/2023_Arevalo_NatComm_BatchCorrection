@@ -4,7 +4,9 @@ from copairs.matching import reverse_index
 
 
 def mnn(parquet_path, batch_key, output_path):
-    from mnnpy import mnn_correct
+    from mnnpy import mnn_correct, settings
+    # disabling parallel because it silently freezes the execution
+    settings.normalization = 'no_parallel'
     meta, vals, features = io.split_parquet(parquet_path)
     indices = reverse_index(meta[batch_key])
     vals = [vals[ix] for ix in indices.values]

@@ -16,7 +16,5 @@
     "column_norm": "Metadata_JCP2022",
     "values_norm": [
         "DMSO"
-    ],
-    "sphering_mode": "corr",
-    "sphering_n_opts": 25
+    ]
 }

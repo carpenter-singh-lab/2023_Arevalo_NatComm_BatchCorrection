@@ -134,8 +134,12 @@ def isolated_labels_f1(adata_path, label_key, batch_key, il_f1_path):
 
 def graph_connectivity(adata_path, label_key, graph_conn_path):
     adata = ad.read_h5ad(adata_path)
-    graph_conn_score = metrics.graph_connectivity(adata, label_key=label_key)
-    np.array(graph_conn_score).tofile(graph_conn_path)
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore',
+                                category=FutureWarning,
+                                message='pandas.value_counts is deprecated')
+        graph_conn_score = metrics.graph_connectivity(adata, label_key=label_key)
+        np.array(graph_conn_score).tofile(graph_conn_path)
 
 
 def kbet(adata_path, label_key, batch_key, kbet_path):
