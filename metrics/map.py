@@ -27,7 +27,7 @@ def _group_negcons(meta: pd.DataFrame):
     negcon_ix = (meta['Metadata_JCP2022'] == 'DMSO')
     n_negcon = negcon_ix.sum()
     negcon_ids = [f'DMSO_{i}' for i in range(n_negcon)]
-    pert_id = meta['Metadata_JCP2022'].cat.add_categories(negcon_ids)
+    pert_id = meta['Metadata_JCP2022'].astype("category").cat.add_categories(negcon_ids)
     pert_id[negcon_ix] = negcon_ids
     meta['Metadata_JCP2022'] = pert_id
 
