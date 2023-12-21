@@ -11,16 +11,15 @@ include: "rules/projection.smk"
 
 METHODS = [
     "scanorama",
-    "pca_scanorama",
     "mnn",
     "harmony",
-    "pca_harmony",
     "combat",
+    "desc",
+    "scvi"
 ]
 
 WORKFLOWS = [
     "mad_int_featselect",
-    "mad_drop_int_featselect",
 ]
 
 umap_pattern = f"outputs/{scenario}/projection/{{workflow}}_{{method}}_umap.parquet"
