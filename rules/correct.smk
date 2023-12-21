@@ -62,3 +62,26 @@ rule mnn:
         batch_key=config["batch_key"],
     run:
         correct.mnn(*input, *params, *output)
+
+
+rule desc:
+    input:
+        "outputs/{scenario}/{pipeline}.parquet",
+    output:
+        "outputs/{scenario}/{pipeline}_desc.parquet",
+    params:
+        batch_key=config["batch_key"],
+    run:
+        correct.desc(*input, *params, *output)
+
+
+rule scvi:
+    input:
+        "outputs/{scenario}/{pipeline}.parquet",
+    output:
+        "outputs/{scenario}/{pipeline}_scvi.parquet",
+    params:
+        batch_key=config["batch_key"],
+        label_key=config["label_key"],
+    run:
+        correct.scvi(*input, *params, *output)
