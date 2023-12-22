@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from quality_control.io import merge_parquet, split_parquet
-from zca import Spherize
+from pycytominer.operations import Spherize
 
 
 def log_uniform_sampling(min_=-5, max_=3, size=25, seed=[6, 12, 2022]):
