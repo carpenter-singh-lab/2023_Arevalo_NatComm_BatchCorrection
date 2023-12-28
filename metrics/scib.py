@@ -38,7 +38,7 @@ def filter_dmso(parquet_path):
 def cluster(parquet_path, label_key, adata_path):
     logger.info('compute neighbors')
     adata = filter_dmso_anndata(parquet_path)
-    sc.pp.neighbors(adata, use_rep='X', n_neighbors=15, metric='cosine')
+    sc.pp.neighbors(adata, use_rep='X', n_neighbors=50, metric='cosine')
     # Get cluster and neighbors
     logger.info('run clustering')
     metrics.cluster_optimal_resolution(adata,
@@ -70,12 +70,12 @@ def asw(parquet_path, label_key, asw_path):
 
 def silhouette_batch(parquet_path, label_key, batch_key, asw_batch_path):
     adata = filter_dmso_anndata(parquet_path)
-    adata.obsm['X_sphe'] = adata.X
+    adata.obsm['X_embd'] = adata.X
     asw_batch = metrics.silhouette_batch(
         adata,
         batch_key,
         label_key,
-        'X_sphe',
+        'X_embd',
         metric="cosine",
         verbose=False,
     )
@@ -102,12 +102,12 @@ def pcr(parquet_path, batch_key, pcr_path):
 
 def isolated_labels_asw(adata_path, label_key, batch_key, il_asw_path):
     adata = ad.read_h5ad(adata_path)
-    adata.obsm['X_sphe'] = adata.X
+    adata.obsm['X_embd'] = adata.X
     il_score_asw = metrics.isolated_labels(
         adata,
         label_key=label_key,
         batch_key=batch_key,
-        embed='X_sphe',
+        embed='X_embd',
         cluster=False,
         # max number of batches a label should be present to be considered isolated
         iso_threshold=None,
@@ -118,12 +118,12 @@ def isolated_labels_asw(adata_path, label_key, batch_key, il_asw_path):
 
 def isolated_labels_f1(adata_path, label_key, batch_key, il_f1_path):
     adata = ad.read_h5ad(adata_path)
-    adata.obsm['X_sphe'] = adata.X
+    adata.obsm['X_embd'] = adata.X
     il_score_f1 = metrics.isolated_labels(
         adata,
         label_key=label_key,
         batch_key=batch_key,
-        embed='X_sphe',
+        embed='X_embd',
         cluster=True,
         # max number of batches a label should be present to be considered isolated
         iso_threshold=None,
