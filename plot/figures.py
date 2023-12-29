@@ -1,5 +1,4 @@
 from difflib import SequenceMatcher
-from glob import glob
 
 from matplotlib import pyplot as plt
 import pandas as pd
@@ -16,7 +15,8 @@ def plot_best_sphering(map_files, fig_path):
         row = df['mean_average_precision'].describe()
         row['name'] = map_file[len(prefix):-len(suffix)]
         row['fraction_below_p'] = df['below_p'].sum() / len(df)
-        row['fraction_below_corrected_p'] = df['below_corrected_p'].sum() / len(df)
+        row['fraction_below_corrected_p'] = df['below_corrected_p'].sum(
+        ) / len(df)
         comparison.append(row)
     comparison = pd.DataFrame(comparison).set_index('name')
     comparison = comparison.sort_values('mean', ascending=False)
@@ -62,24 +62,26 @@ def load_all_parquet(files, key_name='file_id'):
     return dframe
 
 
-def load_scores(metrics_files, metrics_redlist, methods_redlist):
+def tidy_scores(metrics_files, metrics_redlist, methods_redlist, tidy_path):
     scores = load_all_parquet(metrics_files, key_name='method')
     scores = scores.query('metric not in @metrics_redlist')
     scores = scores[scores['method'].apply(
         lambda x: all(m not in x for m in methods_redlist))]
-    return scores
+    scores.to_parquet(tidy_path, index=False)
 
 
-def pivot(scores):
+def pivot_scores(tidy_path, pivot_path):
+    scores = pd.read_parquet(tidy_path)
     scores = scores.pivot_table(index='method',
                                 columns=['dimension', 'metric'],
                                 values='score')
     scores['mean', 'batch'] = scores['batch'].mean(axis=1)
     scores['mean', 'bio'] = scores['bio'].mean(axis=1)
     scores['mean', 'micro_mean'] = scores.mean(axis=1)
-    scores['mean', 'macro_mean'] = (scores['bio'].mean(axis=1) + scores['batch'].mean(axis=1)) / 2
+    scores['mean', 'macro_mean'] = (scores['bio'].mean(axis=1) +
+                                    scores['batch'].mean(axis=1)) / 2
     scores = scores.sort_values(('mean', 'macro_mean'), ascending=False)
-    return scores
+    scores.to_parquet(pivot_path)
 
 
 def write_barplot(scores, title, fig_path, hue='dimension'):
@@ -101,7 +103,9 @@ def write_barplot(scores, title, fig_path, hue='dimension'):
 
 def write_hbarplot(scores, title, fig_path):
     plt.figure(figsize=(6, 12))
-    ax = sns.barplot(scores['mean'].reset_index().round(3), y='method', x='macro_mean')
+    ax = sns.barplot(scores['mean'].reset_index().round(3),
+                     y='method',
+                     x='macro_mean')
     ax.set(title=title)
     ax.bar_label(ax.containers[0], fontsize=10)
     plt.savefig(fig_path, bbox_inches='tight')
@@ -150,39 +154,48 @@ def write_umap(embd_files, fig_path, hue, order, palette, with_dmso=False):
     plt.close()
 
 
+def barplot_all_metrics(tidy_path, fig_path):
+    scores = pd.read_parquet(tidy_path)
+    write_barplot(scores,
+                  title='Preprocessing performance all metrics',
+                  fig_path=fig_path)
 
-redlist = [
-    'pcr', 'pcr_batch', 'il_f1', 'il_asw', 'negcon_fraction_below_p',
-    'negcon_fraction_below_corrected_p', 'nonrep_fraction_below_p',
-    'nonrep_fraction_below_corrected_p', 'lisi_label'
-],
-corr_meth = ['harmony', 'scanorama', 'mnn', 'combat']
-corr_meth = []
-scenario = 'scenario_1'
 
-metrics_files = glob(f'outputs/{scenario}/metrics/target2/*_all_metrics.parquet')
-prefix, suffix = common_prefix_suffix(metrics_files)
-scores = load_scores(metrics_files, redlist, corr_meth)
-write_barplot(
-    scores,
-    title='Preprocessing performance all metrics',
-    fig_path=f'{scenario}_all_metrics_barplot.png',
-)
+def barplot_map_scores(tidy_path, fig_path):
+    scores = pd.read_parquet(tidy_path)
+    write_barplot(scores.query('metric.str.contains("map")'),
+                  title='Preprocessing performance mAP scores',
+                  fig_path=fig_path,
+                  hue='metric')
 
-write_barplot(
-    scores.query('metric.str.contains("map")'),
-    title='Preprocessing performance mAP scores',
-    fig_path=f'{scenario}_map_scores_barplot.png',
-    hue='metric'
-)
 
-pivot_scores = pivot(scores)
-write_hbarplot(pivot_scores, 'mean of all metrics', f'{scenario}_mean_all_metrics.png')
+def hbarplot_all_metrics(pivot_path, fig_path):
+    scores = pd.read_parquet(pivot_path)
+    write_hbarplot(scores, 'mean of all metrics', fig_path)
 
-embd_files = glob(f'outputs/{scenario}/projection/*_umap.parquet')
-col_order = pivot_scores.index.str[:-1].values
-col_order = [c if len(c) else 'baseline' for c in col_order]
 
-write_umap(embd_files, f'{scenario}_source_umap.png', 'Source', col_order, plot.SOURCE_CMAP, with_dmso=False)
-write_umap(embd_files, f'{scenario}_batch_umap.png', 'Batch', col_order, plot.BATCH_CMAP, with_dmso=False)
-write_umap(embd_files, f'{scenario}_compound_umap.png', 'Compound', col_order, None, with_dmso=False)
+def rank_methods(pivot_path):
+    scores = pd.read_parquet(pivot_path)
+    rank = scores.index.str[:-1].values
+    rank = [c if len(c) else 'baseline' for c in rank]
+    return rank
+
+
+def umap_batch(embd_files, pivot_path, fig_path):
+    col_order = rank_methods(pivot_path)
+    write_umap(embd_files,
+               fig_path,
+               'Batch',
+               col_order,
+               plot.BATCH_CMAP,
+               with_dmso=False)
+
+
+def umap_source(embd_files, pivot_path, fig_path):
+    col_order = rank_methods(pivot_path)
+    write_umap(embd_files,
+               fig_path,
+               'Source',
+               col_order,
+               plot.SOURCE_CMAP,
+               with_dmso=False)
