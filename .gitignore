@@ -8,6 +8,7 @@
 .DS_Store
 __pycache__
 outputs
+inputs/source_*
 *plotly
 *csv
 *npz

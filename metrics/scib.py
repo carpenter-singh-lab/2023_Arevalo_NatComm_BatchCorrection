@@ -38,7 +38,7 @@ def filter_dmso(parquet_path):
 def cluster(parquet_path, label_key, adata_path):
     logger.info('compute neighbors')
     adata = filter_dmso_anndata(parquet_path)
-    sc.pp.neighbors(adata, use_rep='X', n_neighbors=50, metric='cosine')
+    sc.pp.neighbors(adata, use_rep='X', n_neighbors=15, metric='cosine')
     # Get cluster and neighbors
     logger.info('run clustering')
     metrics.cluster_optimal_resolution(adata,
@@ -144,6 +144,7 @@ def graph_connectivity(adata_path, label_key, graph_conn_path):
 
 def kbet(adata_path, label_key, batch_key, kbet_path):
     adata = ad.read_h5ad(adata_path)
+    adata = metrics.kbet.diffusion_conn(adata, min_k=25, copy=True)
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', module='rpy2.robjects')
         warnings.filterwarnings('ignore', category=FutureWarning)
