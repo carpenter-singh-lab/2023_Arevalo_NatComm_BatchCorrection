@@ -1,43 +1,17 @@
+'''Plot all figures'''
+import warnings
 from difflib import SequenceMatcher
+from sklearn.preprocessing import minmax_scale
 
 from matplotlib import pyplot as plt
 import pandas as pd
+import numpy as np
 import seaborn as sns
 
 import plot
 
 
-def plot_best_sphering(map_files, fig_path):
-    comparison = []
-    for map_file in map_files:
-        df = pd.read_parquet(map_file)
-        df.dropna(inplace=True)
-        row = df['mean_average_precision'].describe()
-        row['name'] = map_file[len(prefix):-len(suffix)]
-        row['fraction_below_p'] = df['below_p'].sum() / len(df)
-        row['fraction_below_corrected_p'] = df['below_corrected_p'].sum(
-        ) / len(df)
-        comparison.append(row)
-    comparison = pd.DataFrame(comparison).set_index('name')
-    comparison = comparison.sort_values('mean', ascending=False)
-    comparison['reg'] = pd.Series(comparison.index).apply(
-        lambda x: x.split('_')[-1][4:]).astype(float).values
-    comparison['pipeline'] = pd.Series(
-        comparison.index).apply(lambda x: x[:x.index('_reg')]).values
-
-    ax = sns.lineplot(comparison,
-                      y='mean',
-                      x='reg',
-                      hue='pipeline',
-                      hue_order=comparison.pipeline.drop_duplicates())
-    ax.set(title=f'Sphering lambda exploration', ylabel='mean mAP')
-    plt.xscale('log')
-    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
-    plt.savefig(fig_path, bbox_inches='tight')
-    plt.close()
-
-
-def common_prefix_suffix(strings: list[str]):
+def _common_prefix_suffix(strings: list[str]):
     prefix = strings[0]
     suffix = prefix[::-1]
     for string in strings[1:]:
@@ -50,16 +24,66 @@ def common_prefix_suffix(strings: list[str]):
     return prefix, suffix
 
 
-def load_all_parquet(files, key_name='file_id'):
+def _jitter(trace, win_size=0.02):
+    range_x = max(trace.x) - min(trace.x)
+    factor = range_x * win_size
+    trace.x += np.random.uniform(-factor, factor, [len(trace.x)])
+
+    range_y = max(trace.y) - min(trace.y)
+    factor = range_y * win_size
+    trace.y += np.random.uniform(-factor, factor, [len(trace.y)])
+
+
+def load_all_parquet(files, key_name='file_id', placeholder='baseline'):
     dframe = []
     dframes = [pd.read_parquet(file) for file in files]
-    prefix, suffix = common_prefix_suffix(files)
+    prefix, suffix = _common_prefix_suffix(files)
     start = len(prefix)
     end = -len(suffix)
     for dframe, file in zip(dframes, files):
         dframe[key_name] = file[start:end]
     dframe = pd.concat(dframes)
+    dframe[key_name] = dframe[key_name].str.strip('_').replace('', placeholder)
     return dframe
+
+
+def load_embeddings(embd_files: list[str], anon=True):
+    embds = load_all_parquet(embd_files, key_name='method')
+
+    # jitter embds
+    embds_jitter = []
+    for _, embd in embds.groupby('method'):
+        _jitter(embd)
+        with warnings.catch_warnings():
+            warnings.simplefilter(action='ignore', category=FutureWarning)
+            # hack to make plotly happy in ranges
+            embd[['x', 'y']] = minmax_scale(embd[['x', 'y']])
+        embds_jitter.append(embd)
+    embds = pd.concat(embds_jitter)
+
+    if anon:
+        # Make batches and sources annonymous
+        renamer = {
+            batch: f'{i:02d}'
+            for i, batch in enumerate(embds['Metadata_Batch'].unique(), 1)
+        }
+        embds['Metadata_Batch'] = embds['Metadata_Batch'].apply(renamer.get)
+
+        renamer = {
+            source: f'{int(source.split("_")[-1]):02d}'
+            for source in embds['Metadata_Source'].unique()
+        }
+        embds['Metadata_Source'] = embds['Metadata_Source'].apply(renamer.get)
+
+    embds = embds.rename(
+        columns={
+            'Metadata_Batch': 'Batch',
+            'Metadata_Source': 'Source',
+            'Metadata_JCP2022': 'Compound',
+            'Metadata_Row': 'Row',
+            'Metadata_Column': 'Column'
+        })
+    return embds
 
 
 def tidy_scores(metrics_files, metrics_redlist, methods_redlist, tidy_path):
@@ -113,9 +137,7 @@ def write_hbarplot(scores, title, fig_path):
 
 
 def write_umap(embd_files, fig_path, hue, order, palette, with_dmso=False):
-    embds = plot.embeddings.load_embeddings(embd_files)
-    prefix, suffix = common_prefix_suffix(embd_files)
-    embds['method'] = embds['path'].str[len(prefix):-len(suffix)]
+    embds = load_embeddings(embd_files)
     plt.rcParams.update({'font.size': 22})
     if not with_dmso:
         embds = embds.query('~Compound.str.startswith("DMSO")')
@@ -174,15 +196,8 @@ def hbarplot_all_metrics(pivot_path, fig_path):
     write_hbarplot(scores, 'mean of all metrics', fig_path)
 
 
-def rank_methods(pivot_path):
-    scores = pd.read_parquet(pivot_path)
-    rank = scores.index.str[:-1].values
-    rank = [c if len(c) else 'baseline' for c in rank]
-    return rank
-
-
 def umap_batch(embd_files, pivot_path, fig_path):
-    col_order = rank_methods(pivot_path)
+    col_order = pd.read_parquet(pivot_path).index
     write_umap(embd_files,
                fig_path,
                'Batch',
@@ -192,10 +207,40 @@ def umap_batch(embd_files, pivot_path, fig_path):
 
 
 def umap_source(embd_files, pivot_path, fig_path):
-    col_order = rank_methods(pivot_path)
+    col_order = pd.read_parquet(pivot_path).index
     write_umap(embd_files,
                fig_path,
                'Source',
                col_order,
                plot.SOURCE_CMAP,
                with_dmso=False)
+
+
+def best_sphering_eigen_curve(map_files, fig_path):
+    comparison = []
+    for map_file in map_files:
+        df = pd.read_parquet(map_file)
+        df.dropna(inplace=True)
+        row = df['mean_average_precision'].describe()
+        row['name'] = map_file[len(prefix):-len(suffix)]
+        row['fraction_below_p'] = df['below_p'].sum() / len(df)
+        row['fraction_below_corrected_p'] = df['below_corrected_p'].sum(
+        ) / len(df)
+        comparison.append(row)
+    comparison = pd.DataFrame(comparison).set_index('name')
+    comparison = comparison.sort_values('mean', ascending=False)
+    comparison['reg'] = pd.Series(comparison.index).apply(
+        lambda x: x.split('_')[-1][4:]).astype(float).values
+    comparison['pipeline'] = pd.Series(
+        comparison.index).apply(lambda x: x[:x.index('_reg')]).values
+
+    ax = sns.lineplot(comparison,
+                      y='mean',
+                      x='reg',
+                      hue='pipeline',
+                      hue_order=comparison.pipeline.drop_duplicates())
+    ax.set(title='Sphering lambda exploration', ylabel='mean mAP')
+    plt.xscale('log')
+    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    plt.savefig(fig_path, bbox_inches='tight')
+    plt.close()

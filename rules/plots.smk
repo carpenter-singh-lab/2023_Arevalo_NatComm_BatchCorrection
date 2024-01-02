@@ -1,6 +1,7 @@
 rule tidy_scores:
     input:
-        metrics_files=expand(metrics_pattern, workflow=WORKFLOWS, method=METHODS),
+        metrics_files=expand(metrics_pattern, workflow=WORKFLOWS, method=METHODS)
+        + expand(metrics_baseline_pattern, workflow=WORKFLOWS),
     output:
         "outputs/{scenario}/plots/tidy_scores.parquet",
     params:
@@ -60,7 +61,8 @@ rule hbarplot_all_metrics:
 
 rule umap_batch:
     input:
-        embds_files=expand(umap_pattern, workflow=WORKFLOWS, method=METHODS),
+        embd_files=expand(umap_pattern, workflow=WORKFLOWS, method=METHODS)
+        + expand(umap_baseline_pattern, workflow=WORKFLOWS),
         pivot_path="outputs/{scenario}/plots/pivot_scores.parquet",
     output:
         "outputs/{scenario}/plots/umap_batch.png",

@@ -12,6 +12,7 @@ import correct
 import metrics
 from correct import sphering
 import quality_control as qc
+import plot
 
 scenario = config["scenario"]
 if "COMPOUND" in config["plate_types"]:

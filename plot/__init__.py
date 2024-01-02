@@ -7,8 +7,8 @@ import plotly.express as px
 
 from loader import MAPPER
 
-from . import embeddings
 from . import param_search
+from . import figures
 
 rgb_reg = re.compile(r'rgb\((\d+), (\d+), (\d+)\)')
 
