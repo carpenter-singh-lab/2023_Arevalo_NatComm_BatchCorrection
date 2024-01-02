@@ -1,6 +1,6 @@
 import numpy as np
+
 from quality_control import io
-from copairs.matching import reverse_index
 
 
 def mnn(parquet_path, batch_key, output_path):
@@ -8,7 +8,8 @@ def mnn(parquet_path, batch_key, output_path):
     # disabling parallel because it silently freezes the execution
     settings.normalization = 'no_parallel'
     meta, vals, features = io.split_parquet(parquet_path)
-    indices = reverse_index(meta[batch_key])
+    col = meta[batch_key]
+    indices = col.groupby(col, observed=True, sort=False).indices
     vals = [vals[ix] for ix in indices.values]
     vals, _, __ = mnn_correct(*vals, var_index=features, do_concatenate=True)
 
