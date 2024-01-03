@@ -59,15 +59,24 @@ rule hbarplot_all_metrics:
         plot.figures.hbarplot_all_metrics(*input, *output)
 
 
-rule umap_batch:
+rule prepare_embeddings:
     input:
         embd_files=expand(umap_pattern, workflow=WORKFLOWS, method=METHODS)
         + expand(umap_baseline_pattern, workflow=WORKFLOWS),
-        pivot_path="outputs/{scenario}/plots/pivot_scores.parquet",
+    output:
+        "outputs/{scenario}/plots/embeddings.parquet",
+    run:
+        plot.figures.prepare_embeddings(input.embd_files, *output)
+
+
+rule umap_batch:
+    input:
+        "outputs/{scenario}/plots/embeddings.parquet",
+        "outputs/{scenario}/plots/pivot_scores.parquet",
     output:
         "outputs/{scenario}/plots/umap_batch.png",
     run:
-        plot.figures.umap_batch(input.embd_files, input.pivot_path, *output)
+        plot.figures.umap_batch(*input, *output)
 
 
 rule umap_source:

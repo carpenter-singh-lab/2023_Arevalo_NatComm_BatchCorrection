@@ -47,7 +47,7 @@ def load_all_parquet(files, key_name='file_id', placeholder='baseline'):
     return dframe
 
 
-def load_embeddings(embd_files: list[str], anon=True):
+def prepare_embeddings(embd_files: list[str], output_path: str, anon=True):
     embds = load_all_parquet(embd_files, key_name='method')
 
     # jitter embds
@@ -83,7 +83,7 @@ def load_embeddings(embd_files: list[str], anon=True):
             'Metadata_Row': 'Row',
             'Metadata_Column': 'Column'
         })
-    return embds
+    embds.to_parquet(output_path, index=False)
 
 
 def tidy_scores(metrics_files, metrics_redlist, methods_redlist, tidy_path):
@@ -136,8 +136,8 @@ def write_hbarplot(scores, title, fig_path):
     plt.close()
 
 
-def write_umap(embd_files, fig_path, hue, order, palette, with_dmso=False):
-    embds = load_embeddings(embd_files)
+def write_umap(embds_path, fig_path, hue, order, palette, with_dmso=False):
+    embds = pd.read_parquet(embds_path)
     plt.rcParams.update({'font.size': 22})
     if not with_dmso:
         embds = embds.query('~Compound.str.startswith("DMSO")')
@@ -196,9 +196,9 @@ def hbarplot_all_metrics(pivot_path, fig_path):
     write_hbarplot(scores, 'mean of all metrics', fig_path)
 
 
-def umap_batch(embd_files, pivot_path, fig_path):
+def umap_batch(embds_path, pivot_path, fig_path):
     col_order = pd.read_parquet(pivot_path).index
-    write_umap(embd_files,
+    write_umap(embds_path,
                fig_path,
                'Batch',
                col_order,
@@ -206,9 +206,9 @@ def umap_batch(embd_files, pivot_path, fig_path):
                with_dmso=False)
 
 
-def umap_source(embd_files, pivot_path, fig_path):
+def umap_source(embds_path, pivot_path, fig_path):
     col_order = pd.read_parquet(pivot_path).index
-    write_umap(embd_files,
+    write_umap(embds_path,
                fig_path,
                'Source',
                col_order,
