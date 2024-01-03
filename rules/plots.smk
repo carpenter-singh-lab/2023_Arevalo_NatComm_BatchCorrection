@@ -81,10 +81,9 @@ rule umap_batch:
 
 rule umap_source:
     input:
-        embd_files=expand(umap_pattern, workflow=WORKFLOWS, method=METHODS)
-        + expand(umap_baseline_pattern, workflow=WORKFLOWS),
-        pivot_path="outputs/{scenario}/plots/pivot_scores.parquet",
+        "outputs/{scenario}/plots/embeddings.parquet",
+        "outputs/{scenario}/plots/pivot_scores.parquet",
     output:
         "outputs/{scenario}/plots/umap_source.png",
     run:
-        plot.figures.umap_source(input.embd_files, input.pivot_path, *output)
+        plot.figures.umap_source(*input, *output)
