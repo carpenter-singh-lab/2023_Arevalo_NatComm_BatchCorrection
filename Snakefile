@@ -16,6 +16,7 @@ PLOTS = [
     "mean_all_metrics_hbarplot",
     "map_scores_barplot",
     "all_metrics_barplot",
+    "cartesian",
 ]
 
 metrics_baseline_pattern = (

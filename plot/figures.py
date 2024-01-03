@@ -1,14 +1,15 @@
 '''Plot all figures'''
-import warnings
 from difflib import SequenceMatcher
-from sklearn.preprocessing import minmax_scale
+import warnings
 
 from matplotlib import pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
 import seaborn as sns
+from sklearn.preprocessing import minmax_scale
 
-import plot
+from .colors import BATCH_CMAP, SOURCE_CMAP
+from .ranker import Ranker
 
 
 def _common_prefix_suffix(strings: list[str]):
@@ -202,7 +203,7 @@ def umap_batch(embds_path, pivot_path, fig_path):
                fig_path,
                'Batch',
                col_order,
-               plot.BATCH_CMAP,
+               BATCH_CMAP,
                with_dmso=False)
 
 
@@ -212,8 +213,13 @@ def umap_source(embds_path, pivot_path, fig_path):
                fig_path,
                'Source',
                col_order,
-               plot.SOURCE_CMAP,
+               SOURCE_CMAP,
                with_dmso=False)
+
+
+def cartesian_plane(tidy_path, fig_path):
+    scores = pd.read_parquet(tidy_path)
+    Ranker.plot(scores).savefig(fig_path)
 
 
 def best_sphering_eigen_curve(map_files, fig_path):

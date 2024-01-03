@@ -32,6 +32,15 @@ rule pivot_scores:
         plot.figures.pivot_scores(*input, *output)
 
 
+rule cartesian_plane:
+    input:
+        "outputs/{scenario}/plots/tidy_scores.parquet",
+    output:
+        "outputs/{scenario}/plots/cartesian.png",
+    run:
+        plot.figures.cartesian_plane(*input, *output)
+
+
 rule barplot_all_metrics:
     input:
         "outputs/{scenario}/plots/tidy_scores.parquet",
