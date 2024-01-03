@@ -139,6 +139,7 @@ def write_hbarplot(scores, title, fig_path):
 
 def write_umap(embds_path, fig_path, hue, order, palette, with_dmso=False):
     embds = pd.read_parquet(embds_path)
+    hue_order = embds[hue].drop_duplicates().sort_values()
     plt.rcParams.update({'font.size': 22})
     if not with_dmso:
         embds = embds.query('~Compound.str.startswith("DMSO")')
@@ -147,7 +148,7 @@ def write_umap(embds_path, fig_path, hue, order, palette, with_dmso=False):
         x='x',
         y='y',
         hue=hue,
-        hue_order=embds[hue].drop_duplicates().sort_values(),
+        hue_order=hue_order,
         kind='scatter',
         col='method',
         col_order=order,
@@ -170,6 +171,7 @@ def write_umap(embds_path, fig_path, hue, order, palette, with_dmso=False):
         bbox_to_anchor=[0.95, 0.45],
         frameon=False,
         markerscale=3.5,
+        ncol=1 + int(len(hue_order) > 10),
     )
 
     g.set_titles('{col_name}')
@@ -217,8 +219,16 @@ def umap_source(embds_path, pivot_path, fig_path):
                with_dmso=False)
 
 
-def cartesian_plane(tidy_path, fig_path):
+def cartesian_plane(tidy_path, min_cvar, fig_path):
+    '''
+    Plot scores in a cartesian plot ignoring metrics with a coefficient of variation lower than min_cvar'''
     scores = pd.read_parquet(tidy_path)
+    # Find metrics with low coefficient of variation
+    stats = scores.groupby('metric')['score'].agg(['std', 'mean'])
+    stats['cvar'] = stats['std'] / stats['mean']
+    stats = stats.fillna(0).sort_values('cvar')
+    lowcvar_metrics = stats.query('cvar<@min_cvar').index.tolist()
+    scores = scores.query('metric not in @lowcvar_metrics')
     Ranker.plot(scores).savefig(fig_path)
 
 

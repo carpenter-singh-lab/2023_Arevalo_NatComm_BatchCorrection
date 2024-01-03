@@ -37,8 +37,10 @@ rule cartesian_plane:
         "outputs/{scenario}/plots/tidy_scores.parquet",
     output:
         "outputs/{scenario}/plots/cartesian.png",
+    params:
+        min_cvar = 0.01
     run:
-        plot.figures.cartesian_plane(*input, *output)
+        plot.figures.cartesian_plane(*input, *params, *output)
 
 
 rule barplot_all_metrics:
