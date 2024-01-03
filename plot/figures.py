@@ -2,9 +2,13 @@
 from difflib import SequenceMatcher
 import warnings
 
+import matplotlib
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
+from plottable import ColumnDefinition, Table
+from plottable.cmap import normed_cmap
+from plottable.plots import bar
 import seaborn as sns
 from sklearn.preprocessing import minmax_scale
 
@@ -260,3 +264,91 @@ def best_sphering_eigen_curve(map_files, fig_path):
     plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
     plt.savefig(fig_path, bbox_inches='tight')
     plt.close()
+
+
+def cmap_table_fn(col_data):
+    return normed_cmap(col_data, cmap=matplotlib.cm.PRGn, num_stds=2.5)
+
+
+def results_table(pivot_path: str, fig_path: str):
+    '''
+    Adapted from:
+    https://github.com/yoseflab/scib-metrics/blob/0.4.1/src/scib_metrics/benchmark/_core.py#L276-L364
+    '''
+    df = pd.read_parquet(pivot_path)
+    df['mean', 'total'] = .4 * df['mean', 'batch'] + .6 * df['mean', 'bio']
+    column_definitions = [
+        ColumnDefinition("method",
+                         width=1.5,
+                         textprops={
+                             "ha": "left",
+                             "weight": "bold"
+                         }),
+    ]
+    score_cols = df[['batch', 'bio']].columns.get_level_values(1)
+    textprops = {"ha": "center", "bbox": {"boxstyle": "circle", "pad": 0.25}}
+    groupmap = dict(df.columns.swaplevel())
+    for i, col in enumerate(score_cols):
+        col_def = ColumnDefinition(
+            col,
+            title=col.replace(" ", "\n", 1),
+            textprops=textprops,
+            width=1,
+            cmap=cmap_table_fn(df.droplevel(0, axis='columns')[col]),
+            group=groupmap[col],
+            formatter="{:.2f}",
+        )
+        column_definitions.append(col_def)
+
+    plot_kw = {
+        "cmap": matplotlib.cm.YlGnBu,
+        "plot_bg_bar": False,
+        "annotate": True,
+        "height": 0.9,
+        "formatter": "{:.2f}",
+    }
+    agg_cols = df['mean'].columns
+    for i, col in enumerate(agg_cols):
+        col_def = ColumnDefinition(
+            col,
+            width=1,
+            plot_kw=plot_kw,
+            title=col.replace(" ", "\n", 1),
+            plot_fn=bar,
+            group='Aggregate',
+            border="left" if i == 0 else None,
+        )
+        column_definitions.append(col_def)
+
+    with matplotlib.rc_context({"svg.fonttype": "none"}):
+        fig, ax = plt.subplots(figsize=(len(df.columns) * 1.25,
+                                        3 + 0.3 * len(df)))
+        Table(
+            df.droplevel(0, axis='columns').reset_index(),
+            cell_kw={
+                "linewidth": 0,
+                "edgecolor": "k",
+            },
+            column_definitions=column_definitions,
+            ax=ax,
+            row_dividers=True,
+            footer_divider=True,
+            textprops={
+                "fontsize": 10,
+                "ha": "center"
+            },
+            row_divider_kw={
+                "linewidth": 1,
+                "linestyle": (0, (1, 5))
+            },
+            col_label_divider_kw={
+                "linewidth": 1,
+                "linestyle": "-"
+            },
+            column_border_kw={
+                "linewidth": 1,
+                "linestyle": "-"
+            },
+            index_col="method",
+        ).autoset_fontcolors(colnames=df.columns.get_level_values(1))
+        fig.savefig(fig_path, facecolor=ax.get_facecolor(), dpi=300)

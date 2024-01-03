@@ -32,13 +32,22 @@ rule pivot_scores:
         plot.figures.pivot_scores(*input, *output)
 
 
+rule results_table:
+    input:
+        "outputs/{scenario}/plots/pivot_scores.parquet",
+    output:
+        "outputs/{scenario}/plots/results_table.png",
+    run:
+        plot.figures.results_table(*input, *output)
+
+
 rule cartesian_plane:
     input:
         "outputs/{scenario}/plots/tidy_scores.parquet",
     output:
         "outputs/{scenario}/plots/cartesian.png",
     params:
-        min_cvar = 0.01
+        min_cvar=0.01,
     run:
         plot.figures.cartesian_plane(*input, *params, *output)
 
