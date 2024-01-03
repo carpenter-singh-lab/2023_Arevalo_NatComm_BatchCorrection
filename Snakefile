@@ -30,7 +30,7 @@ metrics_pattern = (
 )
 umap_pattern = f"outputs/{scenario}/projection/{{workflow}}_{{method}}_umap.parquet"
 
-plots_pattern = f"outputs/{scenario}/plots/{{plot}}.png"
+plots_pattern = f"outputs/{scenario}/plots/{{plot}}.svg"
 
 
 include: "rules/processing.smk"

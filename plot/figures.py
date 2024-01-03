@@ -12,7 +12,7 @@ from plottable.plots import bar
 import seaborn as sns
 from sklearn.preprocessing import minmax_scale
 
-from .colors import BATCH_CMAP, SOURCE_CMAP
+from .colors import BATCH_CMAP, SOURCE_CMAP, METHOD_FMT, METRIC_FMT
 from .ranker import Ranker
 
 
@@ -101,6 +101,8 @@ def tidy_scores(metrics_files, metrics_redlist, methods_redlist, tidy_path):
 
 def pivot_scores(tidy_path, pivot_path):
     scores = pd.read_parquet(tidy_path)
+    scores['method'] = scores['method'].map(lambda x: METHOD_FMT.get(x, x))
+    scores['metric'] = scores['metric'].map(lambda x: METRIC_FMT.get(x, x))
     scores = scores.pivot_table(index='method',
                                 columns=['dimension', 'metric'],
                                 values='score')
@@ -109,6 +111,8 @@ def pivot_scores(tidy_path, pivot_path):
     scores['mean', 'micro_mean'] = scores.mean(axis=1)
     scores['mean', 'macro_mean'] = (scores['bio'].mean(axis=1) +
                                     scores['batch'].mean(axis=1)) / 2
+    # This is the default weighting from the scIB manuscript
+    scores['mean', 'total'] = .4 * scores['mean', 'batch'] + .6 * scores['mean', 'bio']
     scores = scores.sort_values(('mean', 'macro_mean'), ascending=False)
     scores.to_parquet(pivot_path)
 
@@ -276,7 +280,6 @@ def results_table(pivot_path: str, fig_path: str):
     https://github.com/yoseflab/scib-metrics/blob/0.4.1/src/scib_metrics/benchmark/_core.py#L276-L364
     '''
     df = pd.read_parquet(pivot_path)
-    df['mean', 'total'] = .4 * df['mean', 'batch'] + .6 * df['mean', 'bio']
     column_definitions = [
         ColumnDefinition("method",
                          width=1.5,
@@ -320,35 +323,35 @@ def results_table(pivot_path: str, fig_path: str):
         )
         column_definitions.append(col_def)
 
-    with matplotlib.rc_context({"svg.fonttype": "none"}):
-        fig, ax = plt.subplots(figsize=(len(df.columns) * 1.25,
-                                        3 + 0.3 * len(df)))
-        Table(
-            df.droplevel(0, axis='columns').reset_index(),
-            cell_kw={
-                "linewidth": 0,
-                "edgecolor": "k",
-            },
-            column_definitions=column_definitions,
-            ax=ax,
-            row_dividers=True,
-            footer_divider=True,
-            textprops={
-                "fontsize": 10,
-                "ha": "center"
-            },
-            row_divider_kw={
-                "linewidth": 1,
-                "linestyle": (0, (1, 5))
-            },
-            col_label_divider_kw={
-                "linewidth": 1,
-                "linestyle": "-"
-            },
-            column_border_kw={
-                "linewidth": 1,
-                "linestyle": "-"
-            },
-            index_col="method",
-        ).autoset_fontcolors(colnames=df.columns.get_level_values(1))
-        fig.savefig(fig_path, facecolor=ax.get_facecolor(), dpi=300)
+    plt.style.use('default')
+    fig, ax = plt.subplots(figsize=(len(df.columns) * 1.25, 3 + 0.3 * len(df)))
+    tab = Table(
+        df.droplevel(0, axis='columns').reset_index(),
+        cell_kw={
+            "linewidth": 0,
+            "edgecolor": "k",
+        },
+        column_definitions=column_definitions,
+        ax=ax,
+        row_dividers=True,
+        footer_divider=True,
+        textprops={
+            "fontsize": 10,
+            "ha": "center"
+        },
+        row_divider_kw={
+            "linewidth": 1,
+            "linestyle": (0, (1, 5))
+        },
+        col_label_divider_kw={
+            "linewidth": 1,
+            "linestyle": "-"
+        },
+        column_border_kw={
+            "linewidth": 1,
+            "linestyle": "-"
+        },
+        index_col="method",
+    )
+    tab.autoset_fontcolors(colnames=list(df.columns.get_level_values(1)))
+    fig.savefig(fig_path, facecolor=ax.get_facecolor(), dpi=300)

@@ -58,3 +58,24 @@ COMPOUND_COLORS = np.roll(px.colors.qualitative.Alphabet,
 MICRO_CMAP = dict(
     zip(['CV8000', 'Opera Phenix', 'ImageXpress Micro Confocal'],
         map(rgb_to_hex, px.colors.qualitative.Vivid)))
+
+METRIC_FMT = {
+    'silhouette_batch': 'Silhouette batch',
+    'pcr_batch': 'PCR comparison',
+    'pcr': 'PCR',
+    'graph_conn': 'Graph connectivity',
+    'kbet': 'KBET',
+    'lisi_batch': 'LISI batch',
+    'lisi_label': 'LISI label',
+    'negcon_mean_map': 'mAP (controls)',
+    'negcon_fraction_below_p': '%Retrieved (controls)',
+    'negcon_fraction_below_corrected_p': '%Retrieved-corr (controls)',
+    'nonrep_mean_map': 'mAP (nonrep)',
+    'nonrep_fraction_below_p': '%Retrieved (nonrep)',
+    'nonrep_fraction_below_corrected_p': '%Retrieved-corr (nonrep)',
+    'nmi': 'Leiden NMI',
+    'ari': 'Leiden ARI',
+    'asw': 'Silhouette label',
+    'il_f1': 'Isolated labels(F1)',
+    'il_asw': 'Isolated labels(ASW)',
+}
