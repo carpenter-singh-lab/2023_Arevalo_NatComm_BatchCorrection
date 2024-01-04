@@ -13,6 +13,7 @@ WORKFLOWS = [
 
 PLOTS = [
     f"umap_{'batch' if scenario=='scenario_1' else 'source'}",
+    "umap_compound",
     "mean_all_metrics_hbarplot",
     "map_scores_barplot",
     "all_metrics_barplot",

@@ -1,4 +1,5 @@
 '''Plot all figures'''
+import itertools
 from difflib import SequenceMatcher
 import warnings
 
@@ -12,7 +13,7 @@ from plottable.plots import bar
 import seaborn as sns
 from sklearn.preprocessing import minmax_scale
 
-from .colors import BATCH_CMAP, SOURCE_CMAP, METHOD_FMT, METRIC_FMT
+from .colors import BATCH_CMAP, SOURCE_CMAP, METHOD_FMT, METRIC_FMT, POSCONS, COMPOUND_COLORS, POSCON_MAP
 from .ranker import Ranker
 
 
@@ -113,7 +114,8 @@ def pivot_scores(tidy_path, pivot_path):
     scores['mean', 'macro_mean'] = (scores['bio'].mean(axis=1) +
                                     scores['batch'].mean(axis=1)) / 2
     # This is the default weighting from the scIB manuscript
-    scores['mean', 'total'] = .4 * scores['mean', 'batch'] + .6 * scores['mean', 'bio']
+    scores['mean',
+           'total'] = .4 * scores['mean', 'batch'] + .6 * scores['mean', 'bio']
     scores = scores.sort_values(('mean', 'macro_mean'), ascending=False)
     scores.to_parquet(pivot_path)
 
@@ -146,9 +148,13 @@ def write_hbarplot(scores, title, fig_path):
     plt.close()
 
 
-def write_umap(embds_path, fig_path, hue, order, palette, with_dmso=False):
-    embds = pd.read_parquet(embds_path)
-    hue_order = embds[hue].drop_duplicates().sort_values()
+def write_umap(embds: pd.DataFrame,
+               fig_path: str,
+               hue,
+               col_order,
+               hue_order,
+               palette,
+               with_dmso=False):
     plt.rcParams.update({'font.size': 22})
     if not with_dmso:
         embds = embds.query('~Compound.str.startswith("DMSO")')
@@ -160,7 +166,7 @@ def write_umap(embds_path, fig_path, hue, order, palette, with_dmso=False):
         hue_order=hue_order,
         kind='scatter',
         col='method',
-        col_order=order,
+        col_order=col_order,
         s=6,
         col_wrap=4,
         palette=palette,
@@ -210,21 +216,49 @@ def hbarplot_all_metrics(pivot_path, fig_path):
 
 def umap_batch(embds_path, pivot_path, fig_path):
     col_order = pd.read_parquet(pivot_path).index
-    write_umap(embds_path,
+    embds = pd.read_parquet(embds_path)
+    hue_order = np.unique(embds['Batch'])
+    write_umap(embds,
                fig_path,
                'Batch',
                col_order,
+               hue_order,
                BATCH_CMAP,
                with_dmso=False)
 
 
 def umap_source(embds_path, pivot_path, fig_path):
     col_order = pd.read_parquet(pivot_path).index
-    write_umap(embds_path,
+    embds = pd.read_parquet(embds_path)
+    hue_order = np.unique(embds['Source'])
+    write_umap(embds,
                fig_path,
                'Source',
                col_order,
+               hue_order,
                SOURCE_CMAP,
+               with_dmso=False)
+
+
+def umap_compound(embds_path, pivot_path, fig_path):
+    col_order = pd.read_parquet(pivot_path).index
+    embds = pd.read_parquet(embds_path)
+    multiple_pos = embds.groupby(
+        'Compound')['Metadata_Well'].nunique()[lambda x: x > 1].index
+    multiple_pos = embds[embds['Compound'].isin(multiple_pos)]
+    compounds = multiple_pos['Compound'].drop_duplicates().tolist()
+    non_poscons = [c for c in compounds if c not in POSCONS]
+    poscons = [c for c in compounds if c in POSCONS]
+    hue_order = poscons + non_poscons
+
+    compound_cmap = dict(zip(non_poscons, itertools.cycle(COMPOUND_COLORS)))
+    compound_cmap.update(POSCON_MAP)
+    write_umap(multiple_pos,
+               fig_path,
+               'Compound',
+               col_order,
+               hue_order,
+               compound_cmap,
                with_dmso=False)
 
 
@@ -355,4 +389,7 @@ def results_table(pivot_path: str, fig_path: str):
         index_col="method",
     )
     tab.autoset_fontcolors(colnames=list(df.columns.get_level_values(1)))
-    fig.savefig(fig_path, facecolor=ax.get_facecolor(), dpi=300, bbox_inches='tight')
+    fig.savefig(fig_path,
+                facecolor=ax.get_facecolor(),
+                dpi=300,
+                bbox_inches='tight')

@@ -106,3 +106,13 @@ rule umap_source:
         "outputs/{scenario}/plots/umap_source.{ext}",
     run:
         plot.figures.umap_source(*input, *output)
+
+
+rule umap_compound:
+    input:
+        "outputs/{scenario}/plots/embeddings.parquet",
+        "outputs/{scenario}/plots/pivot_scores.parquet",
+    output:
+        "outputs/{scenario}/plots/umap_compound.{ext}",
+    run:
+        plot.figures.umap_compound(*input, *output)
