@@ -54,6 +54,7 @@ def load_all_parquet(files, key_name='file_id', placeholder='baseline'):
 
 def prepare_embeddings(embd_files: list[str], output_path: str, anon=True):
     embds = load_all_parquet(embd_files, key_name='method')
+    embds['method'] = embds['method'].map(lambda x: METHOD_FMT.get(x, x))
 
     # jitter embds
     embds_jitter = []
@@ -237,7 +238,7 @@ def cartesian_plane(tidy_path, min_cvar, fig_path):
     stats = stats.fillna(0).sort_values('cvar')
     lowcvar_metrics = stats.query('cvar<@min_cvar').index.tolist()
     scores = scores.query('metric not in @lowcvar_metrics')
-    Ranker.plot(scores).savefig(fig_path)
+    Ranker.plot(scores).savefig(fig_path, bbox_inches='tight')
 
 
 def best_sphering_eigen_curve(map_files, fig_path):
@@ -354,4 +355,4 @@ def results_table(pivot_path: str, fig_path: str):
         index_col="method",
     )
     tab.autoset_fontcolors(colnames=list(df.columns.get_level_values(1)))
-    fig.savefig(fig_path, facecolor=ax.get_facecolor(), dpi=300)
+    fig.savefig(fig_path, facecolor=ax.get_facecolor(), dpi=300, bbox_inches='tight')

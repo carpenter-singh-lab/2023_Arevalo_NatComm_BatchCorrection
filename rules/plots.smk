@@ -7,14 +7,13 @@ rule tidy_scores:
     params:
         metrics_redlist=[
             "pcr",
-            # "pcr_batch",
-            # "il_f1",
-            # "il_asw",
+            "pcr_batch",
+            "il_f1",
+            "il_asw",
             "negcon_fraction_below_p",
             "negcon_fraction_below_corrected_p",
             "nonrep_fraction_below_p",
             "nonrep_fraction_below_corrected_p",
-            # "lisi_label",
         ],
         methods_redlist=[],
     run:
