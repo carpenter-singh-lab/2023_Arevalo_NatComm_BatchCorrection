@@ -101,7 +101,7 @@ def tidy_scores(metrics_files, metrics_redlist, methods_redlist, tidy_path):
     scores.to_parquet(tidy_path, index=False)
 
 
-def pivot_scores(tidy_path, pivot_path):
+def pivot_scores(tidy_path, pivot_path, micro_mean=False, macro_mean=False):
     scores = pd.read_parquet(tidy_path)
     scores['method'] = scores['method'].map(lambda x: METHOD_FMT.get(x, x))
     scores['metric'] = scores['metric'].map(lambda x: METRIC_FMT.get(x, x))
@@ -110,13 +110,22 @@ def pivot_scores(tidy_path, pivot_path):
                                 values='score')
     scores['mean', 'batch'] = scores['batch'].mean(axis=1)
     scores['mean', 'bio'] = scores['bio'].mean(axis=1)
-    scores['mean', 'micro_mean'] = scores.mean(axis=1)
-    scores['mean', 'macro_mean'] = (scores['bio'].mean(axis=1) +
-                                    scores['batch'].mean(axis=1)) / 2
+    if micro_mean:
+        scores['mean', 'micro_mean'] = scores.mean(axis=1)
+    if macro_mean:
+        macro = (scores['bio'].mean(axis=1) + scores['batch'].mean(axis=1)) / 2
+        scores['mean', 'macro_mean'] = macro
+
     # This is the default weighting from the scIB manuscript
-    scores['mean',
-           'total'] = .4 * scores['mean', 'batch'] + .6 * scores['mean', 'bio']
-    scores = scores.sort_values(('mean', 'macro_mean'), ascending=False)
+    total = .4 * scores['mean', 'batch'] + .6 * scores['mean', 'bio']
+    scores['mean', 'total'] = total
+    scores = scores.sort_values(('mean', 'total'), ascending=False)
+    agg_names = {
+        'batch': 'Batch correction',
+        'bio': 'Bio metrics',
+        'total': 'Total'
+    }
+    scores.rename(columns=agg_names, inplace=True)
     scores.to_parquet(pivot_path)
 
 
@@ -141,7 +150,7 @@ def write_hbarplot(scores, title, fig_path):
     plt.figure(figsize=(6, 12))
     ax = sns.barplot(scores['mean'].reset_index().round(3),
                      y='method',
-                     x='macro_mean')
+                     x='Total')
     ax.set(title=title)
     ax.bar_label(ax.containers[0], fontsize=10)
     plt.savefig(fig_path, bbox_inches='tight')
@@ -323,7 +332,8 @@ def results_table(pivot_path: str, fig_path: str):
                              "weight": "bold"
                          }),
     ]
-    score_cols = df[['batch', 'bio']].columns.get_level_values(1)
+    score_cols = df[['Batch correction',
+                     'Bio metrics']].columns.get_level_values(1)
     textprops = {"ha": "center", "bbox": {"boxstyle": "circle", "pad": 0.25}}
     groupmap = dict(df.columns.swaplevel())
     for i, col in enumerate(score_cols):
@@ -353,7 +363,7 @@ def results_table(pivot_path: str, fig_path: str):
             plot_kw=plot_kw,
             title=col.replace(" ", "\n", 1),
             plot_fn=bar,
-            group='Aggregate',
+            group='Aggregate score',
             border="left" if i == 0 else None,
         )
         column_definitions.append(col_def)
