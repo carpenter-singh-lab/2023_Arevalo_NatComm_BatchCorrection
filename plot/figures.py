@@ -16,6 +16,8 @@ from sklearn.preprocessing import minmax_scale
 from .colors import BATCH_CMAP, SOURCE_CMAP, METHOD_FMT, METRIC_FMT, POSCONS, COMPOUND_COLORS, POSCON_MAP
 from .ranker import Ranker
 
+matplotlib.use("Agg")
+
 
 def _common_prefix_suffix(strings: list[str]):
     prefix = strings[0]

@@ -1,9 +1,23 @@
+PLOTS = [
+    f"umap_{'batch' if scenario=='scenario_1' else 'source'}",
+    "umap_compound",
+    "mean_all_metrics_hbarplot",
+    "map_scores_barplot",
+    "all_metrics_barplot",
+    "cartesian",
+    "results_table",
+]
+
+plots_pattern = f"outputs/{scenario}/plots/{{plot}}.svg"
+umap_baseline_pattern = f"outputs/{scenario}/projection/{{workflow}}_umap.parquet"
+umap_pattern = f"outputs/{scenario}/projection/{{workflow}}_{{method}}_umap.parquet"
+
 rule tidy_scores:
     input:
         metrics_files=expand(metrics_pattern, workflow=WORKFLOWS, method=METHODS)
         + expand(metrics_baseline_pattern, workflow=WORKFLOWS),
     output:
-        "outputs/{scenario}/plots/tidy_scores.parquet",
+        "outputs/{scenario}/plots/data/tidy_scores.parquet",
     params:
         metrics_redlist=[
             "pcr",
@@ -24,16 +38,16 @@ rule tidy_scores:
 
 rule pivot_scores:
     input:
-        "outputs/{scenario}/plots/tidy_scores.parquet",
+        "outputs/{scenario}/plots/data/tidy_scores.parquet",
     output:
-        "outputs/{scenario}/plots/pivot_scores.parquet",
+        "outputs/{scenario}/plots/data/pivot_scores.parquet",
     run:
         plot.figures.pivot_scores(*input, *output)
 
 
 rule results_table:
     input:
-        "outputs/{scenario}/plots/pivot_scores.parquet",
+        "outputs/{scenario}/plots/data/pivot_scores.parquet",
     output:
         "outputs/{scenario}/plots/results_table.{ext}",
     run:
@@ -42,7 +56,7 @@ rule results_table:
 
 rule cartesian_plane:
     input:
-        "outputs/{scenario}/plots/tidy_scores.parquet",
+        "outputs/{scenario}/plots/data/tidy_scores.parquet",
     output:
         "outputs/{scenario}/plots/cartesian.{ext}",
     params:
@@ -53,7 +67,7 @@ rule cartesian_plane:
 
 rule barplot_all_metrics:
     input:
-        "outputs/{scenario}/plots/tidy_scores.parquet",
+        "outputs/{scenario}/plots/data/tidy_scores.parquet",
     output:
         "outputs/{scenario}/plots/all_metrics_barplot.{ext}",
     run:
@@ -62,7 +76,7 @@ rule barplot_all_metrics:
 
 rule barplot_map_scores:
     input:
-        "outputs/{scenario}/plots/tidy_scores.parquet",
+        "outputs/{scenario}/plots/data/tidy_scores.parquet",
     output:
         "outputs/{scenario}/plots/map_scores_barplot.{ext}",
     run:
@@ -71,7 +85,7 @@ rule barplot_map_scores:
 
 rule hbarplot_all_metrics:
     input:
-        "outputs/{scenario}/plots/pivot_scores.parquet",
+        "outputs/{scenario}/plots/data/pivot_scores.parquet",
     output:
         "outputs/{scenario}/plots/mean_all_metrics_hbarplot.{ext}",
     run:
@@ -83,15 +97,15 @@ rule prepare_embeddings:
         embd_files=expand(umap_pattern, workflow=WORKFLOWS, method=METHODS)
         + expand(umap_baseline_pattern, workflow=WORKFLOWS),
     output:
-        "outputs/{scenario}/plots/embeddings.parquet",
+        "outputs/{scenario}/plots/data/embeddings.parquet",
     run:
         plot.figures.prepare_embeddings(input.embd_files, *output)
 
 
 rule umap_batch:
     input:
-        "outputs/{scenario}/plots/embeddings.parquet",
-        "outputs/{scenario}/plots/pivot_scores.parquet",
+        "outputs/{scenario}/plots/data/embeddings.parquet",
+        "outputs/{scenario}/plots/data/pivot_scores.parquet",
     output:
         "outputs/{scenario}/plots/umap_batch.{ext}",
     run:
@@ -100,8 +114,8 @@ rule umap_batch:
 
 rule umap_source:
     input:
-        "outputs/{scenario}/plots/embeddings.parquet",
-        "outputs/{scenario}/plots/pivot_scores.parquet",
+        "outputs/{scenario}/plots/data/embeddings.parquet",
+        "outputs/{scenario}/plots/data/pivot_scores.parquet",
     output:
         "outputs/{scenario}/plots/umap_source.{ext}",
     run:
@@ -110,8 +124,8 @@ rule umap_source:
 
 rule umap_compound:
     input:
-        "outputs/{scenario}/plots/embeddings.parquet",
-        "outputs/{scenario}/plots/pivot_scores.parquet",
+        "outputs/{scenario}/plots/data/embeddings.parquet",
+        "outputs/{scenario}/plots/data/pivot_scores.parquet",
     output:
         "outputs/{scenario}/plots/umap_compound.{ext}",
     run:
