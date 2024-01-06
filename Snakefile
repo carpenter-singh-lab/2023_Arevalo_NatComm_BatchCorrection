@@ -19,4 +19,5 @@ include: "rules/plots.smk"
 
 rule all:
     input:
-        expand(plots_pattern, plot=PLOTS),
+        expand(plots_pattern, plot=PNG_PLOTS, ext=["png"]),
+        expand(plots_pattern, plot=SVG_PLOTS, ext=["svg"]),

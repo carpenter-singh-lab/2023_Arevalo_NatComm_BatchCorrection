@@ -1,18 +1,20 @@
-PLOTS = [
+SVG_PLOTS = [
     "results_table",
     "results_table_scaled",
     "cartesian",
     "mean_all_metrics_hbarplot",
     "map_scores_barplot",
     "all_metrics_barplot",
+]
+PNG_PLOTS = [
     f"umap_{'batch' if scenario=='scenario_1' else 'source'}",
 ]
 
 if criteria == "TARGET2":
-    PLOTS.append("umap_compound")
+    PNG_PLOTS.append("umap_compound")
 
 
-plots_pattern = f"outputs/{scenario}/plots/{{plot}}.svg"
+plots_pattern = f"outputs/{scenario}/plots/{{plot}}.{{ext}}"
 umap_baseline_pattern = f"outputs/{scenario}/projection/{{workflow}}_umap.parquet"
 umap_pattern = f"outputs/{scenario}/projection/{{workflow}}_{{method}}_umap.parquet"
 
