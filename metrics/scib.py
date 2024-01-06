@@ -143,6 +143,9 @@ def graph_connectivity(adata_path, label_key, graph_conn_path):
 
 
 def kbet(adata_path, label_key, batch_key, kbet_path):
+    # TODO: use only target2 non-poscons in isolated labels and kbet metrics 
+    # to make it computable in scenario 3 and scenario 5 because scib
+    # impl does not scale to the number of labels (>100K).
     adata = ad.read_h5ad(adata_path)
     adata = metrics.kbet.diffusion_conn(adata, min_k=25, copy=True)
     with warnings.catch_warnings():
