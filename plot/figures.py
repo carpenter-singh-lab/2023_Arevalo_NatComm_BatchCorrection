@@ -341,7 +341,7 @@ def results_table(pivot_path: str, fig_path: str, min_max_scale: bool = True):
             df['mean', col] = df[col].mean(axis=1)
         total = np.array([0.4, 0.6]) @ df['mean'][cols].T
         df['mean', 'Total'] = total
-        df = df.sort_values(by=('mean', 'Total'))
+        df = df.sort_values(by=('mean', 'Total'), ascending=False)
 
     column_definitions = [
         ColumnDefinition("method",
