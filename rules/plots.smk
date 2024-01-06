@@ -1,5 +1,6 @@
 PLOTS = [
     "results_table",
+    "results_table_scaled",
     "cartesian",
     "mean_all_metrics_hbarplot",
     "map_scores_barplot",
@@ -56,6 +57,15 @@ rule results_table:
         "outputs/{scenario}/plots/results_table.{ext}",
     run:
         plot.figures.results_table(*input, *output)
+
+
+rule results_table_scaled:
+    input:
+        "outputs/{scenario}/plots/data/pivot_scores.parquet",
+    output:
+        "outputs/{scenario}/plots/results_table_scaled.{ext}",
+    run:
+        plot.figures.results_table(*input, *output, min_max_scale=True)
 
 
 rule cartesian_plane:

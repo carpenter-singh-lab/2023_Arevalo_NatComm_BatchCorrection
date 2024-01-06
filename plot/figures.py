@@ -1,6 +1,6 @@
 '''Plot all figures'''
-import itertools
 from difflib import SequenceMatcher
+import itertools
 import warnings
 
 import matplotlib
@@ -13,7 +13,15 @@ from plottable.plots import bar
 import seaborn as sns
 from sklearn.preprocessing import minmax_scale
 
-from .colors import BATCH_CMAP, SOURCE_CMAP, METHOD_FMT, METRIC_FMT, POSCONS, COMPOUND_COLORS, POSCON_MAP
+from .colors import (
+    BATCH_CMAP,
+    COMPOUND_COLORS,
+    METHOD_FMT,
+    METRIC_FMT,
+    POSCONS,
+    POSCON_MAP,
+    SOURCE_CMAP,
+)
 from .ranker import Ranker
 
 matplotlib.use("Agg")
@@ -320,12 +328,20 @@ def cmap_table_fn(col_data):
     return normed_cmap(col_data, cmap=matplotlib.cm.PRGn, num_stds=2.5)
 
 
-def results_table(pivot_path: str, fig_path: str, min_max_scale:bool=True):
+def results_table(pivot_path: str, fig_path: str, min_max_scale: bool = True):
     '''
     Adapted from:
     https://github.com/yoseflab/scib-metrics/blob/0.4.1/src/scib_metrics/benchmark/_core.py#L276-L364
     '''
     df = pd.read_parquet(pivot_path)
+    if min_max_scale:
+        df = pd.DataFrame(minmax_scale(df), index=df.index, columns=df.columns)
+        cols = ['Batch correction', 'Bio metrics']
+        for col in cols:
+            df['mean', col] = df[col].mean(axis=1)
+        total = np.array([0.4, 0.6]) @ df['mean'][cols].T
+        df['mean', 'Total'] = total
+
     column_definitions = [
         ColumnDefinition("method",
                          width=1.5,
