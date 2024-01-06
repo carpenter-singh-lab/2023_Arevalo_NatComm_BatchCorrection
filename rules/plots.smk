@@ -1,16 +1,20 @@
 PLOTS = [
-    f"umap_{'batch' if scenario=='scenario_1' else 'source'}",
-    "umap_compound",
+    "results_table",
+    "cartesian",
     "mean_all_metrics_hbarplot",
     "map_scores_barplot",
     "all_metrics_barplot",
-    "cartesian",
-    "results_table",
+    f"umap_{'batch' if scenario=='scenario_1' else 'source'}",
 ]
+
+if criteria == "TARGET2":
+    PLOTS.append("umap_compound")
+
 
 plots_pattern = f"outputs/{scenario}/plots/{{plot}}.svg"
 umap_baseline_pattern = f"outputs/{scenario}/projection/{{workflow}}_umap.parquet"
 umap_pattern = f"outputs/{scenario}/projection/{{workflow}}_{{method}}_umap.parquet"
+
 
 rule tidy_scores:
     input:
