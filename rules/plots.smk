@@ -10,7 +10,7 @@ PNG_PLOTS = [
     f"umap_{'batch' if scenario=='scenario_1' else 'source'}",
 ]
 
-if criteria == "TARGET2":
+if criteria == "target2":
     PNG_PLOTS.append("umap_compound")
 
 
