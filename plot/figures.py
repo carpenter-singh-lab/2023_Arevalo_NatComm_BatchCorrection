@@ -328,7 +328,7 @@ def cmap_table_fn(col_data):
     return normed_cmap(col_data, cmap=matplotlib.cm.PRGn, num_stds=2.5)
 
 
-def results_table(pivot_path: str, fig_path: str, min_max_scale: bool = True):
+def results_table(pivot_path: str, fig_path: str, min_max_scale: bool = False):
     '''
     Adapted from:
     https://github.com/yoseflab/scib-metrics/blob/0.4.1/src/scib_metrics/benchmark/_core.py#L276-L364
