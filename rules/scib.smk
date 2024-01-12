@@ -31,10 +31,8 @@ rule clustering:
         "outputs/{prefix}/{pipeline}.parquet",
     output:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
-    params:
-        label_key=config["label_key"],
     run:
-        metrics.scib.cluster(*input, *params, *output)
+        metrics.scib.cluster(*input, *output)
 
 
 rule nmi:

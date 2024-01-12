@@ -35,18 +35,15 @@ def filter_dmso(parquet_path):
     return meta, feats, features
 
 
-def cluster(parquet_path, label_key, adata_path):
-    logger.info('compute neighbors')
+def cluster(parquet_path, adata_path):
     adata = filter_dmso_anndata(parquet_path)
+    logger.info('compute neighbors')
     sc.pp.neighbors(adata, use_rep='X', n_neighbors=25, metric='cosine')
-    # Get cluster and neighbors
     logger.info('run clustering')
-    metrics.cluster_optimal_resolution(adata,
-                                       label_key=label_key,
-                                       cluster_key=CLUSTER_KEY,
-                                       metric=metrics.nmi,
-                                       verbose=False)
+    sc.tl.leiden(adata, key_added=CLUSTER_KEY)
     adata.write_h5ad(adata_path, compression='gzip')
+
+
 
 
 def nmi(adata_path, label_key, nmi_path):
@@ -144,7 +141,8 @@ def graph_connectivity(adata_path, label_key, graph_conn_path):
 
 def kbet(adata_path, label_key, batch_key, kbet_path):
     adata = ad.read_h5ad(adata_path)
-    adata = metrics.kbet.diffusion_conn(adata, min_k=25, copy=True)
+    M = metrics.kbet.diffusion_conn(adata, min_k=15, copy=False)
+    adata.obsp["connectivities"] = M
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', module='rpy2.robjects')
         warnings.filterwarnings('ignore', category=FutureWarning)
