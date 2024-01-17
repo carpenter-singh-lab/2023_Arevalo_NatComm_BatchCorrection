@@ -13,6 +13,8 @@ PNG_PLOTS = [
 if criteria == "target2":
     PNG_PLOTS.append("umap_compound")
 
+if len(config["sources"]) == 5:
+    PNG_PLOTS.append("umap_microscope")
 
 plots_pattern = f"outputs/{scenario}/plots/{{plot}}.{{ext}}"
 umap_baseline_pattern = f"outputs/{scenario}/projection/{{workflow}}_umap.parquet"
@@ -146,3 +148,13 @@ rule umap_compound:
         "outputs/{scenario}/plots/umap_compound.{ext}",
     run:
         plot.figures.umap_compound(*input, *output)
+
+
+rule umap_microscope:
+    input:
+        "outputs/{scenario}/plots/data/embeddings.parquet",
+        "outputs/{scenario}/plots/data/pivot_scores.parquet",
+    output:
+        "outputs/{scenario}/plots/umap_microscope.{ext}",
+    run:
+        plot.figures.umap_microscope(*input, *output)
