@@ -129,14 +129,14 @@ def annotate_axes(ax, text, fontsize=18):
     )
 
 
-embds = pd.read_parquet("outputs/scenario_1/plots/data/embeddings.parquet")
+embds = pd.read_parquet("outputs/scenario_4/plots/data/embeddings.parquet")
 embds = embds.query('~Compound.str.startswith("DMSO")')
 
 fig = plt.figure(figsize=(20, 13))
 spec = fig.add_gridspec(4, 7, height_ratios=[2.3, 1, 1, 0.7])
 
 ax = fig.add_subplot(spec[0, :])
-results_table("outputs/scenario_1/plots/data/pivot_scores.parquet", ax)
+results_table("outputs/scenario_4/plots/data/pivot_scores.parquet", ax)
 method_order = embds["method"].drop_duplicates()
 
 
@@ -169,15 +169,16 @@ compound_cmap.update(POSCON_MAP)
 for i, method in enumerate(method_order):
     group = embds.query("method==@method").sample(frac=1)
     x, y = group["x"], group["y"]
-    colors = group["Batch"].map(BATCH_CMAP)
-    ax_batch = fig.add_subplot(spec[2, i])
-    plot_umap(ax_batch, x, y, colors)
+    colors = group["Source"].map(SOURCE_CMAP)
+    ax_source = fig.add_subplot(spec[2, i])
+    plot_umap(ax_source, x, y, colors)
 
     group = multiple_pos.query("method==@method").sample(frac=1)
     x, y = group["x"], group["y"]
     colors = group["Compound"].map(compound_cmap)
     ax_bio = fig.add_subplot(spec[1, i])
     plot_umap(ax_bio, x, y, colors)
+    ax_bio.set_title(method)
 
 ax_bio = fig.add_subplot(spec[3, 0])
 labels = hue_order
@@ -191,21 +192,23 @@ def hidden_trace(c):
 ax_bio.legend(handles=[hidden_trace(c) for c in colors],
               labels=labels,
               loc="upper left",
+              title="Compound",
               ncols=4)
 
-ax_batch = fig.add_subplot(spec[3, 6])
-labels = embds["Batch"].drop_duplicates().to_list()
-colors = [BATCH_CMAP[lbl] for lbl in labels]
+ax_source = fig.add_subplot(spec[3, 6])
+labels = embds["Source"].drop_duplicates().to_list()
+colors = [SOURCE_CMAP[lbl] for lbl in labels]
 
 
 def hidden_trace(c):
-    return ax_batch.scatter([], [], color=c, ls="", marker="o")
+    return ax_source.scatter([], [], color=c, ls="", marker="o")
 
 
-ax_batch.legend(handles=[hidden_trace(c) for c in colors],
+ax_source.legend(handles=[hidden_trace(c) for c in colors],
                 labels=labels,
                 loc="upper right",
-                ncols=4)
-despine(ax_batch)
+                title="Source",
+                ncols=1)
+despine(ax_source)
 despine(ax_bio)
-plt.savefig("fig.pdf", bbox_inches="tight")
+plt.savefig("fig.png", bbox_inches="tight")
