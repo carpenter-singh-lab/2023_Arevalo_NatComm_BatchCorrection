@@ -129,13 +129,13 @@ def pivot_scores(tidy_path, pivot_path, micro_mean=False, macro_mean=False):
         scores["mean", "macro_mean"] = macro
 
     # This is the default weighting from the scIB manuscript
-    total = 0.4 * scores["mean", "batch"] + 0.6 * scores["mean", "bio"]
-    scores["mean", "total"] = total
-    scores = scores.sort_values(("mean", "total"), ascending=False)
+    overall = 0.4 * scores["mean", "batch"] + 0.6 * scores["mean", "bio"]
+    scores["mean", "overall"] = overall
+    scores = scores.sort_values(("mean", "overall"), ascending=False)
     agg_names = {
         "batch": "Batch correction",
         "bio": "Bio metrics",
-        "total": "Total"
+        "overall": "Overall"
     }
     scores.rename(columns=agg_names, inplace=True)
     scores.to_parquet(pivot_path)
@@ -162,7 +162,7 @@ def write_hbarplot(scores, title, fig_path):
     plt.figure(figsize=(6, 12))
     ax = sns.barplot(scores["mean"].reset_index().round(3),
                      y="method",
-                     x="Total")
+                     x="Overall")
     ax.set(title=title)
     ax.bar_label(ax.containers[0], fontsize=10)
     plt.savefig(fig_path, bbox_inches="tight")
@@ -363,9 +363,9 @@ def results_table(pivot_path: str, fig_path: str, min_max_scale: bool = False):
         cols = ["Batch correction", "Bio metrics"]
         for col in cols:
             df["mean", col] = df[col].mean(axis=1)
-        total = np.array([0.4, 0.6]) @ df["mean"][cols].T
-        df["mean", "Total"] = total
-        df = df.sort_values(by=("mean", "Total"), ascending=False)
+        overall = np.array([0.4, 0.6]) @ df["mean"][cols].T
+        df["mean", "Overall"] = overall
+        df = df.sort_values(by=("mean", "Overall"), ascending=False)
 
     column_definitions = [
         ColumnDefinition("method",
