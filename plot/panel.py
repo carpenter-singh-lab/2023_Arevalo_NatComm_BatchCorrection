@@ -1,73 +1,21 @@
-import itertools
 from functools import partial
 
 import pandas as pd
 from matplotlib import pyplot as plt
-from plot.table import draw as draw_table, add_colorbar
 
-from plot.colors import (
-    COMPOUND_COLORS,
-    MICRO_CMAP,
-    POSCON_MAP,
-    POSCONS,
-    SOURCE_CMAP,
-)
+from .colors import MICRO_CMAP, SOURCE_CMAP
+from .data import query_multiple_pos
+from .scatter import create_compound_cmap, despine, scatter_panel
+from .table import add_colorbar
+from .table import draw as draw_table
 
 
-def despine(ax):
-    for side in ["left", "right", "top", "bottom"]:
-        ax.spines[side].set_visible(False)
-        ax.spines[side].set_visible(False)
-    ax.tick_params(which="both",
-                   bottom=False,
-                   left=False,
-                   labelbottom=False,
-                   labelleft=False)
-
-
-def query_multiple_pos(embds: pd.DataFrame):
-    multiple_pos = (embds.groupby("Compound")["Metadata_Well"].nunique()
-                    [lambda x: x > 1].index)
-    multiple_pos = embds[embds["Compound"].isin(multiple_pos)]
-    return multiple_pos
-
-
-def create_compound_cmap(embds: pd.DataFrame):
-    compounds = embds["Compound"].drop_duplicates().tolist()
-    non_poscons = [c for c in compounds if c not in POSCONS]
-    poscons = [c for c in compounds if c in POSCONS]
-    order = poscons + non_poscons
-    compound_cmap = dict(zip(non_poscons, itertools.cycle(COMPOUND_COLORS)))
-    compound_cmap.update(POSCON_MAP)
-    return compound_cmap, order
-
-
-def scatter_panel(embds,
-                  fig: plt.Figure,
-                  spec: plt.GridSpec,
-                  row: int,
-                  title=False):
-    methods = embds["method"].drop_duplicates().to_list()
-    for i, method in enumerate(methods):
-        points = embds.query("method==@method").sample(frac=1)
-        x, y = points["x"], points["y"]
-        colors = points["colors"]
-        ax = fig.add_subplot(spec[row, i])
-        ax.scatter(x, y, c=colors, s=6)
-        despine(ax)
-        if title:
-            ax.set_title(method)
-
-
-def all_panel(embd_path: str, pivot_path: str):
+def full(embd_path: str, pivot_path: str, fig_path: str):
     embds = pd.read_parquet(embd_path)
     embds = embds.query('~Compound.str.startswith("DMSO")')
 
     # Sort based on the pivot scores table
     rank = pd.read_parquet(pivot_path).index.to_list()
-    # Setting Baseline first
-    # rank.remove('Baseline')
-    # rank.insert(0 , 'Baseline')
     embds = embds.set_index("method").loc[rank].reset_index()
 
     fig = plt.figure(figsize=(20, 15))
@@ -130,10 +78,4 @@ def all_panel(embd_path: str, pivot_path: str):
     despine(ax_source)
     despine(ax_micro)
     despine(ax_cpd)
-
-
-
-pivot_path = "outputs/scenario_4/plots/data/pivot_scores.parquet"
-embd_path = "outputs/scenario_4/plots/data/embeddings.parquet"
-all_panel(embd_path, pivot_path)
-plt.savefig("fig.png", bbox_inches="tight")
+    plt.savefig(fig_path, bbox_inches="tight")

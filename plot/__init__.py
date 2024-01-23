@@ -1,4 +1,2 @@
-from . import param_search
-from . import colors
-from . import figures
+from . import bar, colors, data, param_search, panel, legacy
 from .ranker import Ranker

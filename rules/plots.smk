@@ -1,6 +1,6 @@
 SVG_PLOTS = [
-    "results_table",
-    "results_table_scaled",
+        # "results_table",
+        # "results_table_scaled",
     "cartesian",
     "mean_all_metrics_hbarplot",
     "map_scores_barplot",
@@ -15,6 +15,8 @@ if criteria == "target2":
 
 if len(config["sources"]) == 5:
     PNG_PLOTS.append("umap_microscope")
+
+PNG_PLOTS = ["full_panel"]
 
 plots_pattern = f"outputs/{scenario}/plots/{{plot}}.{{ext}}"
 umap_baseline_pattern = f"outputs/{scenario}/projection/{{workflow}}_umap.parquet"
@@ -40,7 +42,7 @@ rule tidy_scores:
         ],
         methods_redlist=[],
     run:
-        plot.figures.tidy_scores(
+        plot.data.tidy_scores(
             input.metrics_files, params.metrics_redlist, params.methods_redlist, *output
         )
 
@@ -51,7 +53,17 @@ rule pivot_scores:
     output:
         "outputs/{scenario}/plots/data/pivot_scores.parquet",
     run:
-        plot.figures.pivot_scores(*input, *output)
+        plot.data.pivot_scores(*input, *output)
+
+
+rule prepare_embeddings:
+    input:
+        embd_files=expand(umap_pattern, workflow=WORKFLOWS, method=METHODS)
+        + expand(umap_baseline_pattern, workflow=WORKFLOWS),
+    output:
+        "outputs/{scenario}/plots/data/embeddings.parquet",
+    run:
+        plot.data.prepare_embeddings(input.embd_files, *output)
 
 
 rule results_table:
@@ -80,7 +92,7 @@ rule cartesian_plane:
     params:
         min_cvar=0.01,
     run:
-        plot.figures.cartesian_plane(*input, *params, *output)
+        plot.legacy.cartesian_plane(*input, *params, *output)
 
 
 rule barplot_all_metrics:
@@ -89,7 +101,7 @@ rule barplot_all_metrics:
     output:
         "outputs/{scenario}/plots/all_metrics_barplot.{ext}",
     run:
-        plot.figures.barplot_all_metrics(*input, *output)
+        plot.bar.all_metrics(*input, *output)
 
 
 rule barplot_map_scores:
@@ -98,7 +110,7 @@ rule barplot_map_scores:
     output:
         "outputs/{scenario}/plots/map_scores_barplot.{ext}",
     run:
-        plot.figures.barplot_map_scores(*input, *output)
+        plot.bar.map_scores(*input, *output)
 
 
 rule hbarplot_all_metrics:
@@ -107,17 +119,7 @@ rule hbarplot_all_metrics:
     output:
         "outputs/{scenario}/plots/mean_all_metrics_hbarplot.{ext}",
     run:
-        plot.figures.hbarplot_all_metrics(*input, *output)
-
-
-rule prepare_embeddings:
-    input:
-        embd_files=expand(umap_pattern, workflow=WORKFLOWS, method=METHODS)
-        + expand(umap_baseline_pattern, workflow=WORKFLOWS),
-    output:
-        "outputs/{scenario}/plots/data/embeddings.parquet",
-    run:
-        plot.figures.prepare_embeddings(input.embd_files, *output)
+        plot.bar.all_metrics_h(*input, *output)
 
 
 rule umap_batch:
@@ -158,3 +160,13 @@ rule umap_microscope:
         "outputs/{scenario}/plots/umap_microscope.{ext}",
     run:
         plot.figures.umap_microscope(*input, *output)
+
+
+rule full_panel:
+    input:
+        "outputs/{scenario}/plots/data/embeddings.parquet",
+        "outputs/{scenario}/plots/data/pivot_scores.parquet",
+    output:
+        "outputs/{scenario}/plots/full_panel.{ext}",
+    run:
+        plot.panel.full(*input, *output)
