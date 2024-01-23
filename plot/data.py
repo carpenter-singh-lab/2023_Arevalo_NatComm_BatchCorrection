@@ -81,6 +81,7 @@ def prepare_embeddings(embd_files: list[str], output_path: str, anon=True):
             "Metadata_JCP2022": "Compound",
             "Metadata_Row": "Row",
             "Metadata_Column": "Column",
+            "method": "Method"
         })
     embds.to_parquet(output_path, index=False)
 

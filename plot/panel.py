@@ -16,7 +16,7 @@ def full(embd_path: str, pivot_path: str, fig_path: str):
 
     # Sort based on the pivot scores table
     rank = pd.read_parquet(pivot_path).index.to_list()
-    embds = embds.set_index("method").loc[rank].reset_index()
+    embds = embds.set_index("Method").loc[rank].reset_index()
 
     fig = plt.figure(figsize=(20, 15))
     spec = fig.add_gridspec(6, 7, height_ratios=[2.5, 0.1, 1, 1, 1, 0.7])
@@ -41,7 +41,7 @@ def full(embd_path: str, pivot_path: str, fig_path: str):
     ax_cpd = fig.add_subplot(spec[5, 0])
     colors = [compound_cmap[lbl] for lbl in cpd_order]
     hidden_trace = partial(ax_cpd.scatter, x=[], y=[], ls="", marker="o")
-
+    cpd_order = [c.replace('JCP2022_', '') for c in cpd_order]
     ax_cpd.legend(
         handles=[hidden_trace(color=c) for c in colors],
         labels=cpd_order,

@@ -32,9 +32,9 @@ def scatter_panel(embds,
                   spec: plt.GridSpec,
                   row: int,
                   title=False):
-    methods = embds["method"].drop_duplicates().to_list()
+    methods = embds["Method"].drop_duplicates().to_list()
     for i, method in enumerate(methods):
-        points = embds.query("method==@method").sample(frac=1)
+        points = embds.query("Method==@method").sample(frac=1)
         x, y = points["x"], points["y"]
         colors = points["colors"]
         ax = fig.add_subplot(spec[row, i])

@@ -54,7 +54,7 @@ def draw(pivot_path: str, ax: plt.Axes):
 
     column_definitions = [
         ColumnDefinition(
-            "method", width=1.5, textprops={"ha": "left", "weight": "bold"}
+            "Method", width=1.5, textprops={"ha": "left", "weight": "bold"}
         ),
     ]
     score_cols = df[["Batch correction", "Bio metrics"]].columns.get_level_values(1)
@@ -108,6 +108,6 @@ def draw(pivot_path: str, ax: plt.Axes):
         row_divider_kw={"linewidth": 1, "linestyle": (0, (1, 5))},
         col_label_divider_kw={"linewidth": 1, "linestyle": "-"},
         column_border_kw={"linewidth": 1, "linestyle": "-"},
-        index_col="method",
+        index_col="Method",
     )
     tab.autoset_fontcolors(colnames=list(df.columns.get_level_values(1)))
