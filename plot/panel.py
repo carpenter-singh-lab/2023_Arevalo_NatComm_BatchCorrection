@@ -37,12 +37,14 @@ def add_table(pivot_path, fig, spec):
 
 def add_legend(ax: plt.Axes, cmap: pd.Series, title: str):
     hidden_trace = partial(ax.scatter, x=[], y=[], ls="", marker="o")
+    # ceiling_division
+    ncols = -(len(cmap) // -5)
     ax.legend(
         handles=[hidden_trace(color=c) for c in cmap.values],
         labels=cmap.index.to_list(),
         loc="upper left",
         title=title,
-        ncols=4,
+        ncols=ncols,
     )
     despine(ax)
 
