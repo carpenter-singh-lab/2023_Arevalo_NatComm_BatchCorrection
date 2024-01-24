@@ -1,20 +1,11 @@
 SVG_PLOTS = [
-        # "results_table",
-        # "results_table_scaled",
+    "results_table",
+    # "results_table_scaled",
     "cartesian",
     "mean_all_metrics_hbarplot",
     "map_scores_barplot",
     "all_metrics_barplot",
 ]
-PNG_PLOTS = [
-    f"umap_{'batch' if scenario=='scenario_1' else 'source'}",
-]
-
-if criteria == "target2":
-    PNG_PLOTS.append("umap_compound")
-
-if len(config["sources"]) == 5:
-    PNG_PLOTS.append("umap_microscope")
 
 PNG_PLOTS = ["full_panel"]
 
@@ -72,7 +63,7 @@ rule results_table:
     output:
         "outputs/{scenario}/plots/results_table.{ext}",
     run:
-        plot.figures.results_table(*input, *output)
+        plot.panel.results_table(*input, *output)
 
 
 rule results_table_scaled:
@@ -169,4 +160,4 @@ rule full_panel:
     output:
         "outputs/{scenario}/plots/full_panel.{ext}",
     run:
-        plot.panel.full(*input, *output)
+        plot.panel.full_panel(*input, *output, scenario)

@@ -1,5 +1,4 @@
 import itertools
-from collections import OrderedDict
 from functools import partial
 
 import pandas as pd
@@ -87,7 +86,37 @@ def colorby(embds: pd.DataFrame, column: str) -> pd.Series:
     return pd.Series(cmap)[order]
 
 
-def full(embd_path: str, pivot_path: str, fig_path: str):
+def results_table(pivot_path: str, fig_path: str):
+    fig = plt.figure(figsize=(14, 8))
+    spec = fig.add_gridspec(2, 7, height_ratios=[2.5, 0.1])
+    add_table(pivot_path, fig, spec)
+    plt.savefig(fig_path, bbox_inches="tight")
+
+
+def full_panel(embd_path: str, pivot_path: str, fig_path: str, scenario: str):
+    panel_fn = globals()[scenario]
+    panel_fn(embd_path, pivot_path, fig_path)
+
+
+def scenario_1(embd_path: str, pivot_path: str, fig_path: str):
+    fig = plt.figure(figsize=(20, 15))
+    spec = fig.add_gridspec(5, 7, height_ratios=[2.5, 0.1, 1, 1, 0.7])
+    add_table(pivot_path, fig, spec)
+
+    embds = load_embeddings(embd_path, pivot_path)
+
+    cmap = colorby(embds, "Compound")
+    add_legend(fig.add_subplot(spec[4, 0]), cmap, "Compound")
+    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+
+    cmap = colorby(embds, "Batch")
+    add_legend(fig.add_subplot(spec[4, 5]), cmap, "Batch")
+    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
+
+    plt.savefig(fig_path, bbox_inches="tight")
+
+
+def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
     spec = fig.add_gridspec(6, 7, height_ratios=[2.5, 0.1, 1, 1, 1, 0.7])
     add_table(pivot_path, fig, spec)
@@ -98,8 +127,8 @@ def full(embd_path: str, pivot_path: str, fig_path: str):
     add_legend(fig.add_subplot(spec[5, 0]), cmap, "Compound")
     scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
 
-    cmap = colorby(embds, "Batch")
-    add_legend(fig.add_subplot(spec[5, 6]), cmap, "Batch")
+    cmap = colorby(embds, "Source")
+    add_legend(fig.add_subplot(spec[5, 6]), cmap, "Source")
     scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
 
     cmap = colorby(embds, "Microscope")
