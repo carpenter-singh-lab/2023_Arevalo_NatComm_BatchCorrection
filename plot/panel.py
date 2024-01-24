@@ -36,6 +36,8 @@ def add_table(pivot_path, fig, spec):
 
 
 def add_legend(ax: plt.Axes, cmap: pd.Series, title: str):
+    # Remove JCP2022_ prefix
+    cmap.index = cmap.index.str.replace('JCP2022_', '')
     hidden_trace = partial(ax.scatter, x=[], y=[], ls="", marker="o")
     # ceiling_division
     ncols = -(len(cmap) // -5)
