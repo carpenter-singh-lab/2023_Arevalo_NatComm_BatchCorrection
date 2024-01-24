@@ -116,6 +116,38 @@ def scenario_1(embd_path: str, pivot_path: str, fig_path: str):
     plt.savefig(fig_path, bbox_inches="tight")
 
 
+def scenario_2(embd_path: str, pivot_path: str, fig_path: str):
+    fig = plt.figure(figsize=(20, 15))
+    spec = fig.add_gridspec(5, 7, height_ratios=[2.5, 0.1, 1, 1, 0.7])
+    add_table(pivot_path, fig, spec)
+
+    embds = load_embeddings(embd_path, pivot_path)
+
+    cmap = colorby(embds, "Compound")
+    add_legend(fig.add_subplot(spec[4, 0]), cmap, "Compound")
+    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+
+    cmap = colorby(embds, "Source")
+    add_legend(fig.add_subplot(spec[4, 5]), cmap, "Source")
+    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
+
+    plt.savefig(fig_path, bbox_inches="tight")
+
+
+def scenario_3(embd_path: str, pivot_path: str, fig_path: str):
+    fig = plt.figure(figsize=(20, 15))
+    spec = fig.add_gridspec(4, 7, height_ratios=[2.5, 0.1, 1, 0.7])
+    add_table(pivot_path, fig, spec)
+
+    embds = load_embeddings(embd_path, pivot_path)
+
+    cmap = colorby(embds, "Source")
+    add_legend(fig.add_subplot(spec[3, 5]), cmap, "Source")
+    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+
+    plt.savefig(fig_path, bbox_inches="tight")
+
+
 def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
     spec = fig.add_gridspec(6, 7, height_ratios=[2.5, 0.1, 1, 1, 1, 0.7])
@@ -134,5 +166,23 @@ def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
     cmap = colorby(embds, "Microscope")
     add_legend(fig.add_subplot(spec[5, 4]), cmap, "Microscope")
     scatter_panel(embds, fig, spec, row=4)
+
+    plt.savefig(fig_path, bbox_inches="tight")
+
+
+def scenario_5(embd_path: str, pivot_path: str, fig_path: str):
+    fig = plt.figure(figsize=(20, 15))
+    spec = fig.add_gridspec(5, 7, height_ratios=[2.5, 0.1, 1, 1, 0.7])
+    add_table(pivot_path, fig, spec)
+
+    embds = load_embeddings(embd_path, pivot_path)
+
+    cmap = colorby(embds, "Source")
+    add_legend(fig.add_subplot(spec[4, 6]), cmap, "Source")
+    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2)
+
+    cmap = colorby(embds, "Microscope")
+    add_legend(fig.add_subplot(spec[4, 4]), cmap, "Microscope")
+    scatter_panel(embds, fig, spec, row=3)
 
     plt.savefig(fig_path, bbox_inches="tight")
