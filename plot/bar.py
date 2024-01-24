@@ -23,7 +23,7 @@ def write_barplot(scores, title, fig_path, hue="dimension"):
 def write_hbarplot(scores, title, fig_path):
     plt.figure(figsize=(6, 12))
     ax = sns.barplot(scores["mean"].reset_index().round(3),
-                     y="method",
+                     y="Method",
                      x="Overall")
     ax.set(title=title)
     ax.bar_label(ax.containers[0], fontsize=10)
