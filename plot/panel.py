@@ -183,7 +183,7 @@ def scenario_5(embd_path: str, pivot_path: str, fig_path: str):
 
     cmap = colorby(embds, "Source")
     add_legend(fig.add_subplot(spec[4, 6]), cmap, "Source")
-    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2)
+    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
 
     cmap = colorby(embds, "Microscope")
     add_legend(fig.add_subplot(spec[4, 4]), cmap, "Microscope")
