@@ -1,3 +1,6 @@
+include: "sphering.smk"
+
+
 rule combat:
     input:
         "outputs/{scenario}/{pipeline}.parquet",

@@ -34,17 +34,16 @@ METHOD_FMT = {
     'scanorama': 'Scanorama',
     'mnn': 'MNN',
     'desc': 'DESC',
-    'baseline': 'Baseline'
+    'baseline': 'Baseline',
+    'sphering': 'Sphering'
+
 }
 METHODS = [
     'Harmony', 'Scanorama', 'Combat', 'MNN', 'DESC', 'scVI', 'Raw',
-    'MAD+Sphering', 'MAD', 'Sphering'
+    'Sphering', 'Baseline'
 ]
 METHOD_CMAP = dict(zip(METHODS, px.colors.qualitative.D3))
-METHOD_CMAP['Baseline'] = METHOD_CMAP['MAD+Sphering']
-
 METHOD_SMAP = dict(zip(METHODS, Line2D.filled_markers[1:]))
-METHOD_SMAP['Baseline'] = METHOD_SMAP['MAD+Sphering']
 
 cmpds = pd.read_csv('inputs/metadata/compound.csv.gz')['Metadata_JCP2022']
 cmpds = cmpds.apply(lambda x: MAPPER.get(x, x)).sort_values(

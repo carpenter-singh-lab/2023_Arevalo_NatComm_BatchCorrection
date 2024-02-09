@@ -92,7 +92,7 @@ def colorby(embds: pd.DataFrame, column: str) -> pd.Series:
 
 def results_table(pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(14, 8))
-    spec = fig.add_gridspec(2, 7, height_ratios=[2.5, 0.1])
+    spec = fig.add_gridspec(2, 8, height_ratios=[2.5, 0.1])
     add_table(pivot_path, fig, spec)
     plt.savefig(fig_path, bbox_inches="tight")
 
@@ -104,13 +104,13 @@ def full_panel(embd_path: str, pivot_path: str, fig_path: str, scenario: str):
 
 def scenario_1(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(5, 7, height_ratios=[2.5, 0.1, 1, 1, 0.7])
+    spec = fig.add_gridspec(5, 8, height_ratios=[2.5, 0.1, 1, 1, 0.7])
     add_table(pivot_path, fig, spec)
 
     embds = load_embeddings(embd_path, pivot_path)
 
     cmap = colorby(embds, "Compound")
-    add_legend(fig.add_subplot(spec[4, 0]), cmap, "Compound")
+    add_legend(fig.add_subplot(spec[4, 1]), cmap, "Compound")
     scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
 
     cmap = colorby(embds, "Batch")
@@ -122,13 +122,13 @@ def scenario_1(embd_path: str, pivot_path: str, fig_path: str):
 
 def scenario_2(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(5, 7, height_ratios=[2.5, 0.1, 1, 1, 0.7])
+    spec = fig.add_gridspec(5, 8, height_ratios=[2.5, 0.1, 1, 1, 0.7])
     add_table(pivot_path, fig, spec)
 
     embds = load_embeddings(embd_path, pivot_path)
 
     cmap = colorby(embds, "Compound")
-    add_legend(fig.add_subplot(spec[4, 0]), cmap, "Compound")
+    add_legend(fig.add_subplot(spec[4, 1]), cmap, "Compound")
     scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
 
     cmap = colorby(embds, "Source")
@@ -140,7 +140,7 @@ def scenario_2(embd_path: str, pivot_path: str, fig_path: str):
 
 def scenario_3(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(4, 7, height_ratios=[2.5, 0.1, 1, 0.7])
+    spec = fig.add_gridspec(4, 8, height_ratios=[2.5, 0.1, 1, 0.7])
     add_table(pivot_path, fig, spec)
 
     embds = load_embeddings(embd_path, pivot_path)
@@ -154,13 +154,13 @@ def scenario_3(embd_path: str, pivot_path: str, fig_path: str):
 
 def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(6, 7, height_ratios=[2.5, 0.1, 1, 1, 1, 0.7])
+    spec = fig.add_gridspec(6, 8, height_ratios=[2.5, 0.1, 1, 1, 1, 0.7])
     add_table(pivot_path, fig, spec)
 
     embds = load_embeddings(embd_path, pivot_path)
 
     cmap = colorby(embds, "Compound")
-    add_legend(fig.add_subplot(spec[5, 0]), cmap, "Compound")
+    add_legend(fig.add_subplot(spec[5, 1]), cmap, "Compound")
     scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
 
     cmap = colorby(embds, "Source")
@@ -176,7 +176,7 @@ def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
 
 def scenario_5(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(5, 7, height_ratios=[2.5, 0.1, 1, 1, 0.7])
+    spec = fig.add_gridspec(5, 8, height_ratios=[2.5, 0.1, 1, 1, 0.7])
     add_table(pivot_path, fig, spec)
 
     embds = load_embeddings(embd_path, pivot_path)
