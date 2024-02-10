@@ -1,6 +1,3 @@
-import itertools
-
-import pandas as pd
 from matplotlib import pyplot as plt
 
 
@@ -19,7 +16,8 @@ def scatter_panel(embds,
                   fig: plt.Figure,
                   spec: plt.GridSpec,
                   row: int,
-                  title=False):
+                  title=False) -> list[plt.Axes]:
+    axs = []
     methods = embds["Method"].drop_duplicates().to_list()
     for i, method in enumerate(methods):
         points = embds.query("Method==@method").sample(frac=1)
@@ -30,3 +28,5 @@ def scatter_panel(embds,
         despine(ax)
         if title:
             ax.set_title(method)
+        axs.append(ax)
+    return axs

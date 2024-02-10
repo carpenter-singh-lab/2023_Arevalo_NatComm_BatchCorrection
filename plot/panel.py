@@ -27,17 +27,33 @@ def load_embeddings(embd_path: str, pivot_path: str):
     return embds
 
 
-def add_table(pivot_path, fig, spec):
+def add_number(ax: plt.Axes, number: str, **kwargs):
+    """Add number in top-left"""
+    text_params = dict(
+        x=0,
+        y=1,
+        fontsize=16,
+        transform=ax.transAxes,
+        fontweight="bold",
+        va="center",
+        ha="center",
+    )
+    text_params.update(kwargs)
+    ax.text(s=number, **text_params)
+
+
+def add_table(pivot_path, fig, spec) -> plt.Axes:
     # Table with colorbar
     ax = fig.add_subplot(spec[0, :])
     draw_table(pivot_path, ax)
     ax_colorbar = fig.add_subplot(spec[1, 3:5])
     add_colorbar(fig, ax_colorbar)
+    return ax
 
 
 def add_legend(ax: plt.Axes, cmap: pd.Series, title: str):
     # Remove JCP2022_ prefix
-    cmap.index = cmap.index.str.replace('JCP2022_', '')
+    cmap.index = cmap.index.str.replace("JCP2022_", "")
     hidden_trace = partial(ax.scatter, x=[], y=[], ls="", marker="o")
     # ceiling_division
     ncols = -(len(cmap) // -5)
@@ -53,7 +69,7 @@ def add_legend(ax: plt.Axes, cmap: pd.Series, title: str):
 
 def compound_cmap(embds: pd.DataFrame):
     compounds = query_multiple_pos(embds)["Compound"].drop_duplicates()
-    non_poscons = [c for c in compounds if c not in POSCONS]
+    non_poscons = sorted([c for c in compounds if c not in POSCONS])
     poscons = [c for c in compounds if c in POSCONS]
     order = poscons + non_poscons
     cmap = dict(zip(non_poscons, itertools.cycle(COMPOUND_COLORS)))
@@ -62,7 +78,7 @@ def compound_cmap(embds: pd.DataFrame):
 
 
 def source_cmap(embds: pd.DataFrame):
-    order = embds["Source"].drop_duplicates().sort_values().to_list()
+    order = embds["Source"].drop_duplicates().astype(str).sort_values().to_list()
     return order, SOURCE_CMAP
 
 
@@ -72,7 +88,7 @@ def micro_cmap(embds: pd.DataFrame):
 
 
 def batch_cmap(embds: pd.DataFrame):
-    order = embds["Batch"].drop_duplicates().sort_values().to_list()
+    order = embds["Batch"].drop_duplicates().astype(str).sort_values().to_list()
     return order, BATCH_CMAP
 
 
@@ -105,17 +121,22 @@ def full_panel(embd_path: str, pivot_path: str, fig_path: str, scenario: str):
 def scenario_1(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
     spec = fig.add_gridspec(5, 8, height_ratios=[2.5, 0.1, 1, 1, 0.7])
-    add_table(pivot_path, fig, spec)
+    ax = add_table(pivot_path, fig, spec)
+    add_number(ax, "A", y=0.95)
 
     embds = load_embeddings(embd_path, pivot_path)
 
     cmap = colorby(embds, "Compound")
     add_legend(fig.add_subplot(spec[4, 1]), cmap, "Compound")
-    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+    axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+    axs[0].set_ylabel("Compound", fontsize=16)
+    add_number(axs[0], "B")
 
     cmap = colorby(embds, "Batch")
     add_legend(fig.add_subplot(spec[4, 5]), cmap, "Batch")
-    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
+    axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
+    axs[0].set_ylabel("Batch", fontsize=16)
+    add_number(axs[0], "C")
 
     plt.savefig(fig_path, bbox_inches="tight")
 
@@ -123,17 +144,22 @@ def scenario_1(embd_path: str, pivot_path: str, fig_path: str):
 def scenario_2(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
     spec = fig.add_gridspec(5, 8, height_ratios=[2.5, 0.1, 1, 1, 0.7])
-    add_table(pivot_path, fig, spec)
+    ax = add_table(pivot_path, fig, spec)
+    add_number(ax, "A", y=0.95)
 
     embds = load_embeddings(embd_path, pivot_path)
 
     cmap = colorby(embds, "Compound")
     add_legend(fig.add_subplot(spec[4, 1]), cmap, "Compound")
-    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+    axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+    axs[0].set_ylabel("Compound", fontsize=16)
+    add_number(axs[0], "B")
 
     cmap = colorby(embds, "Source")
     add_legend(fig.add_subplot(spec[4, 5]), cmap, "Source")
-    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
+    axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
+    axs[0].set_ylabel("Source", fontsize=16)
+    add_number(axs[0], "C")
 
     plt.savefig(fig_path, bbox_inches="tight")
 
@@ -141,13 +167,16 @@ def scenario_2(embd_path: str, pivot_path: str, fig_path: str):
 def scenario_3(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
     spec = fig.add_gridspec(4, 8, height_ratios=[2.5, 0.1, 1, 0.7])
-    add_table(pivot_path, fig, spec)
+    ax = add_table(pivot_path, fig, spec)
+    add_number(ax, "A", y=0.95)
 
     embds = load_embeddings(embd_path, pivot_path)
 
     cmap = colorby(embds, "Source")
-    add_legend(fig.add_subplot(spec[3, 5]), cmap, "Source")
-    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+    add_legend(fig.add_subplot(spec[3, 4]), cmap, "Source")
+    axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+    axs[0].set_ylabel("Source", fontsize=16)
+    add_number(axs[0], "B")
 
     plt.savefig(fig_path, bbox_inches="tight")
 
@@ -155,21 +184,28 @@ def scenario_3(embd_path: str, pivot_path: str, fig_path: str):
 def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
     spec = fig.add_gridspec(6, 8, height_ratios=[2.5, 0.1, 1, 1, 1, 0.7])
-    add_table(pivot_path, fig, spec)
+    ax = add_table(pivot_path, fig, spec)
+    add_number(ax, "A", y=0.95)
 
     embds = load_embeddings(embd_path, pivot_path)
 
     cmap = colorby(embds, "Compound")
     add_legend(fig.add_subplot(spec[5, 1]), cmap, "Compound")
-    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+    axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+    axs[0].set_ylabel("Compound", fontsize=16)
+    add_number(axs[0], "B")
 
     cmap = colorby(embds, "Source")
     add_legend(fig.add_subplot(spec[5, 6]), cmap, "Source")
-    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
+    axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
+    axs[0].set_ylabel("Source", fontsize=16)
+    add_number(axs[0], "C")
 
     cmap = colorby(embds, "Microscope")
     add_legend(fig.add_subplot(spec[5, 4]), cmap, "Microscope")
-    scatter_panel(embds, fig, spec, row=4)
+    axs = scatter_panel(embds, fig, spec, row=4)
+    axs[0].set_ylabel("Microscope", fontsize=16)
+    add_number(axs[0], "D")
 
     plt.savefig(fig_path, bbox_inches="tight")
 
@@ -177,16 +213,21 @@ def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
 def scenario_5(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
     spec = fig.add_gridspec(5, 8, height_ratios=[2.5, 0.1, 1, 1, 0.7])
-    add_table(pivot_path, fig, spec)
+    ax = add_table(pivot_path, fig, spec)
+    add_number(ax, "A", y=0.95)
 
     embds = load_embeddings(embd_path, pivot_path)
 
     cmap = colorby(embds, "Source")
-    add_legend(fig.add_subplot(spec[4, 6]), cmap, "Source")
-    scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+    add_legend(fig.add_subplot(spec[4, 5]), cmap, "Source")
+    axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
+    axs[0].set_ylabel("Source", fontsize=16)
+    add_number(axs[0], "B")
 
     cmap = colorby(embds, "Microscope")
-    add_legend(fig.add_subplot(spec[4, 4]), cmap, "Microscope")
-    scatter_panel(embds, fig, spec, row=3)
+    add_legend(fig.add_subplot(spec[4, 3]), cmap, "Microscope")
+    axs = scatter_panel(embds, fig, spec, row=3)
+    axs[0].set_ylabel("Microscope", fontsize=16)
+    add_number(axs[0], "C")
 
     plt.savefig(fig_path, bbox_inches="tight")
