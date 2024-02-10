@@ -183,7 +183,7 @@ def scenario_3(embd_path: str, pivot_path: str, fig_path: str):
 
 def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(6, 8, height_ratios=[2.5, 0.1, 1, 1, 1, 0.7])
+    spec = fig.add_gridspec(6, 8, height_ratios=[2.9, 0.1, 1, 1, 1, 0.7])
     ax = add_table(pivot_path, fig, spec)
     add_number(ax, "A", y=0.95)
 
