@@ -6,16 +6,24 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 
 
-def show_inline():
+def show_inline(close=False):
     iobytes = BytesIO()
     plt.savefig(iobytes, format="png", bbox_inches="tight", dpi=300)
     iobytes.seek(0)
     encode = base64.b64encode(iobytes.read())
     props = "File=inline=1"
     print(f"\x1b]1337;{props}:" + encode.decode() + "\x07\n")
+    if close:
+        plt.close()
 
 
+scenarios = [1, 2, 3, 4, 5]
+nsources = dict(zip(scenarios, [1, 3, 3, 5, 5]))
+nmicros =dict(zip(scenarios, [1, 1, 1, 3, 3]))
+ncomps = dict(zip(scenarios, [306, 306, "80000+", 306, "80000+"]))
+# swap order to make it increasing difficulty
 scenarios = [1, 2, 4, 3, 5]
+
 scores = []
 min_cvar = 0.1
 lowcvar_metrics = []
@@ -40,26 +48,32 @@ scores["dimension"] = scores["dimension"].apply(lambda x: {
 box_scores = scores  # .query("method=='harmony'")
 
 
-def add_table(ax: plt.Axes):
+def add_table(ax: plt.Axes, add_legend=True, row_labels=True):
     columns = [f"Scenario {i}" for i in scenarios]
     rows = ["Sources", "Microscopes", "Compounds"]
-    cell_text = [[1, 3, 3, 5, 5], [1, 1, 1, 3, 3],
-                 [306, 306, "80000+", 306, "80000+"]]
-    ax.table(cellText=cell_text,
-             rowLabels=rows,
+    cell_text = [[nsources[i] for i in scenarios],
+                 [nmicros[i] for i in scenarios],
+                 [ncomps[i] for i in scenarios],
+                ]
+
+    tbl = ax.table(cellText=cell_text,
+             rowLabels=rows if row_labels else None,
              colLabels=columns,
              loc="bottom")
+    tbl.auto_set_font_size(False)
+    tbl.set_fontsize(9)
 
     ax.set(xlabel=None)
     ax.xaxis.set_ticks([])
-    handles, labels = ax.get_legend_handles_labels()
-    ax.legend(
-        handles[:2],
-        labels[:2],
-        title="Dimension",
-        bbox_to_anchor=(1, 1),
-        loc="upper left",
-    )
+    if add_legend:
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(
+            handles[:2],
+            labels[:2],
+            title="Dimension",
+            bbox_to_anchor=(1, 1),
+            loc="upper left",
+        )
 
 
 def plot_box_scores(box_scores: pd.DataFrame):
@@ -71,7 +85,7 @@ def plot_box_scores(box_scores: pd.DataFrame):
         gap=0.3,
         fill=False,
     )
-    ax.set_title("Performance distribution - All methods")
+    ax.set_title("Harmony improvement over the Baseline")
     sns.stripplot(
         box_scores,
         hue="dimension",
@@ -82,6 +96,7 @@ def plot_box_scores(box_scores: pd.DataFrame):
         ax=ax,
     )
     add_table(ax)
+    ax.set_ylabel('Harmony_score - Baseline_score')
     show_inline()
     plt.close()
 
@@ -126,3 +141,44 @@ def plot_metrics_agg():
     axes[-1].legend(loc="upper right", bbox_to_anchor=(-0.05, 1))
     show_inline()
     plt.close()
+
+fig = plt.figure(figsize=(10, 4))
+spec = fig.add_gridspec(1, 2)
+delta = (scores.query('method=="desc"').set_index(['scenario', 'metric',
+                                                   'dimension']).score -
+         scores.query('method=="baseline"').set_index(['scenario', 'metric',
+                                                       'dimension']).score).reset_index()
+delta2 = (scores.query('method=="harmony"').set_index(['scenario', 'metric',
+                                                       'dimension']).score -
+          scores.query('method=="baseline"').set_index(['scenario', 'metric',
+                                                        'dimension']).score).reset_index()
+
+delta = scores.query('method=="desc"')
+delta2 = scores.query('method=="harmony"')
+ax = fig.add_subplot(spec[0, 0])
+sns.boxplot(delta, x='scenario', y='score', hue='dimension', fill=False, ax=ax)
+sns.stripplot(delta, x='scenario', y='score', hue='dimension', dodge=True, ax=ax, alpha=0.4)
+add_table(ax, add_legend=False)
+ax.set_ylabel("Improvement over Baseline")
+# ax.get_legend().remove()
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles[:2], labels[:2], ncol=2)
+ax.set_title('DESC')
+ax = fig.add_subplot(spec[0, 1], sharey=ax)
+plt.setp(ax.get_yticklabels(), visible=False)
+sns.boxplot(delta2, x='scenario', y='score', hue='dimension', fill=False, ax=ax)
+sns.stripplot(delta2, x='scenario', y='score', hue='dimension', dodge=True, ax=ax, alpha=0.4)
+add_table(ax, add_legend=False, row_labels=False)
+ax.set_title('Harmony')
+ax.get_legend().remove()
+fig.tight_layout()
+show_inline()
+plt.close('all')
+for scn, data in scores.groupby('scenario'):
+    agg_scores = data.groupby('dimension')['score'].agg(['mean', 'std'])
+    plt.errorbar(x=agg_scores.iloc[0, 0], y=agg_scores.iloc[1, 0], xerr=agg_scores.iloc[0, 1], yerr=agg_scores.iloc[1, 1], label=scn)
+plt.legend()
+plt.gca().set_ylabel('Bio metrics')
+plt.gca().set_xlabel('Batch correction')
+show_inline()
+plt.close('all')
