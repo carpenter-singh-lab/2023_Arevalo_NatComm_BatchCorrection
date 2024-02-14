@@ -144,17 +144,15 @@ def plot_metrics_agg():
 
 fig = plt.figure(figsize=(10, 4))
 spec = fig.add_gridspec(1, 2)
-delta = (scores.query('method=="desc"').set_index(['scenario', 'metric',
+delta = (scores.query('method=="harmony"').set_index(['scenario', 'metric',
                                                    'dimension']).score -
          scores.query('method=="baseline"').set_index(['scenario', 'metric',
                                                        'dimension']).score).reset_index()
-delta2 = (scores.query('method=="harmony"').set_index(['scenario', 'metric',
+delta2 = (scores.query('method=="desc"').set_index(['scenario', 'metric',
                                                        'dimension']).score -
           scores.query('method=="baseline"').set_index(['scenario', 'metric',
                                                         'dimension']).score).reset_index()
 
-delta = scores.query('method=="desc"')
-delta2 = scores.query('method=="harmony"')
 ax = fig.add_subplot(spec[0, 0])
 sns.boxplot(delta, x='scenario', y='score', hue='dimension', fill=False, ax=ax)
 sns.stripplot(delta, x='scenario', y='score', hue='dimension', dodge=True, ax=ax, alpha=0.4)
@@ -163,13 +161,13 @@ ax.set_ylabel("Improvement over Baseline")
 # ax.get_legend().remove()
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles[:2], labels[:2], ncol=2)
-ax.set_title('DESC')
+ax.set_title('Harmony (best)')
 ax = fig.add_subplot(spec[0, 1], sharey=ax)
 plt.setp(ax.get_yticklabels(), visible=False)
 sns.boxplot(delta2, x='scenario', y='score', hue='dimension', fill=False, ax=ax)
 sns.stripplot(delta2, x='scenario', y='score', hue='dimension', dodge=True, ax=ax, alpha=0.4)
 add_table(ax, add_legend=False, row_labels=False)
-ax.set_title('Harmony')
+ax.set_title('DESC (worst)')
 ax.get_legend().remove()
 fig.tight_layout()
 show_inline()
