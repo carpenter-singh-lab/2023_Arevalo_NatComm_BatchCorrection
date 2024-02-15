@@ -72,7 +72,14 @@ df_plot = pd.DataFrame(
     )
 )
 
-sns.boxplot(df_plot, hue="subset", y="mAP", gap=0.3)
-show_inline(True)
-sns.histplot(df_plot, hue="subset", x="mAP", stat="probability", common_norm=False)
+fig, axes = plt.subplots(2, sharex=True, gridspec_kw={"height_ratios": (0.15, 0.85)})
+sns.boxplot(df_plot, hue="subset", x="mAP", ax=axes[0], gap=0.5)
+axes[0].get_legend().set_visible(False)
+axes[0].set_yticks([])
+axes[0].set_ylabel(None)
+sns.histplot(
+    df_plot, hue="subset", x="mAP", stat="probability", common_norm=False, ax=axes[1]
+)
+plt.tight_layout()
+plt.subplots_adjust(hspace=0)
 show_inline(True)
