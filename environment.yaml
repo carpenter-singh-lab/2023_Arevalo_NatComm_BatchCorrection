@@ -37,5 +37,5 @@ dependencies:
   - python-igraph=0.10.8
   - pip:
       - git+https://github.com/johnarevalo/desc.git
-      - git+https://github.com/cytomining/copairs.git@v0.4.0-alpha
+      - git+https://github.com/cytomining/copairs.git@v0.4.0
       - git+https://github.com/theislab/scib.git@v1.1.4
