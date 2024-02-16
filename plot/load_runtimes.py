@@ -9,6 +9,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 
+from plot.colors import METHOD_FMT, METRIC_FMT
 
 def show_inline(close=False):
     iobytes = BytesIO()
@@ -45,6 +46,9 @@ categories = {
     "harmony": "Method",
     "lisi_label": "Metric",
     "mnn": "Method",
+    "kbet": "Metric",
+    "select_best_sphering": "",
+    "umap": "Visualization"
 }
 
 
@@ -62,9 +66,11 @@ order = pd.Series(index=order, data=range(len(order)))
 df = (
     df.sort_values(by="rule", key=order.get)
     .sort_values(by="category", kind="stable")
-    .dropna(subset="category")
+    # .dropna(subset="category")
 )
 df["Scenario"] = df.input.apply(" ".join).str.extract(r"(scenario_.)", expand=False)
+df["rule"] = df.rule.apply(lambda x: METHOD_FMT.get(x, x))
+df["rule"] = df.rule.apply(lambda x: METRIC_FMT.get(x, x))
 ax = sns.barplot(df, x="rule", y="runtime", hue="category")
 ax.set_yscale("log")
 
