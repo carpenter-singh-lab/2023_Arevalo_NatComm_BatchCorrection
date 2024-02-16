@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 
 from plot.colors import METHOD_FMT, METRIC_FMT
 
+
 def show_inline(close=False):
     iobytes = BytesIO()
     plt.savefig(iobytes, format="png", bbox_inches="tight", dpi=300)
@@ -48,7 +49,7 @@ categories = {
     "mnn": "Method",
     "kbet": "Metric",
     "select_best_sphering": "",
-    "umap": "Visualization"
+    "umap": "Visualization",
 }
 
 
@@ -64,25 +65,27 @@ df["category"] = df["rule"].map(categories)
 order = df.groupby("rule")["runtime"].mean().sort_values().index
 order = pd.Series(index=order, data=range(len(order)))
 df = (
-    df.sort_values(by="rule", key=order.get)
-    .sort_values(by="category", kind="stable")
+    df.sort_values(by="rule", key=order.get).sort_values(by="category", kind="stable")
     # .dropna(subset="category")
 )
 df["Scenario"] = df.input.apply(" ".join).str.extract(r"(scenario_.)", expand=False)
 df["rule"] = df.rule.apply(lambda x: METHOD_FMT.get(x, x))
 df["rule"] = df.rule.apply(lambda x: METRIC_FMT.get(x, x))
-ax = sns.barplot(df, x="rule", y="runtime", hue="category")
+ax = sns.barplot(df, x="rule", y="runtime", hue="category", zorder=2)
+ax.grid(axis="y", zorder=0)
 ax.set_yscale("log")
 
 
 def timeTicks(x, pos):
-    d = datetime.timedelta(seconds=x)
+    d = datetime.timedelta(seconds=int(x))
     return str(d)
 
 
+ax.yaxis.set_ticks([10, 60, 600, 3600, 3600 * 2, 3600 * 5])
 formatter = matplotlib.ticker.FuncFormatter(timeTicks)
 ax.yaxis.set_major_formatter(formatter)
-ax.set_ylabel("Runtime (hours)")
+ax.yaxis.set_ticks([], minor=True)
+ax.set_ylabel("Runtime (hh:mm:ss)")
 ax.set_xlabel("Operation")
 ax.get_legend().set_title("Category")
 
