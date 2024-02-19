@@ -32,7 +32,7 @@ def scanorama(parquet_path, batch_key, output_path):
     vals = [vals[ix] for ix in indices]
 
     # correct
-    vals = assemble(vals)
+    vals = assemble(vals, batch_size=5000)
     vals = np.concatenate(vals)
 
     # Recover original order for vals
