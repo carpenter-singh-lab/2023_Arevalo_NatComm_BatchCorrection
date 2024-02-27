@@ -1,4 +1,4 @@
-SVG_PLOTS = [
+PDF_PLOTS = [
     "results_table",
     # "results_table_scaled",
     "cartesian",

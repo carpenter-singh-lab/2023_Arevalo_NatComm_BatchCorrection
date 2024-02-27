@@ -82,7 +82,7 @@ rule silhouette_batch:
 
 rule pcr_batch:
     input:
-        pre_parquet_path="outputs/{prefix}/mad.parquet",
+        pre_parquet_path="outputs/{prefix}/mad_int_featselect.parquet",
         post_parquet_path="outputs/{prefix}/{pipeline}.parquet",
     output:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_pcr_batch.bin",
