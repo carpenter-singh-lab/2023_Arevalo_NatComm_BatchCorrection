@@ -1,17 +1,9 @@
 '''
 Functions to browse the folders and load information
 '''
-from functools import partial
 import logging
 
-import numpy as np
 import pandas as pd
-from pycytominer.operations.transform import RobustMAD
-from tqdm.auto import tqdm
-from tqdm.contrib.concurrent import process_map
-
-from normalization import apply_norm
-from utils import FEATURE_SET
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +22,14 @@ MAPPER = {
     'JCP2022_900001': 'BAD CONSTRUCT'
 }
 
-MICRO_CONFIG = pd.read_csv('https://raw.githubusercontent.com/jump-cellpainting/datasets/181fa0dc96b0d68511b437cf75a712ec782576aa/metadata/microscope_config.csv')
-MICRO_CONFIG['Metadata_Source'] = 'source_' + MICRO_CONFIG['Metadata_Source'].astype(str)
-MICRO_CONFIG = MICRO_CONFIG.set_index('Metadata_Source')['Metadata_Microscope_Name']
+MICRO_CONFIG = pd.read_csv(
+    'https://raw.githubusercontent.com/jump-cellpainting/datasets/181fa0dc96b0d68511b437cf75a712ec782576aa/metadata/microscope_config.csv'
+)
+MICRO_CONFIG['Metadata_Source'] = 'source_' + MICRO_CONFIG[
+    'Metadata_Source'].astype(str)
+MICRO_CONFIG = MICRO_CONFIG.set_index(
+    'Metadata_Source')['Metadata_Microscope_Name']
+
 
 def get_source_4_plate_redlist(plate_types: list[str]):
     '''Get set of plate_id's  that should be not considered in the analysis'''
@@ -108,74 +105,9 @@ def get_well_metadata(plate_types: list[str]):
     return well_metadata
 
 
-def load_plate(path: str, meta: pd.DataFrame, mad_norm: bool,
-               epsilon_mad: float, column_norm: str,
-               values_norm: list[str]) -> pd.DataFrame:
-    '''Load a plate and optionally apply robustmad norm'''
-    profile = pd.read_parquet(path)
-    for column in FEATURE_SET:
-        profile[column] = profile[column].astype(np.float32)
-    profile['Metadata_Plate'] = profile['Metadata_Plate'].astype(str)
-    plate = profile.merge(
-        meta, on=['Metadata_Source', 'Metadata_Plate', 'Metadata_Well'])
-    if plate.shape[0] == 0:
-        logger.warning(f'{path} plate gives empty result')
-        return plate
-
-    if mad_norm:
-        normalizer = RobustMAD(epsilon_mad)
-        plate = apply_norm(normalizer, plate, column_norm, values_norm)
-    return plate
-
-
-def filter_compounds_no_dmso(meta: pd.DataFrame):
-    '''Filter out compound plates without any DMSO'''
-    compound = meta.query('Metadata_PlateType=="COMPOUND"')
-    plate_ids = compound['Metadata_Plate'].drop_duplicates()
-    plate_with_dmso = compound.query(
-        'Metadata_JCP2022=="DMSO"').Metadata_Plate.drop_duplicates()
-    ignored_plates = plate_ids[~plate_ids.isin(plate_with_dmso)]
-    if len(ignored_plates) > 0:
-        logger.warning(
-            f'Ignoring {ignored_plates.values} compound plates, do not have DMSO wells'
-        )
-        meta = meta[~meta['Metadata_Plate'].isin(ignored_plates)]
-    return meta
-
 def load_metadata(sources: list[str], plate_types: list[str]):
     '''Load metadata only'''
     plate = get_plate_metadata(sources, plate_types)
     well = get_well_metadata(plate_types)
     meta = well.merge(plate, on=['Metadata_Source', 'Metadata_Plate'])
     return meta
-
-def load_plates(sources: list[str],
-                plate_types: list[str],
-                mad_norm: bool,
-                epsilon_mad: float,
-                column_norm: str,
-                values_norm: list[str],
-                parallel: bool = True) -> pd.DataFrame:
-    '''Load plates'''
-    plate_metadata = get_plate_metadata(sources, plate_types)
-    well_metadata = get_well_metadata(plate_types)
-    paths = plate_metadata.apply(build_path, axis=1).values
-
-    meta = well_metadata.merge(plate_metadata,
-                               on=['Metadata_Source', 'Metadata_Plate'])
-    meta = filter_compounds_no_dmso(meta)
-    par_func = partial(load_plate,
-                       meta=meta,
-                       mad_norm=mad_norm,
-                       epsilon_mad=epsilon_mad,
-                       column_norm=column_norm,
-                       values_norm=values_norm)
-    if parallel:
-        plates = process_map(par_func, paths, chunksize=1)
-    else:
-        plates = map(par_func, tqdm(paths))
-    dframe = pd.concat(plates)
-    for col in dframe:
-        if col not in FEATURE_SET:
-            dframe[col] = dframe[col].astype('category')
-    return dframe

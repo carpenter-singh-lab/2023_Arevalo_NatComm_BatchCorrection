@@ -1,4 +1,7 @@
 {
+    "scenario": "scenario_2",
+    "iqr_scale": 100,
+    "clip_value": 500,
     "sources": [
         "source_2",
         "source_6",
@@ -12,13 +15,5 @@
     "column_norm": "Metadata_JCP2022",
     "values_norm": [
         "DMSO"
-    ],
-    "epsilon_mad": 0.0011857951574861373,
-    "mad_norm": true,
-    "outlier_removal": true,
-    "nan_removal": true,
-    "feature_selection": true,
-    "sphering": true,
-    "sphering_mode": "corr",
-    "sphering_lambda": 2.5463848916334983
+    ]
 }

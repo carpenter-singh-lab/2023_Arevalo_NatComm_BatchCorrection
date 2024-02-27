@@ -20,7 +20,7 @@ mamba activate batchcp
 Run the following command to install R package `kBET`:
 
 ```bash
-R -e "devtools::install_github('theislab/kBET')"
+R -e "remotes::install_github('theislab/kBET')"
 ```
 
 ### scib installation

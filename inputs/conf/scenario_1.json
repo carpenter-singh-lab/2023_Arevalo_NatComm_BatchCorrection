@@ -1,20 +1,19 @@
 {
-    "scenario": "scenario_3",
+    "scenario": "scenario_1",
     "iqr_scale": 100,
     "clip_value": 500,
     "sources": [
-        "source_2",
-        "source_6",
-        "source_10"
+        "source_6"
     ],
     "plate_types": [
-        "COMPOUND",
         "TARGET2"
     ],
-    "batch_key": "Metadata_Source",
+    "batch_key": "Metadata_Batch",
     "label_key": "Metadata_JCP2022",
     "column_norm": "Metadata_JCP2022",
     "values_norm": [
         "DMSO"
-    ]
+    ],
+    "sphering_method": "ZCA-cor",
+    "sphering_n_opts": 25
 }

@@ -1,12 +1,15 @@
+.snakemake
 *parquet
 *h5ad
 *png
+*svg
 *gz
 *html
 .ipynb_checkpoints
 .DS_Store
 __pycache__
 outputs
+inputs/source_*
 *plotly
 *csv
 *npz
