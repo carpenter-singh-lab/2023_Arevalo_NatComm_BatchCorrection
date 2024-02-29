@@ -4,8 +4,7 @@ import pyarrow.parquet as pq
 from tqdm.contrib.concurrent import thread_map
 import anndata as ad
 
-from loader import build_path, load_metadata, MICRO_CONFIG
-from utils import find_feat_cols, find_meta_cols
+from loader import build_path, load_metadata, MICRO_CONFIG, find_feat_cols, find_meta_cols
 
 
 def to_anndata(parquet_path):
