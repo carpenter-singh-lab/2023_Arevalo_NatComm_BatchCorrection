@@ -5,8 +5,6 @@ SCIB_METRICS = [
     "silhouette_batch",
     "pcr_batch",
     "pcr",
-    "il_asw",
-    "il_f1",
     "graph_conn",
     "kbet",
     "lisi_label",

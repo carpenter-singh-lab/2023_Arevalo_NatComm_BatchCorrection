@@ -1,4 +1,4 @@
-reg_opts = sphering.log_uniform_sampling(size=config["sphering_n_opts"])
+reg_opts = sphering.log_uniform_sampling(size=25)
 
 
 rule sphering_explore:
