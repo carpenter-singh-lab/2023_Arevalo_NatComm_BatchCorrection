@@ -23,12 +23,11 @@ Run the following command to install R package `kBET`:
 R -e "remotes::install_github('theislab/kBET')"
 ```
 
-### scib installation
+### scib troubleshooting
 
-The single-cell integration benchmark `scib` package includes `c/c++` code that
-should be compiled specifically for your environment. Thus it requires
-installation from source. More info in [this
-issue](https://github.com/theislab/scib/issues/308)
+The single-cell integration benchmark `scib` package may fail because it
+includes `c/c++` code that should be compiled specifically for your
+environment. An alternative is to install it from source:
 
 ```bash
 DEST=$HOME/projects/scib
@@ -37,8 +36,10 @@ cd $DEST
 git checkout v1.1.4
 pip install -e .
 ```
+More info in [this issue](https://github.com/theislab/scib/issues/308)
 
 ### mnnpy installation
+
 Similarly, `mnnpy` may require manual installation. More info at
 https://github.com/chriscainx/mnnpy#install
 
