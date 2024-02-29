@@ -1,4 +1,4 @@
-import proj
+from plot import proj
 
 
 rule mde:

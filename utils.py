@@ -32,9 +32,6 @@ METRIC_MAP = {
     'trajectory': 'bio',
 }
 
-with open('feature_set.txt', 'r', encoding='utf8') as f_in:
-    FEATURE_SET = f_in.read().splitlines()
-
 
 def find_feat_cols(cols: Iterable[str]):
     '''Find column names for features'''
