@@ -50,12 +50,11 @@ source download_data.sh
 ```
 
 ## Run scenarios
-Every scenario reported in the paper can be reproduced running the associated
-bash script. For example, to reproduce Scenario 1:
+Every scenario reported in the paper can be reproduced running snakemake with
+the associated config file. For example, to reproduce Scenario 1 using 3 cores:
 
 ```bash
-source run_scenario_1.sh
+snakemake -c3 --configfile inputs/conf/scenario_1.json
 ```
 
-The output is written in the `./outputs/` folder. You can get the scores and
-plots in [Plot_figures.ipynb](Plot_figures.ipynb) notebook.
+You can get the scores, corrected profiles and plots in the `./outputs` folder.
