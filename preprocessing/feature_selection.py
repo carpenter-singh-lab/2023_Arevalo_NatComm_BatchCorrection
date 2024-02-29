@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 from pycytominer.operations import correlation_threshold, variance_threshold
 
-from loader import find_feat_cols
+from .metadata import find_feat_cols
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

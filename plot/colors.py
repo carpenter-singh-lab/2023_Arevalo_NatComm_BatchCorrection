@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 
-from loader import MAPPER
+from preprocessing.metadata import MAPPER
 
 rgb_reg = re.compile(r'rgb\((\d+), (\d+), (\d+)\)')
 

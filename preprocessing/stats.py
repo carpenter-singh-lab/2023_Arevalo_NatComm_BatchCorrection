@@ -8,7 +8,7 @@ from scipy.stats import median_abs_deviation
 from tqdm.contrib.concurrent import thread_map
 from preprocessing.io import merge_parquet
 
-from loader import find_feat_cols, find_meta_cols
+from .metadata import find_feat_cols, find_meta_cols
 
 logger = logging.getLogger(__name__)
 
