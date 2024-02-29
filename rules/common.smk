@@ -11,7 +11,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import correct
 import metrics
 from correct import sphering
-from preprocessing import io, stats, normalize, outliers
+import preprocessing as pp
 import plot
 
 scenario = config["scenario"]
@@ -25,7 +25,7 @@ rule write_parquet:
     output:
         "outputs/{scenario}/raw.parquet",
     run:
-        io.write_parquet(config["sources"], config["plate_types"], *output)
+        pp.io.write_parquet(config["sources"], config["plate_types"], *output)
 
 
 rule compute_negcon_stats:
@@ -34,7 +34,7 @@ rule compute_negcon_stats:
     output:
         "outputs/{scenario}/neg_stats.parquet",
     run:
-        stats.compute_negcon_stats(*input, *output)
+        pp.stats.compute_negcon_stats(*input, *output)
 
 
 rule select_variant_feats:
@@ -44,7 +44,7 @@ rule select_variant_feats:
     output:
         "outputs/{scenario}/variant_feats.parquet",
     run:
-        stats.select_variant_features(*input, *output)
+        pp.stats.select_variant_features(*input, *output)
 
 
 rule mad_normalize:
@@ -54,7 +54,7 @@ rule mad_normalize:
     output:
         "outputs/{scenario}/mad.parquet",
     run:
-        normalize.mad(*input, *output)
+        pp.normalize.mad(*input, *output)
 
 
 rule compute_norm_stats:
@@ -63,7 +63,7 @@ rule compute_norm_stats:
     output:
         "outputs/{scenario}/norm_stats.parquet",
     run:
-        stats.compute_stats(*input, *output)
+        pp.stats.compute_stats(*input, *output)
 
 
 rule iqr_outliers:
@@ -73,4 +73,4 @@ rule iqr_outliers:
     output:
         "outputs/{scenario}/outliers.parquet",
     run:
-        outliers.iqr(config["iqr_scale"], *input, *output)
+        pp.outliers.iqr(config["iqr_scale"], *input, *output)

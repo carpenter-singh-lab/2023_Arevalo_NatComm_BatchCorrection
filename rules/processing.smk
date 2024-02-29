@@ -5,7 +5,7 @@ rule drop:
     output:
         "outputs/{scenario}/{pipeline}_drop.parquet",
     run:
-        qc.outliers.drop_cols(*input, *output)
+        pp.outliers.drop_cols(*input, *output)
 
 
 rule clip:
@@ -17,7 +17,7 @@ rule clip:
     params:
         clip_value=config["clip_value"],
     run:
-        qc.outliers.clip_cols(*input, *params, *output)
+        pp.outliers.clip_cols(*input, *params, *output)
 
 
 rule INT:
@@ -26,7 +26,7 @@ rule INT:
     output:
         "outputs/{scenario}/{pipeline}_int.parquet",
     run:
-        qc.transform.rank_int(*input, *output)
+        pp.transform.rank_int(*input, *output)
 
 
 rule featselect:
@@ -35,7 +35,7 @@ rule featselect:
     output:
         "outputs/{scenario}/{pipeline}_featselect.parquet",
     run:
-        qc.select_features(*input, *output)
+        pp.select_features(*input, *output)
 
 
 rule imputeknn:
@@ -47,7 +47,7 @@ rule imputeknn:
     params:
         clip_value=config["clip_value"],
     run:
-        qc.outliers.impute_knn(*input, *output)
+        pp.outliers.impute_knn(*input, *output)
 
 
 rule imputemedian:
@@ -59,4 +59,4 @@ rule imputemedian:
     params:
         clip_value=config["clip_value"],
     run:
-        qc.outliers.impute_median(*input, *output)
+        pp.outliers.impute_median(*input, *output)
