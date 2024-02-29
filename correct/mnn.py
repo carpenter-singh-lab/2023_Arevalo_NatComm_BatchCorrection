@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from quality_control import io
+from preprocessing import io
 
 
 def mnn(parquet_path, batch_key, output_path):

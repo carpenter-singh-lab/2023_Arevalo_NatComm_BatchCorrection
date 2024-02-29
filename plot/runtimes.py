@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 
 from metrics import DIMENSION_MAP
 from plot.colors import METHOD_FMT, METRIC_FMT
-from quality_control.io import get_num_rows
+from preprocessing.io import get_num_rows
 
 
 def load_json(f: str):

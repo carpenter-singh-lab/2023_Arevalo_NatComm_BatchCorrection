@@ -4,7 +4,7 @@ import shutil
 import numpy as np
 import pandas as pd
 
-from quality_control.io import merge_parquet, split_parquet
+from preprocessing.io import merge_parquet, split_parquet
 from pycytominer.operations import Spherize
 
 

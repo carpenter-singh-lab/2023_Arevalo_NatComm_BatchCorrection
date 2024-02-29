@@ -8,7 +8,7 @@ import pandas as pd
 import scanpy as sc
 from sklearn.metrics import silhouette_score
 
-from quality_control.io import split_parquet, to_anndata
+from preprocessing.io import split_parquet, to_anndata
 
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore',

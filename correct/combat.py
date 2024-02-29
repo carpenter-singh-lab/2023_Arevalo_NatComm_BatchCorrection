@@ -1,5 +1,5 @@
 import scanpy as sc
-from quality_control import io
+from preprocessing import io
 
 
 def combat(dframe_path: str, batch_key: str, output_path: str):

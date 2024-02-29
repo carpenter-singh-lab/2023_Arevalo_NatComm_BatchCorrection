@@ -3,7 +3,7 @@ import warnings
 import anndata as ad
 import scanpy as sc
 
-from quality_control import io
+from preprocessing import io
 
 
 def mde(parquet_path, mde_path):

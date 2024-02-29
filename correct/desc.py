@@ -1,5 +1,5 @@
 import tempfile
-from quality_control import io
+from preprocessing import io
 
 
 def desc(dframe_path: str, batch_key: str, output_path: str):

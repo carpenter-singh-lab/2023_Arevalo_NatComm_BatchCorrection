@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import scanpy as sc
-from quality_control import io
+from preprocessing import io
 
 
 def pca_scanorama(parquet_path, batch_key, output_path):

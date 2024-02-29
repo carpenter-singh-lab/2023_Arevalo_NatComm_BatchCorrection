@@ -1,5 +1,5 @@
 from scvi.model import SCVI
-from quality_control import io
+from preprocessing import io
 
 
 def scvi(dframe_path: str, batch_key: str, label_key: str, output_path: str):

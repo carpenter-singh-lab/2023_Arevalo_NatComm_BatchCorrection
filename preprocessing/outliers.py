@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.impute import KNNImputer, SimpleImputer
 
-from quality_control.io import merge_parquet, split_parquet
+from preprocessing.io import merge_parquet, split_parquet
 
 logger = logging.getLogger(__name__)
 

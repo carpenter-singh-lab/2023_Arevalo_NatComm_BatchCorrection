@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats as ss
 from tqdm.contrib.concurrent import thread_map
 
-from quality_control.io import merge_parquet, split_parquet
+from preprocessing.io import merge_parquet, split_parquet
 
 
 def rank_int_array(array: np.ndarray,

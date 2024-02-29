@@ -1,7 +1,7 @@
 import copairs.map as copairs
 import pandas as pd
 
-from quality_control.io import split_parquet
+from preprocessing.io import split_parquet
 
 
 def _index(meta, plate_types, ignore_dmso=False):
