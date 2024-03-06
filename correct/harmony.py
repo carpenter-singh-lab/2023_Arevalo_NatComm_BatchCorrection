@@ -2,7 +2,7 @@
 import logging
 
 from harmonypy import run_harmony
-import preprocessing as io
+from preprocessing import io
 import scanpy as sc
 
 logger = logging.getLogger(__name__)
