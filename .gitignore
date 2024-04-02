@@ -15,3 +15,5 @@ inputs/source_*
 *npz
 *pkl
 *pickle
+.RData
+.RHistory

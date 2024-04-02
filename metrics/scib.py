@@ -44,8 +44,6 @@ def cluster(parquet_path, adata_path):
     adata.write_h5ad(adata_path, compression='gzip')
 
 
-
-
 def nmi(adata_path, label_key, nmi_path):
     adata = ad.read_h5ad(adata_path)
     nmi = metrics.nmi(adata, label_key, CLUSTER_KEY)

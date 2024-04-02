@@ -88,3 +88,14 @@ rule scvi:
         label_key=config["label_key"],
     run:
         correct.scvi(*input, *params, *output)
+
+
+rule fastMNN:
+    input:
+        "outputs/{scenario}/{pipeline}.parquet",
+    output:
+        "outputs/{scenario}/{pipeline}_fastMNN.parquet",
+    params:
+        batch_key=config["batch_key"],
+    shell:
+        "Rscript correct/fastMNN.R {input} {output} {params.batch_key}"
