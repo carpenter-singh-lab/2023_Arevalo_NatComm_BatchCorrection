@@ -99,3 +99,14 @@ rule fastMNN:
         batch_key=config["batch_key"],
     shell:
         "Rscript correct/fastMNN.R {input} {output} {params.batch_key}"
+
+
+rule seurat:
+    input:
+        "outputs/{scenario}/{pipeline}.parquet",
+    output:
+        "outputs/{scenario}/{pipeline}_seurat.parquet",
+    params:
+        batch_key=config["batch_key"],
+    shell:
+        "Rscript correct/seurat.R {input} {output} {params.batch_key}"

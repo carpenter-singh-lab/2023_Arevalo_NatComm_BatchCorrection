@@ -24,6 +24,7 @@ dependencies:
   - pymde=0.1.18
   - pynndescent=0.5.11
   - python-kaleido=0.2.1
+  - r-base=4.2.3
   - r-remotes=2.4.2.1
   - r-matrixstats=1.1.0
   - r-arrow=11.0.0
