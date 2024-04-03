@@ -24,7 +24,7 @@ def scatter_panel(embds,
         x, y = points["x"], points["y"]
         colors = points["colors"]
         ax = fig.add_subplot(spec[row, i])
-        ax.scatter(x, y, c=colors, s=6)
+        ax.scatter(x, y, c=colors, s=6, rasterized=True)
         despine(ax)
         if title:
             ax.set_title(method)

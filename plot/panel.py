@@ -138,7 +138,7 @@ def scenario_1(embd_path: str, pivot_path: str, fig_path: str):
     axs[0].set_ylabel("Batch", fontsize=16)
     add_number(axs[0], "C")
 
-    plt.savefig(fig_path, bbox_inches="tight")
+    plt.savefig(fig_path, bbox_inches="tight", dpi=300)
 
 
 def scenario_2(embd_path: str, pivot_path: str, fig_path: str):
@@ -161,7 +161,7 @@ def scenario_2(embd_path: str, pivot_path: str, fig_path: str):
     axs[0].set_ylabel("Source", fontsize=16)
     add_number(axs[0], "C")
 
-    plt.savefig(fig_path, bbox_inches="tight")
+    plt.savefig(fig_path, bbox_inches="tight", dpi=300)
 
 
 def scenario_3(embd_path: str, pivot_path: str, fig_path: str):
@@ -178,7 +178,7 @@ def scenario_3(embd_path: str, pivot_path: str, fig_path: str):
     axs[0].set_ylabel("Source", fontsize=16)
     add_number(axs[0], "B")
 
-    plt.savefig(fig_path, bbox_inches="tight")
+    plt.savefig(fig_path, bbox_inches="tight", dpi=300)
 
 
 def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
@@ -207,7 +207,7 @@ def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
     axs[0].set_ylabel("Microscope", fontsize=16)
     add_number(axs[0], "D")
 
-    plt.savefig(fig_path, bbox_inches="tight")
+    plt.savefig(fig_path, bbox_inches="tight", dpi=300)
 
 
 def scenario_5(embd_path: str, pivot_path: str, fig_path: str):
@@ -230,4 +230,4 @@ def scenario_5(embd_path: str, pivot_path: str, fig_path: str):
     axs[0].set_ylabel("Microscope", fontsize=16)
     add_number(axs[0], "C")
 
-    plt.savefig(fig_path, bbox_inches="tight")
+    plt.savefig(fig_path, bbox_inches="tight", dpi=300)
