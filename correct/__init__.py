@@ -5,3 +5,4 @@ from .mnn import mnn
 from .combat import combat
 from .scvi import scvi
 from .desc import desc
+from .bbknn import bbknn_metrics
