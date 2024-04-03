@@ -52,6 +52,7 @@ integrated_obj = IntegrateData(anchor_set, verbose = FALSE)
 
 # Extract metadata and corrected data to ensure order matches
 corrected = integrated_obj[["integrated"]]$data %>% as.matrix() %>% t() %>% as.data.frame()
+colnames(corrected) <- gsub("-", "_", colnames(corrected))
 meta_corrected = integrated_obj@meta.data[,-c(1:3)]
 
 # Write out results
