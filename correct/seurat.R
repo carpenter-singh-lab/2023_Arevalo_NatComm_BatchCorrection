@@ -12,7 +12,7 @@ library(arrow)
 library(Seurat)
 library(dplyr)
 
-options(future.globals.maxSize = 10000 * 1024^2)
+options(future.globals.maxSize = 12000 * 1024^2)
 parquet_data <- as.data.frame(read_parquet(input_file))
 col_names <- names(parquet_data)
 metadata_cols <- col_names[grepl("^Metadata_", col_names)]
