@@ -5,7 +5,18 @@ configfile: "./inputs/conf/scenario_1.json"
 WORKFLOWS = [
     "mad_int_featselect",
 ]
-METHODS = ["scanorama", "mnn", "harmony", "combat", "desc", "scvi", "sphering"]
+METHODS = [
+    "scanorama",
+    "fastMNN",
+    "mnn",
+    "harmony",
+    "combat",
+    "desc",
+    "scvi",
+    "sphering",
+    "seurat_cca",
+    "seurat_rpca",
+]
 
 
 # Load rules

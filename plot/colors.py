@@ -35,14 +35,15 @@ METHOD_FMT = {
     'mnn': 'MNN',
     'desc': 'DESC',
     'baseline': 'Baseline',
-    'sphering': 'Sphering'
-
+    'sphering': 'Sphering',
+    'fastMNN': 'fastMNN',
+    'seurat_rpca': 'Seurat RPCA',
+    'seurat_cca': 'Seurat CCA'
 }
 METHODS = [
-    'Harmony', 'Scanorama', 'Combat', 'MNN', 'DESC', 'scVI', 'Raw',
-    'Sphering', 'Baseline'
+    'Baseline', 'Harmony', 'Scanorama', 'fastMNN', 'Seurat CCA', 'Seurat RPCA', 'MNN', 'Combat', 'DESC', 'scVI', 'Sphering'
 ]
-METHOD_CMAP = dict(zip(METHODS, px.colors.qualitative.D3))
+METHOD_CMAP = dict(zip(METHODS, px.colors.qualitative.Light24))
 METHOD_SMAP = dict(zip(METHODS, Line2D.filled_markers[1:]))
 
 cmpds = pd.read_csv('inputs/metadata/compound.csv.gz')['Metadata_JCP2022']

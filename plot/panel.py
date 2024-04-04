@@ -46,7 +46,7 @@ def add_table(pivot_path, fig, spec) -> plt.Axes:
     # Table with colorbar
     ax = fig.add_subplot(spec[0, :])
     draw_table(pivot_path, ax)
-    ax_colorbar = fig.add_subplot(spec[1, 3:5])
+    ax_colorbar = fig.add_subplot(spec[1, 4:7])
     add_colorbar(fig, ax_colorbar)
     return ax
 
@@ -107,8 +107,8 @@ def colorby(embds: pd.DataFrame, column: str) -> pd.Series:
 
 
 def results_table(pivot_path: str, fig_path: str):
-    fig = plt.figure(figsize=(14, 8))
-    spec = fig.add_gridspec(2, 8, height_ratios=[2.5, 0.1])
+    fig = plt.figure(figsize=(14, 9))
+    spec = fig.add_gridspec(2, 11, height_ratios=[2.5, 0.1])
     add_table(pivot_path, fig, spec)
     plt.savefig(fig_path, bbox_inches="tight")
 
@@ -119,21 +119,21 @@ def full_panel(embd_path: str, pivot_path: str, fig_path: str, scenario: str):
 
 
 def scenario_1(embd_path: str, pivot_path: str, fig_path: str):
-    fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(5, 8, height_ratios=[2.5, 0.1, 1, 1, 0.7])
+    fig = plt.figure(figsize=(24, 18))
+    spec = fig.add_gridspec(5, 11, height_ratios=[2.5, 0.1, 1, 1, 0.7])
     ax = add_table(pivot_path, fig, spec)
     add_number(ax, "A", y=0.95)
 
     embds = load_embeddings(embd_path, pivot_path)
 
     cmap = colorby(embds, "Compound")
-    add_legend(fig.add_subplot(spec[4, 1]), cmap, "Compound")
+    add_legend(fig.add_subplot(spec[4, 2]), cmap, "Compound")
     axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
     axs[0].set_ylabel("Compound", fontsize=16)
     add_number(axs[0], "B")
 
     cmap = colorby(embds, "Batch")
-    add_legend(fig.add_subplot(spec[4, 5]), cmap, "Batch")
+    add_legend(fig.add_subplot(spec[4, 7]), cmap, "Batch")
     axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
     axs[0].set_ylabel("Batch", fontsize=16)
     add_number(axs[0], "C")
@@ -142,21 +142,21 @@ def scenario_1(embd_path: str, pivot_path: str, fig_path: str):
 
 
 def scenario_2(embd_path: str, pivot_path: str, fig_path: str):
-    fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(5, 8, height_ratios=[2.5, 0.1, 1, 1, 0.7])
+    fig = plt.figure(figsize=(24, 18))
+    spec = fig.add_gridspec(5, 11, height_ratios=[2.5, 0.1, 1, 1, 0.7])
     ax = add_table(pivot_path, fig, spec)
     add_number(ax, "A", y=0.95)
 
     embds = load_embeddings(embd_path, pivot_path)
 
     cmap = colorby(embds, "Compound")
-    add_legend(fig.add_subplot(spec[4, 1]), cmap, "Compound")
+    add_legend(fig.add_subplot(spec[4, 2]), cmap, "Compound")
     axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=2, title=True)
     axs[0].set_ylabel("Compound", fontsize=16)
     add_number(axs[0], "B")
 
     cmap = colorby(embds, "Source")
-    add_legend(fig.add_subplot(spec[4, 5]), cmap, "Source")
+    add_legend(fig.add_subplot(spec[4, 7]), cmap, "Source")
     axs = scatter_panel(embds.dropna(subset="colors"), fig, spec, row=3)
     axs[0].set_ylabel("Source", fontsize=16)
     add_number(axs[0], "C")
@@ -165,8 +165,8 @@ def scenario_2(embd_path: str, pivot_path: str, fig_path: str):
 
 
 def scenario_3(embd_path: str, pivot_path: str, fig_path: str):
-    fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(4, 8, height_ratios=[2.5, 0.1, 1, 0.7])
+    fig = plt.figure(figsize=(24, 18))
+    spec = fig.add_gridspec(4, 11, height_ratios=[2.5, 0.1, 1, 0.7])
     ax = add_table(pivot_path, fig, spec)
     add_number(ax, "A", y=0.95)
 
@@ -182,8 +182,8 @@ def scenario_3(embd_path: str, pivot_path: str, fig_path: str):
 
 
 def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
-    fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(6, 8, height_ratios=[2.9, 0.1, 1, 1, 1, 0.7])
+    fig = plt.figure(figsize=(24, 18))
+    spec = fig.add_gridspec(6, 11, height_ratios=[2.9, 0.1, 1, 1, 1, 0.7])
     ax = add_table(pivot_path, fig, spec)
     add_number(ax, "A", y=0.95)
 
@@ -211,8 +211,8 @@ def scenario_4(embd_path: str, pivot_path: str, fig_path: str):
 
 
 def scenario_5(embd_path: str, pivot_path: str, fig_path: str):
-    fig = plt.figure(figsize=(20, 15))
-    spec = fig.add_gridspec(5, 8, height_ratios=[2.5, 0.1, 1, 1, 0.7])
+    fig = plt.figure(figsize=(24, 18))
+    spec = fig.add_gridspec(5, 11, height_ratios=[2.5, 0.1, 1, 1, 0.7])
     ax = add_table(pivot_path, fig, spec)
     add_number(ax, "A", y=0.95)
 
