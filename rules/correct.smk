@@ -105,8 +105,8 @@ rule seurat:
     input:
         "outputs/{scenario}/{pipeline}.parquet",
     output:
-        "outputs/{scenario}/{pipeline}_seurat.parquet",
+        "outputs/{scenario}/{pipeline}_seurat_{seurat_method}.parquet",
     params:
         batch_key=config["batch_key"],
     shell:
-        "Rscript correct/seurat.R {input} {output} {params.batch_key}"
+        "Rscript correct/seurat.R {input} {output} {params.batch_key} {wildcards.seurat_method}"
