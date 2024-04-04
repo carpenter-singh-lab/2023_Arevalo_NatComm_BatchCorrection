@@ -5,9 +5,8 @@ PDF_PLOTS = [
     "mean_all_metrics_hbarplot",
     "map_scores_barplot",
     "all_metrics_barplot",
+    "full_panel",
 ]
-
-PNG_PLOTS = ["full_panel"]
 
 plots_pattern = f"outputs/{scenario}/plots/{{plot}}.{{ext}}"
 umap_baseline_pattern = f"outputs/{scenario}/projection/{{workflow}}_umap.parquet"
