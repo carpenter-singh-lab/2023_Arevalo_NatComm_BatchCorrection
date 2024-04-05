@@ -14,6 +14,22 @@ from plot.colors import METHOD_FMT, METRIC_FMT
 from preprocessing.io import get_num_rows
 
 
+def load_logs():
+    files = glob(".snakemake/metadata/*")
+    df = pd.DataFrame(map(load_json, files))
+    df["runtime"] = df.eval("(endtime - starttime)")
+    df["category"] = df["rule"].map(categories)
+    order = df.groupby("rule")["runtime"].mean().sort_values().index
+    order = pd.Series(index=order, data=range(len(order)))
+    df = df.sort_values(by="rule", key=order.get).sort_values(
+        by="category", kind="stable"
+    )
+    df["scenario"] = df.input.apply(" ".join).str.extract(r"(scenario_.)", expand=False)
+    df["rule"] = df.rule.apply(lambda x: METHOD_FMT.get(x, x))
+    df["rule"] = df.rule.apply(lambda x: METRIC_FMT.get(x, x))
+    return df
+
+
 def load_json(f: str):
     with open(f) as f_in:
         return json.load(f_in)
@@ -41,6 +57,8 @@ categories = {
     "mnn": "Method",
     "sphering_explore": "Method",
     "combat": "Method",
+    "seurat": "Method",
+    "fastMNN": "Method",
     "INT": "Preprocessing",
     # "compute_negcon_stats": "Preprocessing",
     "select_variant_feats": "Preprocessing",
@@ -54,16 +72,7 @@ categories = {
 categories.update(DIMENSION_MAP)
 
 
-files = glob(".snakemake/metadata/*")
-df = pd.DataFrame(map(load_json, files))
-df["runtime"] = df.eval("(endtime - starttime)")
-df["category"] = df["rule"].map(categories)
-order = df.groupby("rule")["runtime"].mean().sort_values().index
-order = pd.Series(index=order, data=range(len(order)))
-df = df.sort_values(by="rule", key=order.get).sort_values(by="category", kind="stable")
-df["scenario"] = df.input.apply(" ".join).str.extract(r"(scenario_.)", expand=False)
-df["rule"] = df.rule.apply(lambda x: METHOD_FMT.get(x, x))
-df["rule"] = df.rule.apply(lambda x: METRIC_FMT.get(x, x))
+df = load_logs()
 num_comp_map = dict(
     scenario_1="~300",
     scenario_2="~300",
@@ -95,6 +104,14 @@ df["rule"].replace(
     inplace=True,
 )
 
+# Split RPCA and CCA
+df.loc[
+    (df["rule"] == "seurat") & df["shellcmd"].str.contains("seurat_rpca"), "rule"
+] = "seurat_rpca"
+df.loc[
+    (df["rule"] == "seurat") & df["shellcmd"].str.contains("seurat_cca"), "rule"
+] = "seurat_cca"
+
 fig, axes = plt.subplots(
     ncols=4, nrows=1, figsize=(24, 8), constrained_layout=True, sharey=True, sharex=True
 )
@@ -109,6 +126,8 @@ for ax, category in zip(
             by=["scenario", "rule", "runtime"],
             ascending=[True, True, False],
         ).drop_duplicates(["scenario", "rule"])
+    if len(subdf) == 0:
+        continue
     g = sns.lineplot(subdf, x="Number of samples", y="runtime", hue="rule", ax=ax)
     g.get_legend().set_title(None)
     ax.set_title(category)
