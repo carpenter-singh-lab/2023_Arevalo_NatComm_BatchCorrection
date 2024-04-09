@@ -128,7 +128,7 @@ for ax, category in zip(
         ).drop_duplicates(["scenario", "rule"])
     if len(subdf) == 0:
         continue
-    g = sns.lineplot(subdf, x="Number of samples", y="runtime", hue="rule", ax=ax)
+    g = sns.lineplot(subdf, x="Number of samples", y="runtime", hue="rule", ax=ax, marker="o")
     g.get_legend().set_title(None)
     ax.set_title(category)
     ax.set_ylabel("Runtime (hh:mm:ss)")
@@ -138,7 +138,7 @@ for ax, category in zip(
     ax.set_xscale("log")
     ax.yaxis.set_major_formatter(formatter)
     ax.yaxis.set_ticks([], minor=True)
-    ax.yaxis.set_ticks([10, 60, 600, 3600, 3600 * 2, 3600 * 5, 3600 * 10])
+    ax.yaxis.set_ticks([10, 60, 600, 3600, 3600 * 2, 3600 * 5, 3600 * 10, 3600 * 48])
     ax.xaxis.set_ticks([], minor=True)
     ax.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
     ax.xaxis.set_ticks(list(num_samp_map.values()))
