@@ -1,5 +1,6 @@
 include: "scib.smk"
 include: "map.smk"
+include: "consistency.smk"
 
 
 metrics_baseline_pattern = (

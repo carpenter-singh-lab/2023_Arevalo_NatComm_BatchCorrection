@@ -1,6 +1,7 @@
 import pandas as pd
 
 from . import scib
+from . import consistency
 from .map import (
     average_precision_negcon,
     average_precision_nonrep,
