@@ -1,8 +1,7 @@
-from .harmony import harmony, pca_harmony
-from . import sphering
-from .scanorama import scanorama, pca_scanorama
-from .mnn import mnn
+from . import bbknn, sphering
 from .combat import combat
-from .scvi import scvi
 from .desc import desc
-from .bbknn import bbknn_metrics
+from .harmony import harmony, pca_harmony
+from .mnn import mnn
+from .scanorama import pca_scanorama, scanorama
+from .scvi import scvi

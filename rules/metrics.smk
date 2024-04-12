@@ -1,6 +1,7 @@
 include: "scib.smk"
 include: "map.smk"
 include: "consistency.smk"
+include: "bbknn.smk"
 
 
 metrics_baseline_pattern = (
@@ -20,17 +21,3 @@ rule all_metrics:
         "outputs/{scenario}/metrics/{criteria}/{pipeline}_all_metrics.parquet",
     run:
         metrics.concat(*input, *output)
-
-
-rule bbknn_all_metrics:
-    input:
-        "outputs/{scenario}/{pipeline}.parquet",
-    output:
-        "outputs/{scenario}/metrics/{criteria}/{pipeline}_bbknn_all_metrics.parquet",
-    params:
-        batch_key=config["batch_key"],
-    run:
-        correct.bbknn_metrics(*input, *output, *params)
-
-
-ruleorder: bbknn_all_metrics > all_metrics
