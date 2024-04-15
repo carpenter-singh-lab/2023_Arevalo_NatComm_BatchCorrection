@@ -7,10 +7,9 @@ from plot.colors import METRIC_FMT
 def get_table():
     path = "./outputs/scenario_{}/metrics/{}/mad_int_featselect_bbknn_scib.parquet"
     scores = []
-    for scn in range(1, 5):
+    for scn in range(1, 6):
         if scn in (3, 5):
             criteria = "prod"
-            continue
         else:
             criteria = "target2"
         scib_path = path.format(scn, criteria)

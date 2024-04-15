@@ -19,7 +19,7 @@ rule bbknn_all:
             metric=BBKNN_METRICS,
         ),
     output:
-        output_path="outputs/{scenario}/metrics/{criteria}/{pipeline}_scib.parquet",
+        output_path="outputs/{scenario}/metrics/{criteria}/{pipeline}_bbknn_scib.parquet",
     run:
         metrics.scib.concat(*input, **output)
 
