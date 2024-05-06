@@ -83,4 +83,5 @@ sns.histplot(
 )
 plt.tight_layout()
 plt.subplots_adjust(hspace=0)
+plt.savefig("figures/sup_figure_F.pdf", format="pdf", bbox_inches="tight", dpi=300)
 show_inline(True)

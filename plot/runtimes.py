@@ -143,5 +143,5 @@ for ax, category in zip(
     ax.xaxis.set_ticks(list(num_samp_map.values()))
     ax.set_xticklabels(list(num_samp_map.values()), rotation=40, ha="right")
 fig.supxlabel("Number of samples")
-fig.savefig("runtimes.pdf", format="pdf", bbox_inches="tight", dpi=300)
+fig.savefig("figures/sup_figure_G.pdf", format="pdf", bbox_inches="tight", dpi=300)
 show_inline(True)
