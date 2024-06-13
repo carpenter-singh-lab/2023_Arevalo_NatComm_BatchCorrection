@@ -85,7 +85,7 @@ def plot_box_scores(box_scores: pd.DataFrame):
         gap=0.3,
         fill=False,
     )
-    ax.set_title("Harmony improvement over the Baseline")
+    ax.set_title("Seurat CCA improvement over the Baseline")
     sns.stripplot(
         box_scores,
         hue="dimension",
@@ -96,7 +96,7 @@ def plot_box_scores(box_scores: pd.DataFrame):
         ax=ax,
     )
     add_table(ax)
-    ax.set_ylabel('Harmony_score - Baseline_score')
+    ax.set_ylabel('SeuratCCA_score - Baseline_score')
     show_inline()
     plt.close()
 
@@ -144,7 +144,7 @@ def plot_metrics_agg():
 
 fig = plt.figure(figsize=(10, 4))
 spec = fig.add_gridspec(1, 2)
-delta = (scores.query('method=="harmony"').set_index(['scenario', 'metric',
+delta = (scores.query('method=="seurat_cca"').set_index(['scenario', 'metric',
                                                    'dimension']).score -
          scores.query('method=="baseline"').set_index(['scenario', 'metric',
                                                        'dimension']).score).reset_index()
@@ -161,7 +161,7 @@ ax.set_ylabel("Improvement over Baseline")
 # ax.get_legend().remove()
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles[:2], labels[:2], ncol=2)
-ax.set_title('Harmony (best)')
+ax.set_title('Seurat CCA (best)')
 ax = fig.add_subplot(spec[0, 1], sharey=ax)
 plt.setp(ax.get_yticklabels(), visible=False)
 sns.boxplot(delta2, x='scenario', y='score', hue='dimension', fill=False, ax=ax)
@@ -170,6 +170,7 @@ add_table(ax, add_legend=False, row_labels=False)
 ax.set_title('DESC (worst)')
 ax.get_legend().remove()
 fig.tight_layout()
+fig.savefig("figures/sup_figure_H.pdf", format="pdf", bbox_inches="tight", dpi=300)
 show_inline()
 plt.close('all')
 for scn, data in scores.groupby('scenario'):
@@ -178,5 +179,6 @@ for scn, data in scores.groupby('scenario'):
 plt.legend()
 plt.gca().set_ylabel('Bio metrics')
 plt.gca().set_xlabel('Batch correction')
+fig.savefig("figures/sup_figure_I.pdf", format="pdf", bbox_inches="tight", dpi=300)
 show_inline()
 plt.close('all')

@@ -42,7 +42,7 @@ def timeTicks(x, pos):
 
 def show_inline(close=False):
     iobytes = BytesIO()
-    plt.savefig(iobytes, format="png", bbox_inches="tight", dpi=300)
+    plt.savefig(iobytes, format="pdf", bbox_inches="tight", dpi=300)
     iobytes.seek(0)
     encode = base64.b64encode(iobytes.read())
     props = "File=inline=1"
@@ -124,7 +124,6 @@ for ax, category in zip(
     if category == "Method":
         subdf = subdf.sort_values(
             by=["scenario", "rule", "runtime"],
-            ascending=[True, True, False],
         ).drop_duplicates(["scenario", "rule"])
     if len(subdf) == 0:
         continue
@@ -144,4 +143,5 @@ for ax, category in zip(
     ax.xaxis.set_ticks(list(num_samp_map.values()))
     ax.set_xticklabels(list(num_samp_map.values()), rotation=40, ha="right")
 fig.supxlabel("Number of samples")
+fig.savefig("figures/sup_figure_G.pdf", format="pdf", bbox_inches="tight", dpi=300)
 show_inline(True)

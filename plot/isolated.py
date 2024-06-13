@@ -5,13 +5,14 @@ import pandas as pd
 
 from metrics.map import average_precision_negcon, mean_average_precision
 
+model = "seurat_cca"
 ap_scores = pd.read_parquet(
-    "./outputs/scenario_3/metrics/prod/mad_int_featselect_harmony_ap_negcon.parquet"
+    f"./outputs/scenario_3/metrics/prod/mad_int_featselect_{model}_ap_negcon.parquet"
 )
 map_scores = pd.read_parquet(
-    "./outputs/scenario_3/metrics/prod/mad_int_featselect_harmony_map_negcon.parquet"
+    f"./outputs/scenario_3/metrics/prod/mad_int_featselect_{model}_map_negcon.parquet"
 )
-df = pd.read_parquet("./outputs/scenario_3/mad_int_featselect_harmony.parquet")
+df = pd.read_parquet(f"./outputs/scenario_3/mad_int_featselect_{model}.parquet")
 occ = (
     ap_scores.groupby("Metadata_JCP2022", observed=True)["Metadata_Source"]
     .apply(set)
@@ -82,4 +83,5 @@ sns.histplot(
 )
 plt.tight_layout()
 plt.subplots_adjust(hspace=0)
+plt.savefig("figures/sup_figure_F.pdf", format="pdf", bbox_inches="tight", dpi=300)
 show_inline(True)
