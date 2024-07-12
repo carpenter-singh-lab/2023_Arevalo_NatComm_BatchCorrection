@@ -6,9 +6,9 @@ SCIB_METRICS = [
     "pcr_batch",
     "pcr",
     "graph_conn",
-    "kbet",
-    "lisi_label",
-    "lisi_batch",
+    # "kbet",
+    # "lisi_label",
+    # "lisi_batch",
 ]
 
 
@@ -136,35 +136,35 @@ rule graph_conn:
         metrics.scib.graph_connectivity(*input, *params, *output)
 
 
-rule kbet:
-    input:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
-    output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_kbet.bin",
-    params:
-        label_key=config["label_key"],
-        batch_key=config["batch_key"],
-    run:
-        metrics.scib.kbet(*input, *params, *output)
+# rule kbet:
+#     input:
+#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
+#     output:
+#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_kbet.bin",
+#     params:
+#         label_key=config["label_key"],
+#         batch_key=config["batch_key"],
+#     run:
+#         metrics.scib.kbet(*input, *params, *output)
 
 
-rule lisi_label:
-    input:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
-    output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_label.bin",
-    params:
-        label_key=config["label_key"],
-    run:
-        metrics.scib.lisi_label(*input, *params, *output)
+# rule lisi_label:
+#     input:
+#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
+#     output:
+#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_label.bin",
+#     params:
+#         label_key=config["label_key"],
+#     run:
+#         metrics.scib.lisi_label(*input, *params, *output)
 
 
-rule lisi_batch:
-    input:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
-    output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_batch.bin",
-    params:
-        batch_key=config["batch_key"],
-    run:
-        metrics.scib.lisi_batch(*input, *params, *output)
+# rule lisi_batch:
+#     input:
+#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
+#     output:
+#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_batch.bin",
+#     params:
+#         batch_key=config["batch_key"],
+#     run:
+#         metrics.scib.lisi_batch(*input, *params, *output)

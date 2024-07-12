@@ -43,6 +43,8 @@ rule select_variant_feats:
         "outputs/{scenario}/neg_stats.parquet",
     output:
         "outputs/{scenario}/variant_feats.parquet",
+    log:
+        "logs/{scenario}/variant_feats.log"
     run:
         pp.stats.select_variant_features(*input, *output)
 

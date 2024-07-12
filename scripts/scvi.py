@@ -1,6 +1,8 @@
+import sys
 from scvi.model import SCVI
 from preprocessing import io
 
+logger = logging.getLogger(__name__)
 
 def scvi(dframe_path: str, batch_key: str, label_key: str, output_path: str):
     '''scVI correction'''
@@ -20,3 +22,10 @@ def scvi(dframe_path: str, batch_key: str, label_key: str, output_path: str):
     vals = vae.get_latent_representation()
     features = [f'scvi_{i}' for i in range(vals.shape[1])]
     io.merge_parquet(meta, vals, features, output_path)
+
+if __name__ == "__main__":
+    dframe_path = sys.argv[1]
+    batch_key = sys.argv[2]
+    label_key = sys.argv[3]
+    output_path = sys.argv[4]
+    scvi(dframe_path, batch_key, label_key, output_path)

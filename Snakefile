@@ -1,4 +1,4 @@
-configfile: "./inputs/conf/scenario_1.json"
+configfile: "./inputs/conf/scenario_6.json"
 
 
 # Define processing workflows and correction methods to run
@@ -6,16 +6,17 @@ WORKFLOWS = [
     "mad_int_featselect",
 ]
 METHODS = [
-    "scanorama",
-    "fastMNN",
-    "mnn",
+    # "scanorama",
+    # "fastMNN",
+    # "mnn",
     "harmony",
-    "combat",
-    "desc",
-    "scvi",
-    "sphering",
-    "seurat_cca",
-    "seurat_rpca",
+    # "combat",
+    # "desc",
+    # "scvi",
+    # "sysvi",
+    # "sphering",
+    # "seurat_cca",
+    # "seurat_rpca",
 ]
 
 

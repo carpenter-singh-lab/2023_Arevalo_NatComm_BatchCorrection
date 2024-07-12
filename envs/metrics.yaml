@@ -1,0 +1,14 @@
+name: batchcp_metrics
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - rpy2
+  - pandas
+  - plotly
+  - plottable
+  - pip=24.0
+  - r-remotes=2.5.0
+  - python=3.10
+  - pip:
+      - scib

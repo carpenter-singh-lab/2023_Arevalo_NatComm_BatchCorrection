@@ -1,0 +1,11 @@
+name: batchcp_correct_scvi
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - anndata
+  - pandas
+  - pip=24.0
+  - pytorch=2.0.0=cuda*
+  - scanpy
+  - scvi-tools

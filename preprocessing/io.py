@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+# import fastparquet
 import pyarrow.parquet as pq
 from tqdm.contrib.concurrent import thread_map
 import anndata as ad
@@ -32,8 +33,13 @@ def merge_parquet(meta, vals, features, output_path) -> None:
     dframe = pd.DataFrame(vals, columns=features)
     for c in meta:
         dframe[c] = meta[c].reset_index(drop=True)
+    print("heeeey")
     dframe.to_parquet(output_path)
 
+# def get_num_rows(path) -> int:
+#     '''Count the number of rows in a parquet file using fastparquet'''
+#     pf = fastparquet.ParquetFile(path)
+#     return pf.count()
 
 def get_num_rows(path) -> int:
     '''Count the number of rows in a parquet file'''
@@ -62,6 +68,10 @@ def load_data(sources, plate_types):
     '''Load all plates given the params'''
     paths, slices = prealloc_params(sources, plate_types)
     total = slices[-1, 1]
+
+    # f = fastparquet.ParquetFile(paths[0])
+    # meta_cols = find_meta_cols(f.columns)
+    # feat_cols = find_feat_cols(f.columns)
 
     with pq.ParquetFile(paths[0]) as f:
         meta_cols = find_meta_cols(f.schema.names)
