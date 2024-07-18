@@ -8,7 +8,7 @@ import scanpy as sc
 
 logger = logging.getLogger(__name__)
 
-def harmony(dframe_path, batch_key, output_path):
+def correct_with_harmony(dframe_path, batch_key, output_path):
     '''Harmony correction'''
     meta, feats, features = io.split_parquet(dframe_path)
     harmony_out = run_harmony(feats,
@@ -21,7 +21,7 @@ def harmony(dframe_path, batch_key, output_path):
     features = [f'harmony_{i}' for i in range(feats.shape[1])]
     io.merge_parquet(meta, feats, features, output_path)
 
-def pca_harmony(dframe_path, batch_key, output_path):
+def correct_with_pca_harmony(dframe_path, batch_key, output_path):
     '''Harmony correction with PCA'''
     meta, feats, features = io.split_parquet(dframe_path)
     n_latent = min(feats.shape) - 1  # required for arpack
@@ -45,8 +45,8 @@ if __name__ == "__main__":
     output_path = sys.argv[4]
 
     if mode == "harmony":
-        harmony(dframe_path, batch_key, output_path)
+        correct_with_harmony(dframe_path, batch_key, output_path)
     elif mode == "pca_harmony":
-        pca_harmony(dframe_path, batch_key, output_path)
+        correct_with_pca_harmony(dframe_path, batch_key, output_path)
     else:
         raise ValueError("Invalid mode. Choose either 'harmony' or 'pca_harmony'")

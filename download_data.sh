@@ -1,7 +1,7 @@
 BASEPATH="s3://cellpainting-gallery/cpg0016-jump"
 # To download all of the sources in the JUMP dataset
-# sources=`aws s3 ls --no-sign-request "$BASEPATH/" | awk '{print substr($2, 1, length($2)-1)}'`
-sources="source_2 source_3 source_6 source_8 source_10"
+sources=`aws s3 ls --no-sign-request "$BASEPATH/" | awk '{print substr($2, 1, length($2)-1)}'`
+# sources="source_2 source_3 source_6 source_8 source_10"
 
 mkdir -p inputs/metadata
 for source_id in $sources;

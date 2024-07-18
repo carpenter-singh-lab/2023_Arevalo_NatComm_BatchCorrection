@@ -33,7 +33,6 @@ def merge_parquet(meta, vals, features, output_path) -> None:
     dframe = pd.DataFrame(vals, columns=features)
     for c in meta:
         dframe[c] = meta[c].reset_index(drop=True)
-    print("heeeey")
     dframe.to_parquet(output_path)
 
 # def get_num_rows(path) -> int:

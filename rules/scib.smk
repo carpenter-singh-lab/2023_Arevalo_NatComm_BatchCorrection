@@ -73,7 +73,7 @@ rule silhouette_batch:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_silhouette_batch.bin",
     params:
         label_key=config["label_key"],
-        batch_key=config["batch_key"],
+        batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     run:
         metrics.scib.silhouette_batch(*input, *params, *output)
 
@@ -85,7 +85,7 @@ rule pcr_batch:
     output:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_pcr_batch.bin",
     params:
-        batch_key=config["batch_key"],
+        batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     run:
         metrics.scib.pcr_batch(*input, *params, *output)
 
@@ -96,7 +96,7 @@ rule pcr:
     output:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_pcr.bin",
     params:
-        batch_key=config["batch_key"],
+        batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     run:
         metrics.scib.pcr(*input, *params, *output)
 
@@ -108,7 +108,7 @@ rule il_asw:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_il_asw.bin",
     params:
         label_key=config["label_key"],
-        batch_key=config["batch_key"],
+        batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     run:
         metrics.scib.isolated_labels_asw(*input, *params, *output)
 
@@ -120,7 +120,7 @@ rule il_f1:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_il_f1.bin",
     params:
         label_key=config["label_key"],
-        batch_key=config["batch_key"],
+        batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     run:
         metrics.scib.isolated_labels_f1(*input, *params, *output)
 

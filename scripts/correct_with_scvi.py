@@ -1,10 +1,11 @@
 import sys
-from scvi.model import SCVI
+import logging
+import scvi
 from preprocessing import io
 
 logger = logging.getLogger(__name__)
 
-def scvi(dframe_path: str, batch_key: str, label_key: str, output_path: str):
+def correct_with_scvi(dframe_path: str, batch_key: str, label_key: str, output_path: str):
     '''scVI correction'''
     n_latent = 30
 
@@ -14,8 +15,8 @@ def scvi(dframe_path: str, batch_key: str, label_key: str, output_path: str):
     min_value = adata.X.min()
     adata.X -= min_value
 
-    SCVI.setup_anndata(adata, batch_key=batch_key, labels_key=label_key)
-    vae = SCVI(adata, n_layers=2, n_latent=n_latent)
+    scvi.model.SCVI.setup_anndata(adata, batch_key=batch_key, labels_key=label_key)
+    vae = scvi.model.SCVI(adata, n_layers=2, n_latent=n_latent)
     vae.view_anndata_setup(adata=adata)
     vae.train()
 
@@ -28,4 +29,4 @@ if __name__ == "__main__":
     batch_key = sys.argv[2]
     label_key = sys.argv[3]
     output_path = sys.argv[4]
-    scvi(dframe_path, batch_key, label_key, output_path)
+    correct_with_scvi(dframe_path, batch_key, label_key, output_path)

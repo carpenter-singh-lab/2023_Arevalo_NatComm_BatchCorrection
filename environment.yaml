@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - anndata
+  - awscli
   - rpy2
   - scanpy
   - pandas

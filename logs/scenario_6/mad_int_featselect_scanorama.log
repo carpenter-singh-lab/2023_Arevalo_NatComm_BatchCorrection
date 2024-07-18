@@ -1,0 +1,5 @@
+/ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/env_store/c3b71e8e8009d5c71efb3c36471cc09c_/lib/python3.12/site-packages/scanpy/preprocessing/_pca.py:325: ImplicitModificationWarning: Setting element `.obsm['X_pca']` of view, initializing view as actual.
+  adata.obsm["X_pca"] = X_pca
+[[0.         0.41170324]
+ [0.         0.        ]]
+Processing datasets source_2 <=> source_6

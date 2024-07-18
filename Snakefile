@@ -6,15 +6,17 @@ WORKFLOWS = [
     "mad_int_featselect",
 ]
 METHODS = [
-    # "scanorama",
+    "scanorama",
     # "fastMNN",
     # "mnn",
     "harmony",
     # "combat",
     # "desc",
-    # "scvi",
-    # "sysvi",
+    "scvi",
+    "sysvi",
+    "scpoli",
     # "sphering",
+    "seurat",
     # "seurat_cca",
     # "seurat_rpca",
 ]

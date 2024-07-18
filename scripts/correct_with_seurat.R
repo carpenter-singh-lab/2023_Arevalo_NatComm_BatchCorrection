@@ -1,12 +1,12 @@
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 4) {
-  cat("Usage: Rscript seurat.R input_file output_file batch_col\n")
+  cat("Usage: Rscript seurat.R input_file batch_col seurat_method output_file\n")
   quit()
 }
 input_file <- args[1]
-output_file <- args[2]
-batch_col <- args[3]
-seurat_method <- args[4]
+batch_col <- args[2]
+seurat_method <- args[3]
+output_file <- args[4]
 
 library(arrow)
 library(Seurat)

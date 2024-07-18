@@ -31,6 +31,8 @@ METHOD_FMT = {
     'combat': 'Combat',
     'harmony': 'Harmony',
     'scvi': 'scVI',
+    'sysvi': 'sysVI',
+    'scpoli': 'scPoli',
     'scanorama': 'Scanorama',
     'mnn': 'MNN',
     'desc': 'DESC',
@@ -41,7 +43,7 @@ METHOD_FMT = {
     'seurat_cca': 'Seurat CCA'
 }
 METHODS = [
-    'Baseline', 'Harmony', 'Scanorama', 'fastMNN', 'Seurat CCA', 'Seurat RPCA', 'MNN', 'Combat', 'DESC', 'scVI', 'Sphering'
+    'Baseline', 'Harmony', 'Scanorama', 'fastMNN', 'Seurat CCA', 'Seurat RPCA', 'MNN', 'Combat', 'DESC', 'scVI', 'sysVI', 'scPoli', 'Sphering'
 ]
 METHOD_CMAP = dict(zip(METHODS, px.colors.qualitative.Light24))
 METHOD_SMAP = dict(zip(METHODS, Line2D.filled_markers[1:]))

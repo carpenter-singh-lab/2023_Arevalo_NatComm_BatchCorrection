@@ -1,4 +1,4 @@
-name: batchcp_correct_scvi
+name: batchcp_correct_sysvi
 channels:
   - conda-forge
 dependencies:
@@ -10,4 +10,5 @@ dependencies:
   - python=3.11
   - scanpy
   - pyarrow
-  - scvi-tools
+  - pip:
+    - git+https://github.com/Hrovatin/scvi-tools.git@main

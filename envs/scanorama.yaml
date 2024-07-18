@@ -1,0 +1,12 @@
+name: batchcp_correct_scanorama
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - anndata
+  - pandas
+  - pip=24.0
+  - scanorama
+  - scanpy
+  - numpy
+  - pyarrow
