@@ -63,7 +63,7 @@ Every scenario reported in the paper can be reproduced running snakemake with
 the associated config file. For example, to reproduce Scenario 1 using 3 cores:
 
 ```bash
-snakemake -c8 --configfile inputs/conf/scenario_6.json  --verbose --use-conda --conda-prefix "./env_store/"
+snakemake -c8 --configfile inputs/conf/scenario_6.json --use-conda --conda-prefix "./env_store/"
 ```
 
 You can get the scores, corrected profiles and plots in the `./outputs` folder.

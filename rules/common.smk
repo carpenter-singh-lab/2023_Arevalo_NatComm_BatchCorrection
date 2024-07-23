@@ -20,7 +20,6 @@ if "COMPOUND" in config["plate_types"]:
 else:
     criteria = "target2"
 
-
 rule write_parquet:
     output:
         "outputs/{scenario}/raw.parquet",

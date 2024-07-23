@@ -116,9 +116,10 @@ rule scvi:
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
         label_key=config["label_key"],
+        smoketest=config["smoketest"],
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} {params.batch_key} {params.label_key} {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} {params.batch_key} {params.label_key} {output} --smoketest={params.smoketest} &> {log}
         """
 
 
@@ -135,9 +136,10 @@ rule sysvi:
     params:
         batch_key=config["batch_key"],
         label_key=config["label_key"],
+        smoketest=config["smoketest"],
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} '{params.batch_key}' {params.label_key} {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} '{params.batch_key}' {params.label_key} {output} --smoketest={params.smoketest} &> {log}
         """
 
 rule scpoli:
@@ -153,9 +155,10 @@ rule scpoli:
     params:
         batch_key=config["batch_key"],
         label_key=config["label_key"],
+        smoketest=config["smoketest"],
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} '{params.batch_key}' {params.label_key} {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} '{params.batch_key}' {params.label_key} {output} --smoketest={params.smoketest} &> {log}
         """
 
 
@@ -173,16 +176,16 @@ rule seurat:
     input:
         data="outputs/{scenario}/{pipeline}.parquet",
         script="scripts/correct_with_seurat.R",
-        method=expand("{method}", method=config["seurat_methods"])
+        seurat_method=expand("{method}", method=config["seurat_methods"])
     output:
-        "outputs/{scenario}/{pipeline}_seurat_{input.method}.parquet",
+        "outputs/{scenario}/{pipeline}_seurat_{input.seurat_method}.parquet",
     log:
-        "logs/{scenario}/{pipeline}_seurat_{input.method}.log"
+        "logs/{scenario}/{pipeline}_seurat_{input.seurat_method}.log"
     conda:
         "../envs/seurat.yaml"  
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && Rscript {input.script} {input.data} {params.batch_key} {input.method} {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && Rscript {input.script} {input.data} {params.batch_key} {input.seurat_method} {output} &> {log}
         """

@@ -16,7 +16,7 @@ METHODS = [
     "sysvi",
     "scpoli",
     # "sphering",
-    "seurat",
+    # "seurat",
     # "seurat_cca",
     # "seurat_rpca",
 ]

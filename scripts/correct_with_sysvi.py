@@ -5,9 +5,11 @@ from preprocessing import io
 
 logger = logging.getLogger(__name__)
 
-def correct_with_sysvi(dframe_path: str, batch_key: list[str] | str, label_key: str, output_path: str):
+def correct_with_sysvi(dframe_path: str, batch_key: list[str] | str, label_key: str, output_path: str, **kwargs):
     '''sysVI correction from https://github.com/Hrovatin/scvi-tutorials/blob/main/scrna/sysVI.ipynb'''
     n_latent = 30
+    smoketest = kwargs.get("smoketest", 0)
+    n_epochs = 999999 if smoketest else 2
 
     adata = io.to_anndata(dframe_path)
     meta = adata.obs.reset_index(drop=True).copy()
@@ -33,7 +35,7 @@ def correct_with_sysvi(dframe_path: str, batch_key: list[str] | str, label_key: 
     )
     vae = SysVI(adata, n_layers=2, n_latent=n_latent, prior="standard_normal")
     vae.view_anndata_setup(adata=adata)
-    vae.train()
+    vae.train(max_epochs=n_epochs, early_stopping=True, early_stopping_monitor="loss_validation")
 
     vals = vae.get_latent_representation(adata=adata)
     features = [f'sysvi_{i}' for i in range(vals.shape[1])]

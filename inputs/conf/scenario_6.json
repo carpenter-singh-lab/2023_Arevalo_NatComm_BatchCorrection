@@ -1,5 +1,6 @@
 {
     "scenario": "scenario_6",
+    "smoketest": 1,
     "iqr_scale": 100,
     "clip_value": 500,
     "sources": [

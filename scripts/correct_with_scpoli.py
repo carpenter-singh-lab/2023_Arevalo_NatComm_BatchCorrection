@@ -6,9 +6,11 @@ from preprocessing import io
 
 logger = logging.getLogger(__name__)
 
-def correct_with_scpoli(dframe_path: str, batch_key: Union[List[str], str], label_key: str, output_path: str):
+def correct_with_scpoli(dframe_path: str, batch_key: Union[List[str], str], label_key: str, output_path: str, **kwargs):
     '''scPoli correction from https://www.nature.com/articles/s41592-023-02035-2'''
     n_latent = 30
+    smoketest = kwargs.get("smoketest", 0)
+    n_epochs = (999999, 25) if smoketest else (4, 2)
 
     batch_key = batch_key.split(' ') # returns a list with len = 1 if no whitespace present, saves conversion
 
@@ -26,8 +28,8 @@ def correct_with_scpoli(dframe_path: str, batch_key: Union[List[str], str], labe
     ) 
 
     model.train(
-        n_epochs=999999, # train until early stopping limit
-        pretraining_epochs=25,
+        n_epochs=n_epochs[0], # train until early stopping limit
+        pretraining_epochs=n_epochs[1],
         use_early_stopping=True,
         alpha_epoch_anneal=1000,
         eta=0.5,
