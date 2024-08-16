@@ -9,7 +9,7 @@ def correct_with_sysvi(dframe_path: str, batch_key: list[str] | str, label_key: 
     '''sysVI correction from https://github.com/Hrovatin/scvi-tutorials/blob/main/scrna/sysVI.ipynb'''
     n_latent = 30
     smoketest = kwargs.get("smoketest", 0)
-    n_epochs = 999999 if smoketest else 2
+    n_epochs = 2 if smoketest else 999999
 
     adata = io.to_anndata(dframe_path)
     meta = adata.obs.reset_index(drop=True).copy()
@@ -18,7 +18,7 @@ def correct_with_sysvi(dframe_path: str, batch_key: list[str] | str, label_key: 
     batch_key = batch_key.split(' ')
 
     if isinstance(batch_key, list):
-        actual_batch_key = batch_key[0] 
+        actual_batch_key = batch_key[0]
         assert isinstance(actual_batch_key, str)
 
         categorical_covariate_keys = batch_key[1:]
@@ -26,8 +26,8 @@ def correct_with_sysvi(dframe_path: str, batch_key: list[str] | str, label_key: 
             categorical_covariate_keys = [categorical_covariate_keys]
     else:
         actual_batch_key = batch_key
-        categorical_covariate_keys = None
-    
+        categorical_covariate_keys = [None]
+        
     SysVI.setup_anndata(
         adata,
         batch_key=actual_batch_key,

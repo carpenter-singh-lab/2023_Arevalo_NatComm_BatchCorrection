@@ -1,6 +1,7 @@
 name: batchcp
 channels:
   - conda-forge
+  - bioconda
 dependencies:
   - anndata
   - awscli
@@ -17,5 +18,4 @@ dependencies:
   - snakemake-minimal
   - pip:
       - git+https://github.com/johnarevalo/scib.git@frozen_paper
-      - pyarrow
       - git+https://github.com/cytomining/copairs.git@v0.4.1
