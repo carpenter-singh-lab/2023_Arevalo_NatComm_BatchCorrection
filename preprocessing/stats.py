@@ -17,10 +17,16 @@ def get_feat_stats(dframe: pd.DataFrame, features=None):
     '''Get statistics per each feature'''
     if features is None:
         features = find_feat_cols(dframe)
-    desc = thread_map(lambda x: dframe[x].describe(), features, leave=False)
-    desc = pd.DataFrame(desc)
+    desc = [dframe[feature].describe() for feature in tqdm(features, leave=False)]
+    desc = pd.DataFrame(desc, index=features)
     desc['iqr'] = desc['75%'] - desc['25%']
     return desc
+
+    # caused C++ memory error
+    # desc = thread_map(lambda x: dframe[x].describe(), features, leave=False)
+    # desc = pd.DataFrame(desc)
+    # desc['iqr'] = desc['75%'] - desc['25%']
+    # return desc
 
 
 def get_plate_stats(dframe: pd.DataFrame):
@@ -114,7 +120,7 @@ def select_variant_features(parquet_path, neg_stats_path, variant_feats_path):
     groups = neg_stats.groupby('Metadata_Plate', observed=True)['feature']
     variant_features = set.intersection(*groups.agg(set).tolist())
 
-    # Select plates with variant features
+    # # Select plates with variant features
     neg_stats = neg_stats.query('feature in @variant_features')
     dframe = dframe.query('Metadata_Plate in @neg_stats.Metadata_Plate')
 

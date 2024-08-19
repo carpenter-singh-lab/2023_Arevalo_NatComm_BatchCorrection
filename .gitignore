@@ -17,3 +17,5 @@ inputs/source_*
 *pickle
 .RData
 .RHistory
+
+env_store/*

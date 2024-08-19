@@ -1,0 +1,10 @@
+name: batchcp_correct_seurat
+channels:
+  - conda-forge
+dependencies:
+  - r-arrow
+  - r-dplyr
+  - r-remotes
+  - r-seurat=4.4
+  - r-seuratobject
+  - r-matrixstats

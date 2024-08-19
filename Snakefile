@@ -1,4 +1,4 @@
-configfile: "./inputs/conf/scenario_1.json"
+configfile: "./inputs/conf/scenario_6.json"
 
 
 # Define processing workflows and correction methods to run
@@ -7,15 +7,18 @@ WORKFLOWS = [
 ]
 METHODS = [
     "scanorama",
-    "fastMNN",
-    "mnn",
+    # "fastMNN",
+    # "mnn",
     "harmony",
-    "combat",
-    "desc",
+    # "combat",
+    # "desc",
     "scvi",
-    "sphering",
-    "seurat_cca",
-    "seurat_rpca",
+    "sysvi",
+    "scpoli",
+    # "sphering",
+    # "seurat",
+    # "seurat_cca",
+    # "seurat_rpca",
 ]
 
 

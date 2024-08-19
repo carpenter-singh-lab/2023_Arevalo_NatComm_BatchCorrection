@@ -1,0 +1,14 @@
+name: batchcp_correct_sysvi
+channels:
+  - conda-forge
+dependencies:
+  - anndata
+  - cudatoolkit
+  - pandas
+  - pip=24.0
+  - pytorch=2.0.0=cuda*
+  - python=3.11
+  - scanpy
+  - pyarrow
+  - pip:
+    - git+https://github.com/Hrovatin/scvi-tools.git@main

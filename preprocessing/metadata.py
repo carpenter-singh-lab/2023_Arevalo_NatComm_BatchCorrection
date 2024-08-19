@@ -34,14 +34,12 @@ MICRO_CONFIG = MICRO_CONFIG.set_index("Metadata_Source")["Metadata_Microscope_Na
 
 def find_feat_cols(cols: Iterable[str]):
     """Find column names for features"""
-    feat_cols = [c for c in cols if not c.startswith("Meta")]
-    return feat_cols
+    return [c for c in cols if not c.startswith("Meta")]
 
 
 def find_meta_cols(cols: Iterable[str]):
     """Find column names for metadata"""
-    meta_cols = [c for c in cols if c.startswith("Meta")]
-    return meta_cols
+    return [c for c in cols if c.startswith("Meta")]
 
 
 def get_source_4_plate_redlist(plate_types: list[str]):
@@ -132,5 +130,4 @@ def load_metadata(sources: list[str], plate_types: list[str]):
     """Load metadata only"""
     plate = get_plate_metadata(sources, plate_types)
     well = get_well_metadata(plate_types)
-    meta = well.merge(plate, on=["Metadata_Source", "Metadata_Plate"])
-    return meta
+    return well.merge(plate, on=["Metadata_Source", "Metadata_Plate"])

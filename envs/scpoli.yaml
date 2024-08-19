@@ -1,0 +1,17 @@
+# loosly inspired by https://github.com/theislab/scarches/blob/master/envs/scarches_linux.yaml
+name: batchcp_correct_scpoli
+channels:
+  - conda-forge
+dependencies:
+  - anndata
+  - cudatoolkit
+  - pandas
+  - pip=24.0
+  - pytorch=2.0.0=cuda*
+  - python=3.9
+  - scanpy
+  - pyarrow
+  - pip:
+    - scarches
+variables:
+  SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL: True
