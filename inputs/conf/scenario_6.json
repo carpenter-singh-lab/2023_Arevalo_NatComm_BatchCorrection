@@ -10,10 +10,6 @@
     "plate_types": [
         "TARGET2"
     ],
-    "seurat_methods": [
-        "cca",
-        "rpca"
-    ],
     "batch_key": ["Metadata_Source", "Metadata_Batch"],
     "label_key": "Metadata_JCP2022",
     "column_norm": "Metadata_JCP2022",

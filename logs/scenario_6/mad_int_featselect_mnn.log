@@ -1,0 +1,42 @@
+/ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/env_store/18014caee9f9a8958af6ed0a9a85aa95_/lib/python3.10/site-packages/scipy/__init__.py:146: UserWarning: A NumPy version >=1.17.3 and <1.25.0 is required for this version of SciPy (detected version 1.26.4
+  warnings.warn(f"A NumPy version >={np_minversion} and <{np_maxversion}"
+/ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/env_store/18014caee9f9a8958af6ed0a9a85aa95_/lib/python3.10/site-packages/mnnpy/utils.py:30: NumbaPerformanceWarning: [1m[1mnp.dot() is faster on contiguous arrays, called on (Array(float32, 1, 'A', False, aligned=True), Array(float32, 1, 'A', False, aligned=True))[0m[0m
+  dist[i, j] = np.dot(m[i], n[j])
+/ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/env_store/18014caee9f9a8958af6ed0a9a85aa95_/lib/python3.10/site-packages/mnnpy/utils.py:205: NumbaPerformanceWarning: [1m[1mnp.dot() is faster on contiguous arrays, called on (Array(float32, 1, 'C', False, aligned=True), Array(float32, 1, 'A', False, aligned=True))[0m[0m
+  scale = np.dot(working, grad)
+/ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/env_store/18014caee9f9a8958af6ed0a9a85aa95_/lib/python3.10/site-packages/mnnpy/utils.py:215: NumbaPerformanceWarning: [1m[1mnp.dot() is faster on contiguous arrays, called on (Array(float32, 1, 'C', False, aligned=True), Array(float32, 1, 'A', False, aligned=True))[0m[0m
+  curproj = np.dot(grad, curcell)
+/ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/scripts/correct_with_mnn.py:19: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
+  indices = list(col.groupby(level=0).indices.values())
+/ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/env_store/18014caee9f9a8958af6ed0a9a85aa95_/lib/python3.10/site-packages/mnnpy/utils.py:90: NumbaWarning: [1m
+Compilation is falling back to object mode WITHOUT looplifting enabled because Function "find_mutual_nn" failed type inference due to: [1m[1mnon-precise type pyobject[0m
+[0m[1mDuring: typing of argument at /ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/env_store/18014caee9f9a8958af6ed0a9a85aa95_/lib/python3.10/site-packages/mnnpy/utils.py (96)[0m
+[1m
+File "env_store/18014caee9f9a8958af6ed0a9a85aa95_/lib/python3.10/site-packages/mnnpy/utils.py", line 96:[0m
+[1mdef find_mutual_nn(data1, data2, k1, k2, n_jobs):
+    <source elided>
+    mutual_2 = []
+[1m    for index_2 in range(data2.shape[0]):
+[0m    [1m^[0m[0m
+[0m
+  @jit((float32[:, :], float32[:, :], int8, int8, int8), forceobj=True)
+/ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/env_store/18014caee9f9a8958af6ed0a9a85aa95_/lib/python3.10/site-packages/mnnpy/utils.py:105: NumbaWarning: [1m
+Compilation is falling back to object mode WITHOUT looplifting enabled because Function "compute_correction" failed type inference due to: [1m[1mnon-precise type pyobject[0m
+[0m[1mDuring: typing of argument at /ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/env_store/18014caee9f9a8958af6ed0a9a85aa95_/lib/python3.10/site-packages/mnnpy/utils.py (110)[0m
+[1m
+File "env_store/18014caee9f9a8958af6ed0a9a85aa95_/lib/python3.10/site-packages/mnnpy/utils.py", line 110:[0m
+[1mdef compute_correction(data1, data2, mnn1, mnn2, data2_or_raw2, sigma):
+    <source elided>
+    vect_reduced = np.zeros((data2.shape[0], vect.shape[1]), dtype=np.float32)
+[1m    for index, ve in zip(mnn2, vect):
+[0m    [1m^[0m[0m
+[0m
+  @jit(float32[:, :](float32[:, :], float32[:, :], int32[:], int32[:], float32[:, :], float32), forceobj=True)
+Performing cosine normalization...
+Starting MNN correct iteration. Reference batch: 0
+Step 1 of 1: processing batch 1
+  Looking for MNNs...
+  Computing correction vectors...
+  Adjusting variance...
+  Applying correction...
+MNN correction complete. Gathering output...

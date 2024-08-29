@@ -8,12 +8,15 @@ from preprocessing.io import merge_parquet, split_parquet
 from pycytominer.operations import Spherize
 
 
-def log_uniform_sampling(min_=-5, max_=3, size=25, seed=[6, 12, 2022]):
+def log_uniform_sampling(min_=-5, max_=3, size=25, seed=None):
+    if seed is None:
+        seed = [6, 12, 2022]
     rng = np.random.default_rng(seed)
     return 10.**rng.uniform(min_, max_, size=size)
 
 
-def sphering(dframe_path, method, epsilon, column_norm, values_norm,
+def sphering(
+    dframe_path, method, epsilon, column_norm, values_norm,
              sphered_path, spherer_path):
     spherer = Spherize(epsilon=epsilon, method=method)
     meta, vals, features = split_parquet(dframe_path)

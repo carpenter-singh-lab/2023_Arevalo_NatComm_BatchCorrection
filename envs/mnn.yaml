@@ -1,0 +1,13 @@
+name: batchcp_correct_mnn
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - anndata
+  - pandas
+  - pip=24.0
+  - numpy
+  - scikit-learn=1.4.1.post1
+  - pyarrow
+  - mnnpy
+  - tqdm

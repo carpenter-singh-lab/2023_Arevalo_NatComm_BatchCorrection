@@ -1,10 +1,7 @@
 # Evaluating batch correction methods for image-based cell profiling
 
-This repository contains the source code to reproduce the results in the
-paper: "Evaluating batch correction methods for image-based cell profiling".
+This repository adapts the source code from the paper: "Evaluating batch correction methods for image-based cell profiling".
 
-These scripts generate several embedding visualizations and .csv files for
-quantitative evaluation of batch correction methods.
 
 ## Installation
 

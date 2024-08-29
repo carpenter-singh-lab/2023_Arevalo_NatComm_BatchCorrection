@@ -9,7 +9,7 @@ def correct_with_sysvi(dframe_path: str, batch_key: list[str] | str, label_key: 
     '''sysVI correction from https://github.com/Hrovatin/scvi-tutorials/blob/main/scrna/sysVI.ipynb'''
     n_latent = 30
     smoketest = kwargs.get("smoketest", 0)
-    n_epochs = 999999 if smoketest else 2
+    n_epochs = 2 if smoketest else 999999
 
     adata = io.to_anndata(dframe_path)
     meta = adata.obs.reset_index(drop=True).copy()

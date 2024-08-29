@@ -1,10 +1,13 @@
-import tempfile
+import sys
+import logging
+from desc import train, scale_bygroup
 from preprocessing import io
+import tempfile
 
+logger = logging.getLogger(__name__)
 
-def desc(dframe_path: str, batch_key: str, output_path: str):
+def correct_with_desc(dframe_path: str, batch_key: str, output_path: str):
     '''DESC correction'''
-    from desc import train, scale_bygroup
 
     adata = io.to_anndata(dframe_path)
     meta = adata.obs.reset_index(drop=True).copy()
@@ -28,7 +31,15 @@ def desc(dframe_path: str, batch_key: str, output_path: str):
         do_umap=False,
     )
 
-    vals = adata.obsm["X_Embeded_z" + str(res)]
+    vals = adata.obsm[f"X_Embeded_z{res}"]
 
     features = [f'desc_{i}' for i in range(vals.shape[1])]
     io.merge_parquet(meta, vals, features, output_path)
+
+
+if __name__ == "__main__":
+    dframe_path = sys.argv[1]
+    batch_key = sys.argv[2]
+    output_path = sys.argv[3]
+
+    correct_with_desc(dframe_path, batch_key, output_path)

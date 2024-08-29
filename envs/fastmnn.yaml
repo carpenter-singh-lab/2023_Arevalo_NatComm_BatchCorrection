@@ -1,0 +1,10 @@
+name: batchcp_correct_fastmnn
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-arrow
+  - r-dplyr
+  - r-remotes
+  - bioconductor-batchelor
+  - bioconductor-singlecellexperiment

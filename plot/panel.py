@@ -234,7 +234,11 @@ def scenario_5(embd_path: str, pivot_path: str, fig_path: str):
 
 def scenario_6(embd_path: str, pivot_path: str, fig_path: str):
     fig = plt.figure(figsize=(24, 18))
-    spec = fig.add_gridspec(5, 11, height_ratios=[2.5, 0.1, 0.8, 0.8, 0.7])
+    spec = fig.add_gridspec(
+        5, 
+        13, # adjust when more methods are added
+        height_ratios=[2.5, 0.1, 0.8, 0.8, 0.7]
+    )
     ax = add_table(pivot_path, fig, spec)
     add_number(ax, "A", y=0.95)
 

@@ -1,11 +1,14 @@
+import sys
+import logging
 import pandas as pd
 import numpy as np
-
+from mnnpy import mnn_correct, settings
 from preprocessing import io
 
+logger = logging.getLogger(__name__)
 
-def mnn(parquet_path, batch_key, output_path):
-    from mnnpy import mnn_correct, settings
+def correct_with_mnn(parquet_path: str, batch_key: str, output_path: str):
+    """MNN correction"""
     # disabling parallel because it silently freezes the execution
     settings.normalization = 'no_parallel'
 
@@ -27,3 +30,10 @@ def mnn(parquet_path, batch_key, output_path):
     # Save file
     features = [f'mnn_{i}' for i in range(vals.shape[1])]
     io.merge_parquet(meta, vals, features, output_path)
+
+if __name__ == "__main__":
+    dframe_path = sys.argv[1]
+    batch_key = sys.argv[2]
+    output_path = sys.argv[3]
+
+    correct_with_mnn(dframe_path, batch_key, output_path)

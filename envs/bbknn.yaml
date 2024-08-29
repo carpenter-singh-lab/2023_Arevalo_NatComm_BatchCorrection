@@ -1,0 +1,11 @@
+name: batchcp_correct_bbknn
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - anndata
+  - pandas
+  - pip=24.0
+  - numpy
+  - pyarrow
+  - bbknn

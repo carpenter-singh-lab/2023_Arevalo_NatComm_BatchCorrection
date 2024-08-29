@@ -1,0 +1,14 @@
+name: batchcp_correct_desc
+channels:
+  - conda-forge
+dependencies:
+  - anndata
+  - pandas
+  - scanpy
+  - pip=24.0
+  - python-igraph=0.10.8
+  - numpy
+  - pyarrow
+  - tensorflow=2.14.0=cuda*
+  - pip:
+    - git+https://github.com/johnarevalo/desc.git

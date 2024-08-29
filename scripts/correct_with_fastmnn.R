@@ -1,15 +1,16 @@
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 3) {
-  cat("Usage: Rscript fastMNN.R input_file output_file batch_col\n")
+  cat("Usage: Rscript fastMNN.R input_file batch_col output_file \n")
   quit()
 }
 
 library(arrow)
 library(batchelor)
 library(SingleCellExperiment)
+
 input_file <- args[1]
-output_file <- args[2]
-batch_col <- args[3]
+batch_col <- args[2]
+output_file <- args[3]
 
 parquet_data <- read_parquet(input_file)
 col_names <- names(parquet_data)

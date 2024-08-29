@@ -9,7 +9,7 @@ def correct_with_scvi(dframe_path: str, batch_key: str, label_key: str, output_p
     '''scVI correction'''
     n_latent = 30
     smoketest = kwargs.get("smoketest", 0)
-    n_epochs = 999999 if smoketest else 2
+    n_epochs = 2 if smoketest else 999999
 
     adata = io.to_anndata(dframe_path)
     meta = adata.obs.reset_index(drop=True).copy()

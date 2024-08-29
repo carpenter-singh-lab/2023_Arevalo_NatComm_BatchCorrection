@@ -10,7 +10,7 @@ def correct_with_scpoli(dframe_path: str, batch_key: Union[List[str], str], labe
     '''scPoli correction from https://www.nature.com/articles/s41592-023-02035-2'''
     n_latent = 30
     smoketest = kwargs.get("smoketest", 0)
-    n_epochs = (999999, 25) if smoketest else (4, 2)
+    n_epochs = (4, 2) if smoketest else (999999, 25)
 
     batch_key = batch_key.split(' ') # returns a list with len = 1 if no whitespace present, saves conversion
 

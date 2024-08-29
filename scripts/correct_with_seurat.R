@@ -34,8 +34,8 @@ for (i in c(1:length(batches))) {
   # Create a Seurat object from the batch
   names(raw) <- gsub("_","-",names(raw))
   obj <- CreateSeuratObject(counts = t(raw), meta.data = meta)
-  obj <- SetAssayData(object = obj, slot = "data", new.data = t(raw))
-  obj <- SetAssayData(object = obj, slot = "scale.data", new.data = t(raw))
+  obj <- SetAssayData(object = obj, layer = "data", new.data = t(raw))
+  obj <- SetAssayData(object = obj, layer = "scale.data", new.data = t(raw))
   
   # Specifying features enables skipping automatic trigger of "FindVariableFeatures" function
   obj <- RunPCA(obj, features = colnames(raw), verbose = FALSE)
@@ -52,7 +52,7 @@ anchor_set <- FindIntegrationAnchors(object.list = seurat_lists,
 integrated_obj = IntegrateData(anchor_set, verbose = FALSE)
 
 # Extract metadata and corrected data to ensure order matches
-int_data = GetAssayData(object = integrated_obj, assay="integrated", slot="data")
+int_data = GetAssayData(object = integrated_obj, assay="integrated", layer="data")
 corrected = int_data %>% as.matrix() %>% t() %>% as.data.frame()
 colnames(corrected) <- gsub("-", "_", colnames(corrected))
 meta_corrected = integrated_obj@meta.data[,-c(1:3)]

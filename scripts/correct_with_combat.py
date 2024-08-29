@@ -1,8 +1,11 @@
+import sys
+import logging
 import scanpy as sc
 from preprocessing import io
 
+logger = logging.getLogger(__name__)
 
-def combat(dframe_path: str, batch_key: str, output_path: str):
+def correct_with_combat(dframe_path: str, batch_key: str, output_path: str):
     '''Combat correction'''
 
     adata = io.to_anndata(dframe_path)
@@ -11,3 +14,11 @@ def combat(dframe_path: str, batch_key: str, output_path: str):
     meta = adata.obs.reset_index(drop=True).copy()
     features = [f'combat_{i}' for i in range(vals.shape[1])]
     io.merge_parquet(meta, vals, features, output_path)
+
+
+if __name__ == "__main__":
+    dframe_path = sys.argv[1]
+    batch_key = sys.argv[2]
+    output_path = sys.argv[3]
+
+    correct_with_combat(dframe_path, batch_key, output_path)

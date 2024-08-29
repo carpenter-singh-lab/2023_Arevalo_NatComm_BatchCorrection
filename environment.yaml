@@ -18,4 +18,5 @@ dependencies:
   - pip:
       - git+https://github.com/johnarevalo/scib.git@frozen_paper
       - pyarrow
+      - bbknn
       - git+https://github.com/cytomining/copairs.git@v0.4.1

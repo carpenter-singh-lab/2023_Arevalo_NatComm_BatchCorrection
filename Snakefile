@@ -7,18 +7,17 @@ WORKFLOWS = [
 ]
 METHODS = [
     "scanorama",
-    # "fastMNN",
-    # "mnn",
+    "fastMNN",
+    "mnn",
     "harmony",
-    # "combat",
-    # "desc",
+    "combat",
+    "desc",
     "scvi",
     "sysvi",
     "scpoli",
-    # "sphering",
-    # "seurat",
-    # "seurat_cca",
-    # "seurat_rpca",
+    "sphering",
+    "seurat_cca",
+    "seurat_rpca",
 ]
 
 
