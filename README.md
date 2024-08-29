@@ -52,7 +52,7 @@ https://github.com/chriscainx/mnnpy#install
 
 Download profiles and metadata:
 ```bash
-source download_data.sh
+bash download_data.sh
 ```
 
 ## Run scenarios

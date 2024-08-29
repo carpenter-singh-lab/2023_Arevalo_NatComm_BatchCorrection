@@ -1,6 +1,7 @@
 name: batchcp
 channels:
   - conda-forge
+  - bioconda
 dependencies:
   - anndata
   - awscli

@@ -1,0 +1,24 @@
+{
+    "scenario": "scenario_7",
+    "smoketest": 0,
+    "iqr_scale": 100,
+    "clip_value": 500,
+    "sources": [
+        "source_6"
+    ],
+    "plate_types": [
+        "TARGET2"
+    ],
+    "seurat_methods": [
+        "cca",
+        "rpca"
+    ],
+    "batch_key": "Metadata_Batch",
+    "label_key": "Metadata_JCP2022",
+    "column_norm": "Metadata_JCP2022",
+    "values_norm": [
+        "DMSO"
+    ],
+    "sphering_method": "ZCA-cor",
+    "sphering_n_opts": 25
+}
