@@ -109,6 +109,8 @@ def get_plate_metadata(sources: list[str], plate_types: list[str]) -> pd.DataFra
 def get_well_metadata(plate_types: list[str]):
     """Load well metadata"""
     well_metadata = pd.read_csv("./inputs/metadata/well.csv.gz")
+    compound_metadata = pd.read_csv("./inputs/metadata/compound.csv.gz")
+    well_metadata = well_metadata.merge(compound_metadata, on="Metadata_JCP2022", how="left")
     if "ORF" in plate_types:
         orf_metadata = pd.read_csv("./inputs/metadata/orf.csv.gz")
         well_metadata = well_metadata.merge(orf_metadata, how="inner")
