@@ -1,7 +1,7 @@
 SCIB_METRICS = [
     "nmi",
     "ari",
-    "asw",
+    # "asw",
     "silhouette_batch",
     "pcr_batch",
     "pcr",
@@ -17,6 +17,10 @@ rule scib_all:
         expand(
             "outputs/{{scenario}}/metrics/{{criteria}}/scib/{{pipeline}}_{metric}.bin",
             metric=SCIB_METRICS,
+        ),
+        expand(
+            "outputs/{{scenario}}/metrics/{{criteria}}/scib/{{pipeline}}_asw_{key}.bin",
+            key=config["eval_key"],
         ),
     output:
         output_path="outputs/{scenario}/metrics/{criteria}/{pipeline}_scib.parquet",
@@ -57,13 +61,13 @@ rule ari:
 
 rule asw:
     input:
-        "outputs/{prefix}/{pipeline}.parquet",
+        parquet_path="outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_asw.bin",
+        asw_path="outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_asw_{key}.bin",
     params:
-        label_key=config["label_key"],
+        label_key="{key}",
     run:
-        metrics.scib.asw(*input, *params, *output)
+        metrics.scib.asw(input.parquet_path, params.label_key, output.asw_path)
 
 
 rule silhouette_batch:

@@ -21,6 +21,19 @@ logger = logging.getLogger(__name__)
 CLUSTER_KEY = 'Metadata_Cluster'
 
 
+def _add_moa_info(meta) -> pd.DataFrame:
+    moa_info = pd.read_csv("inputs/metadata/inchi_to_moa_moaexploded.csv")
+    return meta.merge(moa_info, on="Metadata_InChIKey", how="left")
+
+def _subset_obs_based_on_eval_label_presence(meta, feats, eval_key) -> pd.DataFrame:
+    # using mask because pd.DataFrames and np.arrays index differently
+    valid_mask = meta[eval_key].isna().values
+    feats_subset = feats[valid_mask]
+    meta_subset = meta.loc[valid_mask].copy()
+    
+    return feats_subset, meta_subset
+
+
 def filter_dmso_anndata(parquet_path):
     adata = to_anndata(parquet_path)
     non_dmso_ix = adata.obs['Metadata_JCP2022'] != 'DMSO'
@@ -56,11 +69,27 @@ def ari(adata_path, label_key, ari_path):
     np.array(ari).tofile(ari_path)
 
 
-def asw(parquet_path, label_key, asw_path):
+def asw(parquet_path, eval_key, asw_path):
+
     meta, feats, _ = filter_dmso(parquet_path)
-    asw = silhouette_score(feats, meta[label_key], metric='cosine')
-    asw = (asw + 1) / 2
-    np.array(asw).tofile(asw_path)
+    meta = _add_moa_info(meta)
+
+    meta = meta.reset_index(drop=True)
+    feats_df = pd.DataFrame(feats)
+    feats_df = feats_df.reset_index(drop=True)
+
+    merged_df = pd.concat([meta, feats_df], axis=1)
+    merged_df = merged_df[merged_df[eval_key].notna()].copy()
+    meta_cols = meta.columns
+    feature_cols = feats_df.columns
+
+    merged_df = merged_df.dropna(subset=feature_cols)  # drop NAs since we cannot compute
+
+    asw = silhouette_score(merged_df[feature_cols].values, merged_df[eval_key].values, metric='cosine')
+
+    
+    asw = (asw + 1) / 2  # normalizes to [0, 1]
+    np.array([asw]).tofile(asw_path)
 
 
 def silhouette_batch(parquet_path, label_key, batch_key, asw_batch_path):
