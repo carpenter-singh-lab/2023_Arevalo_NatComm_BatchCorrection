@@ -22,6 +22,7 @@ CLUSTER_KEY = 'Metadata_Cluster'
 
 
 def _add_moa_info(meta) -> pd.DataFrame:
+    # from https://github.com/theislab/jump-integrate-reproducibility/blob/main/experiments/get_moas_from_opentarget/get_moas_from_opentarget.ipynb
     moa_info = pd.read_parquet("inputs/metadata/opentargets_moa_target2_eval.parquet")
 
     return meta.merge(moa_info, on="Metadata_InChIKey", how="left")
