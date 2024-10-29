@@ -22,7 +22,8 @@ CLUSTER_KEY = 'Metadata_Cluster'
 
 
 def _add_moa_info(meta) -> pd.DataFrame:
-    moa_info = pd.read_csv("inputs/metadata/inchi_to_moa_moaexploded.csv")
+    moa_info = pd.read_parquet("inputs/metadata/opentargets_moa_target2_eval.parquet")
+
     return meta.merge(moa_info, on="Metadata_InChIKey", how="left")
 
 def _subset_obs_based_on_eval_label_presence(meta, feats, eval_key) -> pd.DataFrame:
@@ -74,19 +75,20 @@ def asw(parquet_path, eval_key, asw_path):
     meta, feats, _ = filter_dmso(parquet_path)
     meta = _add_moa_info(meta)
 
+    if eval_key not in meta.columns:
+        raise ValueError(f"Eval key '{eval_key}' not in metadata")
+
     meta = meta.reset_index(drop=True)
     feats_df = pd.DataFrame(feats)
     feats_df = feats_df.reset_index(drop=True)
 
     merged_df = pd.concat([meta, feats_df], axis=1)
     merged_df = merged_df[merged_df[eval_key].notna()].copy()
-    meta_cols = meta.columns
     feature_cols = feats_df.columns
 
     merged_df = merged_df.dropna(subset=feature_cols)  # drop NAs since we cannot compute
 
     asw = silhouette_score(merged_df[feature_cols].values, merged_df[eval_key].values, metric='cosine')
-
     
     asw = (asw + 1) / 2  # normalizes to [0, 1]
     np.array([asw]).tofile(asw_path)
