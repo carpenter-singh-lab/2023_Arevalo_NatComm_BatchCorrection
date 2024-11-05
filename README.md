@@ -15,11 +15,20 @@ mamba activate batchcp
 mamba install pyarrow -c conda-forge
 ```
 
+or if you already have an environment you just want to update:
+
+```bash
+mamba env update --name batchcp --file environment.yaml --prune
+```
+
+
 For easier environment management, we have split out the environment definitions for the individual tools. We recommend creating them manually before using them to get more verbose output in case of conflicts. Optionally, they can be stored in a specific directory so it's easy to find and troubleshoot them. For this, the following command can be used:
 
 ```bash
 mamba env create -f ./envs/harmony.yaml --prefix ./env_store/batchcp_correct_harmony
 ```
+
+
 
 ### kBET installation
 Run the following command to install R package `kBET`:
@@ -62,5 +71,7 @@ the associated config file. For example, to reproduce Scenario 1 using 3 cores:
 ```bash
 snakemake -c8 --configfile inputs/conf/scenario_6.json --use-conda --conda-prefix "./env_store/"
 ```
+
+snakemake -c8 --configfile inputs/conf/scenario_6.json --use-conda --conda-prefix "./env_store/" --until tidy_scores
 
 You can get the scores, corrected profiles and plots in the `./outputs` folder.

@@ -60,7 +60,7 @@ def draw(pivot_path: str, ax: plt.Axes):
     score_cols = df[["Batch correction", "Bio metrics"]].columns.get_level_values(1)
     textprops = {"ha": "center", "bbox": {"boxstyle": "circle", "pad": 0.25}}
     groupmap = dict(df.columns.swaplevel())
-    for i, col in enumerate(score_cols):
+    for col in score_cols:
         mappable = get_scalar_mapppable(df.droplevel(0, axis="columns")[col])
         col_def = ColumnDefinition(
             col,

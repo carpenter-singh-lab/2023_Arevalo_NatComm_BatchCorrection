@@ -14,18 +14,22 @@ SCIB_METRICS = [
 
 rule scib_all:
     input:
-        expand(
-            "outputs/{{scenario}}/metrics/{{criteria}}/scib/{{pipeline}}_{metric}.bin",
+        metric_paths=
+        [expand(
+            "outputs/{{scenario}}/metrics/{{criteria}}/scib/{{pipeline}}_{metric}.npy",
             metric=SCIB_METRICS,
-        ),
+        )] + [
         expand(
-            "outputs/{{scenario}}/metrics/{{criteria}}/scib/{{pipeline}}_asw_{key}.bin",
+            "outputs/{{scenario}}/metrics/{{criteria}}/scib/{{pipeline}}_asw_{key}.npy",
             key=config["eval_key"],
-        ),
+        )],
+    params:
+        scib_metrics=SCIB_METRICS,
+        eval_keys=config["eval_key"],
     output:
         output_path="outputs/{scenario}/metrics/{criteria}/{pipeline}_scib.parquet",
     run:
-        metrics.scib.concat(*input, **output)
+        metrics.scib.concat_metrics_per_method_into_df(input.metric_paths, params.scib_metrics, params.eval_keys, output.output_path)
 
 
 rule clustering:
@@ -41,7 +45,7 @@ rule nmi:
     input:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_nmi.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_nmi.npy",
     params:
         label_key=config["label_key"],
     run:
@@ -52,7 +56,7 @@ rule ari:
     input:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_ari.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_ari.npy",
     params:
         label_key=config["label_key"],
     run:
@@ -63,7 +67,7 @@ rule asw:
     input:
         parquet_path="outputs/{prefix}/{pipeline}.parquet",
     output:
-        asw_path="outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_asw_{key}.bin",
+        asw_path="outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_asw_{key}.npy",
     params:
         label_key="{key}",
     run:
@@ -74,7 +78,7 @@ rule silhouette_batch:
     input:
         "outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_silhouette_batch.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_silhouette_batch.npy",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
@@ -87,7 +91,7 @@ rule pcr_batch:
         pre_parquet_path="outputs/{prefix}/mad_int_featselect.parquet",
         post_parquet_path="outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_pcr_batch.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_pcr_batch.npy",
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     run:
@@ -98,7 +102,7 @@ rule pcr:
     input:
         "outputs/{prefix}/{pipeline}.parquet",
     output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_pcr.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_pcr.npy",
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     run:
@@ -109,7 +113,7 @@ rule il_asw:
     input:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_il_asw.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_il_asw.npy",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
@@ -121,7 +125,7 @@ rule il_f1:
     input:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_il_f1.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_il_f1.npy",
     params:
         label_key=config["label_key"],
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
@@ -133,7 +137,7 @@ rule graph_conn:
     input:
         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
     output:
-        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_graph_conn.bin",
+        "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_graph_conn.npy",
     params:
         label_key=config["label_key"],
     run:
@@ -144,7 +148,7 @@ rule graph_conn:
 #     input:
 #         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
 #     output:
-#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_kbet.bin",
+#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_kbet.npy",
 #     params:
 #         label_key=config["label_key"],
 #         batch_key=config["batch_key"],
@@ -156,7 +160,7 @@ rule graph_conn:
 #     input:
 #         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
 #     output:
-#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_label.bin",
+#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_label.npy",
 #     params:
 #         label_key=config["label_key"],
 #     run:
@@ -167,7 +171,7 @@ rule graph_conn:
 #     input:
 #         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_clusters.h5ad",
 #     output:
-#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_batch.bin",
+#         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_batch.npy",
 #     params:
 #         batch_key=config["batch_key"],
 #     run:

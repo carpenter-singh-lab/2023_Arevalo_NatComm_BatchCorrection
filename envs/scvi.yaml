@@ -6,8 +6,9 @@ dependencies:
   - cudatoolkit
   - pandas
   - pip=24.0
-  - pytorch=2.0.0=cuda*
-  - python=3.11
+  - pytorch>=2.0.0=*_cuda*
+  - python
   - scanpy
   - pyarrow
   - scvi-tools
+  - jaxlib>=0.4.26

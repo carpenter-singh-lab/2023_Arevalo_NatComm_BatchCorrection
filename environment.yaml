@@ -2,10 +2,11 @@ name: batchcp
 channels:
   - conda-forge
   - bioconda
-dependencies:
+dependencies: 
   - anndata
   - awscli
   - rpy2
+  - conda>=24.7.1
   - scanpy
   - pandas
   - plotly
@@ -15,9 +16,9 @@ dependencies:
   - r-matrix
   - r-ggplot2
   - r-mass
-  - snakemake-minimal
+  - snakemake
+  - pyarrow
   - pip:
       - git+https://github.com/johnarevalo/scib.git@frozen_paper
-      - pyarrow
       - bbknn
-      - git+https://github.com/cytomining/copairs.git@v0.4.1
+      - git+https://github.com/cytomining/copairs.git@v0.4.2

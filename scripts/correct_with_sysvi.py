@@ -35,7 +35,7 @@ def correct_with_sysvi(dframe_path: str, batch_key: list[str] | str, label_key: 
     )
     vae = SysVI(adata, n_layers=2, n_latent=n_latent, prior="standard_normal")
     vae.view_anndata_setup(adata=adata)
-    vae.train(max_epochs=n_epochs, early_stopping=True, early_stopping_monitor="loss_validation")
+    vae.train(max_epochs=n_epochs, early_stopping=True, early_stopping_monitor="validation_loss")
 
     vals = vae.get_latent_representation(adata=adata)
     features = [f'sysvi_{i}' for i in range(vals.shape[1])]

@@ -95,6 +95,7 @@ def query_multiple_pos(embds: pd.DataFrame):
 
 
 def tidy_scores(metrics_files, metrics_redlist, methods_redlist, tidy_path):
+    print(metrics_files)
     scores = load_all_parquet(metrics_files, key_name="method")
     scores = scores.query("metric not in @metrics_redlist")
     scores = scores[scores["method"].apply(
