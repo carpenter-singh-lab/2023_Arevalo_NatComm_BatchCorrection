@@ -16,7 +16,7 @@ rule bbknn_clustering:
 rule bbknn_all:
     input:
         expand(
-            "outputs/{{scenario}}/metrics/{{criteria}}/scib/{{pipeline}}_{metric}.bin",
+            "outputs/{{scenario}}/metrics/{{criteria}}/scib/{{pipeline}}_{metric}.npy",
             metric=BBKNN_METRICS,
         ),
     output:

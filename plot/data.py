@@ -7,6 +7,42 @@ from sklearn.preprocessing import minmax_scale
 
 from .colors import METHOD_FMT, METRIC_FMT
 
+# METHOD_FMT = {
+#     'combat': 'Combat',
+#     'harmony': 'Harmony',
+#     'scvi': 'scVI',
+#     'sysvi': 'sysVI',
+#     'scpoli': 'scPoli',
+#     'scanorama': 'Scanorama',
+#     'mnn': 'MNN',
+#     'desc': 'DESC',
+#     'baseline': 'Baseline',
+#     'sphering': 'Sphering',
+#     'fastMNN': 'fastMNN',
+#     'seurat_rpca': 'Seurat RPCA',
+#     'seurat_cca': 'Seurat CCA'
+# }
+
+# METRIC_FMT = {
+#     'silhouette_batch': 'Silhouette batch',
+#     'pcr_batch': 'PCR comparison',
+#     'pcr': 'PCR',
+#     'graph_conn': 'Graph connectivity',
+#     'kbet': 'KBET',
+#     'lisi_batch': 'LISI batch',
+#     'lisi_label': 'LISI label',
+#     'negcon_mean_map': 'mAP (controls)',
+#     'negcon_fraction_below_p': '%Retrieved (controls)',
+#     'negcon_fraction_below_corrected_p': '%Retrieved-corr (controls)',
+#     'nonrep_mean_map': 'mAP (nonrep)',
+#     'nonrep_fraction_below_p': '%Retrieved (nonrep)',
+#     'nonrep_fraction_below_corrected_p': '%Retrieved-corr (nonrep)',
+#     'nmi': 'Leiden NMI',
+#     'ari': 'Leiden ARI',
+#     'asw': 'Silhouette label',
+#     'il_f1': 'Isolated labels(F1)',
+#     'il_asw': 'Isolated labels(ASW)',
+# }
 
 def _common_prefix_suffix(strings: list[str]):
     prefix = strings[0]
@@ -104,28 +140,48 @@ def tidy_scores(metrics_files, metrics_redlist, methods_redlist, tidy_path):
 
 def pivot_scores(tidy_path, pivot_path, micro_mean=False, macro_mean=False):
     scores = pd.read_parquet(tidy_path)
+    scores["eval_key"] = scores["eval_key"].fillna("Metadata_JCP2022") # HACK until all methods are pivoted
+    eval_keys = scores["eval_key"].unique()
     scores["method"] = scores["method"].map(lambda x: METHOD_FMT.get(x, x))
     scores["metric"] = scores["metric"].map(lambda x: METRIC_FMT.get(x, x))
-    scores = scores.pivot_table(index="method",
-                                columns=["dimension", "metric"],
-                                values="score")
-    scores["mean", "batch"] = scores["batch"].mean(axis=1)
-    scores["mean", "bio"] = scores["bio"].mean(axis=1)
-    if micro_mean:
-        scores["mean", "micro_mean"] = scores.mean(axis=1)
-    if macro_mean:
-        macro = (scores["bio"].mean(axis=1) + scores["batch"].mean(axis=1)) / 2
-        scores["mean", "macro_mean"] = macro
+    scores = scores.pivot_table(
+        index="method",
+        columns=["eval_key", "dimension", "metric"],
+        values="score"
+    )
+    for eval_key in eval_keys:
 
-    # This is the default weighting from the scIB manuscript
-    overall = 0.4 * scores["mean", "batch"] + 0.6 * scores["mean", "bio"]
-    scores["mean", "overall"] = overall
-    scores = scores.sort_values(("mean", "overall"), ascending=False)
-    agg_names = {
-        "batch": "Batch correction",
-        "bio": "Bio metrics",
-        "overall": "Overall",
-    }
-    scores.rename(columns=agg_names, inplace=True)
+        try:
+            scores[eval_key, "overall", "mean_batch"] =  scores[eval_key, "batch"].mean(axis=1)
+        except KeyError:
+            scores[eval_key, "overall", "mean_batch"] = None
+
+        try:
+            scores[eval_key, "overall", "mean_bio"] =  scores[eval_key, "bio"].mean(axis=1)
+        except KeyError:
+            scores[eval_key, "overall", "mean_bio"] = None
+        
+        if micro_mean:
+            scores[eval_key, "mean", "micro_mean"] = scores.mean(axis=1)
+        if macro_mean:
+            macro = (scores["bio"].mean(axis=1) + scores[eval_key, "batch"].mean(axis=1)) / 2
+            scores[eval_key, "mean", "macro_mean"] = macro
+
+        # This is the default weighting from the scIB manuscript
+        overall = 0.4 * scores[eval_key, "overall", "mean_batch"] + 0.6 * scores[eval_key, "overall", "mean_bio"]
+
+        scores[eval_key, "overall", "mean_overall"] = overall
+
+    scores["overall", "overall", "mean_overall"] = np.nanmean([scores[eval_key, "overall", "mean_overall"] for eval_key in eval_keys], axis=0)
+
+    scores = scores.sort_values(("overall", "overall", "mean_overall"), ascending=False)
+    # agg_names = {
+    #     "batch": "Batch correction",
+    #     "bio": "Bio metrics",
+    #     "overall": "Overall",
+    # }
+    scores.sort_index(axis=1, level=[0,1], inplace=True)
+
+    # scores.rename(columns=agg_names, inplace=True)
     scores.index.name = "Method"
     scores.to_parquet(pivot_path)

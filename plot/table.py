@@ -52,50 +52,110 @@ def draw(pivot_path: str, ax: plt.Axes):
     """
     df = pd.read_parquet(pivot_path)
 
+    # prepare cmaps so we can pass them as callables
+    Blues = matplotlib.cm.get_cmap("Blues")
+    Greens = matplotlib.cm.get_cmap("Greens")
+
+    # extract labels from columns so we can construct queries later
+    eval_keys = df.columns.get_level_values("eval_key").unique().drop("overall")
+    dimensions_keys = df.columns.get_level_values("dimension").unique().drop("overall")
+    metric_keys = df.columns.get_level_values("metric").unique().drop(["mean_batch", "mean_bio", "mean_overall"])
+
+    # flatten the MultiIndex so we can properly create a plottable
+    df_for_table = df.reset_index()
+    df_for_table.columns = [
+        "_".join(filter(None, map(str, col))).strip() if isinstance(col, tuple) else col
+        for col in df_for_table.columns.values
+    ]
+    df_for_table.fillna(0, inplace=True) # TMP HACK
+
+    # Add first column for the method names
     column_definitions = [
         ColumnDefinition(
             "Method", width=1.5, textprops={"ha": "left", "weight": "bold"}
         ),
     ]
-    score_cols = df[["Batch correction", "Bio metrics"]].columns.get_level_values(1)
-    textprops = {"ha": "center", "bbox": {"boxstyle": "circle", "pad": 0.25}}
-    groupmap = dict(df.columns.swaplevel())
-    for i, col in enumerate(score_cols):
-        mappable = get_scalar_mapppable(df.droplevel(0, axis="columns")[col])
-        col_def = ColumnDefinition(
-            col,
-            title=col.replace(" ", "\n", 1),
-            textprops=textprops,
-            width=1,
-            cmap=mappable.to_rgba,
-            group=groupmap[col],
-            formatter="{:.2f}",
-        )
-        column_definitions.append(col_def)
 
-    plot_kw = {
+    # define how circles and barplots look
+    circle_props = {"ha": "center", "bbox": {"boxstyle": "circle", "pad": 0.25}}
+    barplot_props = {
         "cmap": matplotlib.cm.YlGnBu,
         "plot_bg_bar": False,
         "annotate": True,
         "height": 0.9,
         "formatter": "{:.2f}",
     }
-    agg_cols = df["mean"].columns
-    for i, col in enumerate(agg_cols):
-        col_def = ColumnDefinition(
-            col,
-            width=1,
-            plot_kw=plot_kw,
-            title=col.replace(" ", "\n", 1),
-            plot_fn=bar,
-            group="Aggregate score",
-            border="left" if i == 0 else None,
-        )
-        column_definitions.append(col_def)
 
+    # todo: generate labelfree metrics and treat them separately
+
+    # iterate over keys and generate columns for each
+    for eval_key in eval_keys:
+
+        # we'll iterate over this later for the aggregated scores
+        mean_col_fstring_tuples = []
+
+        for dimension in dimensions_keys:
+            for metric in metric_keys:
+                colname = f"{eval_key}_{dimension}_{metric}"
+
+                # we might not have all metrics for all eval_keys (esp during testing)
+                if colname in df_for_table.columns:
+                    col_def = ColumnDefinition(
+                        colname,
+                        title=metric.replace(" ", "\n", 1),
+                        textprops=circle_props,
+                        width=1,
+                        cmap=Blues if dimension == "batch" else Greens,
+                        group=eval_key,
+                        formatter="{:.2f}",
+                    )
+                    column_definitions.append(col_def)
+
+            mean_col_fstring_tuples.append((eval_key, "overall", f"mean_{dimension}"))
+        
+        mean_col_fstring_tuples.append((eval_key, "overall", "mean_overall"))
+        
+        title_lookup = {
+            "mean_batch": "mean\nbatch",
+            "mean_bio": "mean\nbio",
+            "mean_overall": f"mean\n{eval_key.replace('Metadata_', '')}",
+        }
+
+        border_lookup = {
+            0: "left",
+            len(mean_col_fstring_tuples) - 1: "right",
+        }
+
+        for i, (ek, d, meancol) in enumerate(mean_col_fstring_tuples):
+            
+            col_def = ColumnDefinition(
+                f"{ek}_{d}_{meancol}",
+                title=title_lookup[meancol],
+                plot_kw=barplot_props,
+                width=1,
+                plot_fn=bar,
+                group=eval_key,
+                formatter="{:.2f}",
+                border=border_lookup.get(i)
+            )
+            column_definitions.append(col_def)
+
+    # add mean column across all eval_keys
+    col_def = ColumnDefinition(
+        "overall_overall_mean_overall",
+        title="Total",
+        plot_kw=barplot_props,
+        width=1,
+        plot_fn=bar,
+        formatter="{:.2f}",
+        border="both",
+    )
+    column_definitions.append(col_def)
+
+    # create the table
     plt.style.use("default")
     tab = Table(
-        df.droplevel(0, axis="columns").reset_index(),
+        df_for_table,
         cell_kw={
             "linewidth": 0,
             "edgecolor": "k",
@@ -110,4 +170,6 @@ def draw(pivot_path: str, ax: plt.Axes):
         column_border_kw={"linewidth": 1, "linestyle": "-"},
         index_col="Method",
     )
-    tab.autoset_fontcolors(colnames=list(df.columns.get_level_values(1)))
+    # Adjust colnames for font color settings
+    colnames = [col_def.name for col_def in column_definitions[1:]]  # Exclude "Method"
+    tab.autoset_fontcolors(colnames=colnames)

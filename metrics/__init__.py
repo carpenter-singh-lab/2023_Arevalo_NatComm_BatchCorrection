@@ -10,11 +10,11 @@ from .map import (
 
 DIMENSION_MAP = {
     'silhouette_batch': 'batch',
-    'pcr_batch': 'batch',
-    'pcr': 'batch',
+    'pcr_batch': 'labelfree',
+    'pcr': 'labelfree',
     'graph_conn': 'batch',
-    'kbet': 'batch',
-    'lisi_batch': 'batch',
+    'kbet': 'labelfree',
+    'lisi_batch': 'labelfree',
     'lisi_label': 'bio',
     'negcon_mean_map': 'bio',
     'negcon_fraction_below_p': 'bio',
@@ -31,7 +31,8 @@ DIMENSION_MAP = {
 
 
 def concat(scib_path, negcon_path, nonrep_path, output_path):
-    scores = pd.read_parquet(scib_path).set_index('metric')['score']
+    print(scib_path)
+    scib_scores = pd.read_parquet(scib_path)
 
     def map_summary(path, name):
         map_scores = pd.read_parquet(path)
@@ -39,13 +40,14 @@ def concat(scib_path, negcon_path, nonrep_path, output_path):
         frac_p = map_scores['below_p'].sum() / len(map_scores)
         frac_q = map_scores['below_corrected_p'].sum() / len(map_scores)
         mean_map = map_scores['mean_average_precision'].mean()
-        scores[f'{name}_mean_map'] = mean_map
-        scores[f'{name}_fraction_below_p'] = frac_p
-        scores[f'{name}_fraction_below_corrected_p'] = frac_q
+        scib_scores[f'{name}_mean_map'] = mean_map
+        scib_scores[f'{name}_fraction_below_p'] = frac_p
+        scib_scores[f'{name}_fraction_below_corrected_p'] = frac_q
 
     map_summary(negcon_path, 'negcon')
     map_summary(nonrep_path, 'nonrep')
 
-    scores = scores.reset_index()
-    scores['dimension'] = scores['metric'].map(DIMENSION_MAP)
-    scores.to_parquet(output_path)
+    scib_scores = scib_scores.reset_index()
+    scib_scores['dimension'] = scib_scores['metric'].map(DIMENSION_MAP)
+    print(scib_scores)
+    scib_scores.to_parquet(output_path)

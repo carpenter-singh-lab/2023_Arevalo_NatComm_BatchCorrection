@@ -11,7 +11,7 @@ for scn in range(1, 6):
     paths = glob(f"outputs/scenario_{scn}/metrics/{criteria}/scib/*pcr*")
     pre, suf = _common_prefix_suffix(paths)
     names = [p[len(pre) : -len(suf)] for p in paths]
-    values = [np.fromfile(c).item() for c in paths]
+    values = [np.load(c).item() for c in paths]
     scores = pd.DataFrame({"name": names, "value": values})
     scores["scenario"] = scn
     df.append(scores)
