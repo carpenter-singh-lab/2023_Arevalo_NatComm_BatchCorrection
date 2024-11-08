@@ -10,11 +10,11 @@ from .map import (
 
 DIMENSION_MAP = {
     'silhouette_batch': 'batch',
-    'pcr_batch': 'batch',
-    'pcr': 'batch',
+    'pcr_batch': 'labelfree',
+    'pcr': 'labelfree',
     'graph_conn': 'batch',
-    'kbet': 'batch',
-    'lisi_batch': 'batch',
+    'kbet': 'labelfree',
+    'lisi_batch': 'labelfree',
     'lisi_label': 'bio',
     'negcon_mean_map': 'bio',
     'negcon_fraction_below_p': 'bio',

@@ -11,11 +11,13 @@ from sklearn.metrics import silhouette_score
 from preprocessing.io import split_parquet, to_anndata
 
 with warnings.catch_warnings():
-    warnings.filterwarnings("ignore",
-                            category=ResourceWarning,
-                            message="Implicitly cleaning up")
-    from scib import metrics
-    from scib.metrics.pcr import pc_regression
+    warnings.filterwarnings(
+        "ignore",
+        category=ResourceWarning,
+        message="Implicitly cleaning up"
+    )
+    import scib_metrics as metrics
+    from scib_metrics.utils import principal_component_regression as pc_regression
 
 logger = logging.getLogger(__name__)
 CLUSTER_KEY = "Metadata_Cluster"
@@ -202,7 +204,7 @@ def kbet(adata_path, label_key, batch_key, kbet_path):
 
 def lisi_label(adata_path, label_key, lisi_label_path):
     adata = ad.read_h5ad(adata_path)
-    clisi = metrics.clisi_graph(
+    clisi = metrics.clisi_knn(
         adata,
         label_key=label_key,
         type_="knn",
@@ -216,15 +218,13 @@ def lisi_label(adata_path, label_key, lisi_label_path):
 
 def lisi_batch(adata_path, batch_key, lisi_batch_path):
     adata = ad.read_h5ad(adata_path)
-    ilisi = metrics.ilisi_graph(
+    
+    ilisi = metrics.ilisi_knn(
         adata,
-        batch_key=batch_key,
-        type_="knn",
-        subsample=100,  # Use all data
+        batches=adata.obs[batch_key],
         scale=True,
-        n_cores=8,
-        verbose=False,
     )
+    print(ilisi)
     np.save(lisi_batch_path, ilisi)
 
 

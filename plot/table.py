@@ -45,19 +45,104 @@ def get_scalar_mapppable(col_data, norm_type=None):
     return m
 
 
+# def draw(pivot_path: str, ax: plt.Axes):
+#     """
+#     Adapted from:
+#     https://github.com/yoseflab/scib-metrics/blob/0.4.1/src/scib_metrics/benchmark/_core.py#L276-L364
+#     """
+#     df = pd.read_parquet(pivot_path)
+#     print(df)
+    
+#     # Updated to work with the new MultiIndex structure
+#     column_definitions = [
+#         ColumnDefinition(
+#             "Method", width=1.5, textprops={"ha": "left", "weight": "bold"}
+#         ),
+#     ]
+    
+#     # Access score columns under "batch" and "bio" dimension levels
+#     score_cols = df.xs("batch", level="dimension", axis=1).columns.get_level_values(1).union(
+#         df.xs("bio", level="dimension", axis=1).columns.get_level_values(1)
+#     )
+    
+#     textprops = {"ha": "center", "bbox": {"boxstyle": "circle", "pad": 0.25}}
+#     groupmap = dict(df.columns.swaplevel())
+    
+#     for col in score_cols:
+#         mappable = get_scalar_mapppable(df.xs(col, level=1, axis=1))
+#         col_def = ColumnDefinition(
+#             col,
+#             title=col.replace(" ", "\n", 1),
+#             textprops=textprops,
+#             width=1,
+#             cmap=mappable.to_rgba,
+#             group=groupmap[col],
+#             formatter="{:.2f}",
+#         )
+#         column_definitions.append(col_def)
+
+#     plot_kw = {
+#         "cmap": matplotlib.cm.YlGnBu,
+#         "plot_bg_bar": False,
+#         "annotate": True,
+#         "height": 0.9,
+#         "formatter": "{:.2f}",
+#     }
+    
+#     # Access aggregate scores based on a specific level (assuming "mean" level exists)
+#     agg_cols = df.xs("mean", level="dimension", axis=1).columns
+    
+#     for i, col in enumerate(agg_cols):
+#         col_def = ColumnDefinition(
+#             col,
+#             width=1,
+#             plot_kw=plot_kw,
+#             title=col.replace(" ", "\n", 1),
+#             plot_fn=bar,
+#             group="Aggregate score",
+#             border="left" if i == 0 else None,
+#         )
+#         column_definitions.append(col_def)
+
+#     plt.style.use("default")
+    
+#     # Modify the Table creation to handle the new MultiIndex structure by flattening it
+#     tab = Table(
+#         df.xs("mean", level="dimension", axis=1).reset_index(),
+#         cell_kw={
+#             "linewidth": 0,
+#             "edgecolor": "k",
+#         },
+#         column_definitions=column_definitions,
+#         ax=ax,
+#         row_dividers=True,
+#         footer_divider=True,
+#         textprops={"fontsize": 10, "ha": "center"},
+#         row_divider_kw={"linewidth": 1, "linestyle": (0, (1, 5))},
+#         col_label_divider_kw={"linewidth": 1, "linestyle": "-"},
+#         column_border_kw={"linewidth": 1, "linestyle": "-"},
+#         index_col="Method",
+#     )
+    
+#     # Set font colors based on the second level column names
+#     tab.autoset_fontcolors(colnames=list(df.columns.get_level_values(1)))
+
+
 def draw(pivot_path: str, ax: plt.Axes):
     """
     Adapted from:
     https://github.com/yoseflab/scib-metrics/blob/0.4.1/src/scib_metrics/benchmark/_core.py#L276-L364
     """
     df = pd.read_parquet(pivot_path)
-
+    print(df)
     column_definitions = [
         ColumnDefinition(
             "Method", width=1.5, textprops={"ha": "left", "weight": "bold"}
         ),
     ]
+    print(column_definitions)
     score_cols = df[["Batch correction", "Bio metrics"]].columns.get_level_values(1)
+    print(score_cols)
     textprops = {"ha": "center", "bbox": {"boxstyle": "circle", "pad": 0.25}}
     groupmap = dict(df.columns.swaplevel())
     for col in score_cols:

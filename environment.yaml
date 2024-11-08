@@ -19,6 +19,6 @@ dependencies:
   - snakemake
   - pyarrow
   - pip:
-      - git+https://github.com/johnarevalo/scib.git@frozen_paper
+      - scib-metrics>=0.5.0
       - bbknn
       - git+https://github.com/cytomining/copairs.git@v0.4.2

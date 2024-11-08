@@ -7,8 +7,8 @@ SCIB_METRICS = [
     "pcr",
     "graph_conn",
     # "kbet",
-    # "lisi_label",
-    # "lisi_batch",
+    "lisi_label",
+    "lisi_batch",
 ]
 
 
@@ -173,6 +173,6 @@ rule graph_conn:
 #     output:
 #         "outputs/{prefix}/metrics/{criteria}/scib/{pipeline}_lisi_batch.npy",
 #     params:
-#         batch_key=config["batch_key"],
+#         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
 #     run:
 #         metrics.scib.lisi_batch(*input, *params, *output)
