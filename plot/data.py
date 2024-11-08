@@ -131,19 +131,16 @@ def query_multiple_pos(embds: pd.DataFrame):
 
 
 def tidy_scores(metrics_files, metrics_redlist, methods_redlist, tidy_path):
-    print(metrics_files)
     scores = load_all_parquet(metrics_files, key_name="method")
     scores = scores.query("metric not in @metrics_redlist")
     scores = scores[scores["method"].apply(
         lambda x: all(m not in x for m in methods_redlist))]
-    print(scores)
     scores.to_parquet(tidy_path, index=False)
 
 
 def pivot_scores(tidy_path, pivot_path, micro_mean=False, macro_mean=False):
     scores = pd.read_parquet(tidy_path)
-    print(scores)
-    scores["eval_key"] = scores["eval_key"].fillna("Metadata_JCP2022") # temp until all methods are pivoted
+    scores["eval_key"] = scores["eval_key"].fillna("Metadata_JCP2022") # HACK until all methods are pivoted
     eval_keys = scores["eval_key"].unique()
     scores["method"] = scores["method"].map(lambda x: METHOD_FMT.get(x, x))
     scores["metric"] = scores["metric"].map(lambda x: METRIC_FMT.get(x, x))
@@ -152,11 +149,17 @@ def pivot_scores(tidy_path, pivot_path, micro_mean=False, macro_mean=False):
         columns=["eval_key", "dimension", "metric"],
         values="score"
     )
-
     for eval_key in eval_keys:
 
-        scores[eval_key, "batch", "mean"] =  scores[eval_key, "batch"].mean(axis=1)
-        scores[eval_key, "bio", "mean"] =  scores[eval_key, "bio"].mean(axis=1)
+        try:
+            scores[eval_key, "overall", "mean_batch"] =  scores[eval_key, "batch"].mean(axis=1)
+        except KeyError:
+            scores[eval_key, "overall", "mean_batch"] = None
+
+        try:
+            scores[eval_key, "overall", "mean_bio"] =  scores[eval_key, "bio"].mean(axis=1)
+        except KeyError:
+            scores[eval_key, "overall", "mean_bio"] = None
         
         if micro_mean:
             scores[eval_key, "mean", "micro_mean"] = scores.mean(axis=1)
@@ -164,24 +167,21 @@ def pivot_scores(tidy_path, pivot_path, micro_mean=False, macro_mean=False):
             macro = (scores["bio"].mean(axis=1) + scores[eval_key, "batch"].mean(axis=1)) / 2
             scores[eval_key, "mean", "macro_mean"] = macro
 
-        print(scores)
         # This is the default weighting from the scIB manuscript
-        overall = 0.4 * scores[eval_key, "batch", "mean"] + 0.6 * scores[eval_key, "bio", "mean"]
+        overall = 0.4 * scores[eval_key, "overall", "mean_batch"] + 0.6 * scores[eval_key, "overall", "mean_bio"]
 
-        scores[eval_key, "overall", "mean"] = overall
+        scores[eval_key, "overall", "mean_overall"] = overall
 
-    scores["overall", "overall", "mean"] = np.mean([scores[eval_key, "overall", "mean"] for eval_key in eval_keys], axis=0)
+    scores["overall", "overall", "mean_overall"] = np.nanmean([scores[eval_key, "overall", "mean_overall"] for eval_key in eval_keys], axis=0)
 
-    scores = scores.sort_values(("overall", "overall", "mean"), ascending=False)
-    agg_names = {
-        "batch": "Batch correction",
-        "bio": "Bio metrics",
-        "overall": "Overall",
-    }
+    scores = scores.sort_values(("overall", "overall", "mean_overall"), ascending=False)
+    # agg_names = {
+    #     "batch": "Batch correction",
+    #     "bio": "Bio metrics",
+    #     "overall": "Overall",
+    # }
     scores.sort_index(axis=1, level=[0,1], inplace=True)
 
-    scores.rename(columns=agg_names, inplace=True)
-    print(scores)
-    assert 1==0
+    # scores.rename(columns=agg_names, inplace=True)
     scores.index.name = "Method"
     scores.to_parquet(pivot_path)
