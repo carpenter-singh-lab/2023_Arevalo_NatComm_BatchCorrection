@@ -7,8 +7,8 @@ SCIB_METRICS = [
     "pcr",
     "graph_conn",
     # "kbet",
-    "lisi_label",
-    "lisi_batch",
+    # "lisi_label",
+    # "lisi_batch",
 ]
 
 
