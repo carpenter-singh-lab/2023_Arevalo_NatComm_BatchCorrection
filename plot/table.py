@@ -57,8 +57,9 @@ def draw(pivot_path: str, ax: plt.Axes):
     Greens = matplotlib.cm.get_cmap("Greens")
 
     # extract labels from columns so we can construct queries later
-    eval_keys = df.columns.get_level_values("eval_key").unique().drop("overall")
-    dimensions_keys = df.columns.get_level_values("dimension").unique().drop("overall")
+    print(df)
+    eval_keys = df.columns.get_level_values("eval_key").unique()
+    metric_type_keys = df.columns.get_level_values("metric_type").unique()
     metric_keys = df.columns.get_level_values("metric").unique().drop(["mean_batch", "mean_bio", "mean_overall"])
 
     # flatten the MultiIndex so we can properly create a plottable
@@ -67,7 +68,8 @@ def draw(pivot_path: str, ax: plt.Axes):
         "_".join(filter(None, map(str, col))).strip() if isinstance(col, tuple) else col
         for col in df_for_table.columns.values
     ]
-    df_for_table.fillna(0, inplace=True) # TMP HACK
+    print(df_for_table.columns)
+    # df_for_table.fillna(0, inplace=True)  # TMP HACK
 
     # Add first column for the method names
     column_definitions = [
@@ -86,35 +88,51 @@ def draw(pivot_path: str, ax: plt.Axes):
         "formatter": "{:.2f}",
     }
 
-    # todo: generate labelfree metrics and treat them separately
+    # we'll use this to resort the df columns later
+    final_col_order = []
 
     # iterate over keys and generate columns for each
     for eval_key in eval_keys:
-
         # we'll iterate over this later for the aggregated scores
         mean_col_fstring_tuples = []
 
-        for dimension in dimensions_keys:
+        for metric_type in metric_type_keys:
+            print(metric_type)
+            # Skip 'aggregate_score' as it contains mean values
+            if metric_type == 'aggregate_score':
+                continue
+
             for metric in metric_keys:
-                colname = f"{eval_key}_{dimension}_{metric}"
+                colname = f"{eval_key}_{metric_type}_{metric}"
 
                 # we might not have all metrics for all eval_keys (esp during testing)
                 if colname in df_for_table.columns:
                     col_def = ColumnDefinition(
                         colname,
-                        title=metric.replace(" ", "\n", 1),
+                        title=metric.replace("_", "\n", 1),
                         textprops=circle_props,
                         width=1,
-                        cmap=Blues if dimension == "batch" else Greens,
+                        cmap=Blues if metric_type == "batch_correction" else Greens,
                         group=eval_key,
                         formatter="{:.2f}",
                     )
                     column_definitions.append(col_def)
+                    final_col_order.append(colname)
 
-            mean_col_fstring_tuples.append((eval_key, "overall", f"mean_{dimension}"))
-        
-        mean_col_fstring_tuples.append((eval_key, "overall", "mean_overall"))
-        
+            # Collect mean columns
+            metric_substring = metric_type.split("_")[0]
+            mean_colname = f"{eval_key}_aggregate_score_mean_{metric_substring}"
+            if mean_colname in df_for_table.columns:
+                mean_col_fstring_tuples.append((eval_key, 'aggregate_score', f"mean_{metric_substring}"))
+
+        # Now, append 'mean_overall'
+        mean_overall_colname = f"{eval_key}_aggregate_score_mean_overall"
+        if mean_overall_colname in df_for_table.columns:
+            mean_col_fstring_tuples.append((eval_key, 'aggregate_score', "mean_overall"))
+
+        # Add mean columns for reordering
+        # final_col_order.extend([f"{ek}_{mt}_{meancol}" for ek, mt, meancol in mean_col_fstring_tuples])
+
         title_lookup = {
             "mean_batch": "mean\nbatch",
             "mean_bio": "mean\nbio",
@@ -126,23 +144,28 @@ def draw(pivot_path: str, ax: plt.Axes):
             len(mean_col_fstring_tuples) - 1: "right",
         }
 
-        for i, (ek, d, meancol) in enumerate(mean_col_fstring_tuples):
-            
+        for i, (ek, mt, meancol) in enumerate(mean_col_fstring_tuples):
+            colname = f"{ek}_{mt}_{meancol}"
             col_def = ColumnDefinition(
-                f"{ek}_{d}_{meancol}",
-                title=title_lookup[meancol],
+                colname,
+                title=title_lookup.get(meancol, meancol).replace("_", "\n", 1),
                 plot_kw=barplot_props,
                 width=1,
                 plot_fn=bar,
                 group=eval_key,
                 formatter="{:.2f}",
-                border=border_lookup.get(i)
+                border=border_lookup.get(i),
             )
             column_definitions.append(col_def)
+            final_col_order.append(colname)
 
-    # add mean column across all eval_keys
+    # Calculate mean-score across all eval_keys and add it to the table
+    name_for_col_that_averages_across_eval_keys = "total_mean"
+    total_mean = df_for_table[[col for col in df_for_table.columns if "aggregate_score_mean_overall" in col]].mean(axis=1)
+    df_for_table["total_mean"] = total_mean
+
     col_def = ColumnDefinition(
-        "overall_overall_mean_overall",
+        name_for_col_that_averages_across_eval_keys,
         title="Total",
         plot_kw=barplot_props,
         width=1,
@@ -151,6 +174,11 @@ def draw(pivot_path: str, ax: plt.Axes):
         border="both",
     )
     column_definitions.append(col_def)
+    final_col_order.append(name_for_col_that_averages_across_eval_keys)
+
+    # Reorder columns and rows
+    df_for_table = df_for_table[["Method"] + final_col_order]
+    df_for_table = df_for_table.sort_values(by=name_for_col_that_averages_across_eval_keys, ascending=False)
 
     # create the table
     plt.style.use("default")

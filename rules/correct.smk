@@ -1,237 +1,351 @@
-include: "sphering.smk" # not modifying this for now, dependencies are unproblematic
-
-rule combat:
+rule aggregate_method_outputs_into_adata:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        unintegrated="outputs/{scenario}/" + config["preproc"] + ".parquet",
+        integrated=expand(
+            "outputs/{{scenario}}/" + config["preproc"] + "_{method}.parquet",
+            method=METHODS,
+        )
+    output:
+        path="outputs/{scenario}/" + config["preproc"] + "_all_methods.h5ad"
+    run:
+        metrics.scib.aggregate_method_outputs_into_adata(input.unintegrated, input.integrated, output.path)
+
+rule methods_combat:
+    input:
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_combat.py"
     output:
-        "outputs/{scenario}/{pipeline}_combat.parquet"
+        path="outputs/{scenario}/" + config["preproc"] + "_combat.parquet"
     log:
-        "logs/{scenario}/{pipeline}_combat.log"
+        "logs/{scenario}/" + config["preproc"] + "_combat.log"
     conda:
         "../envs/harmony.yaml"  # we only need scanpy so this will do
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} {params.batch_key} {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --output_path '{output.path}' \
+            &> '{log}'
         """
 
-rule harmony:
+rule methods_sphering:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
+        script="scripts/correct_with_sphering.py"
+    output:
+        path="outputs/{scenario}/" + config["preproc"] + "_sphering.parquet"
+    log:
+        "logs/{scenario}/" + config["preproc"] + "_sphering.log"
+    conda:
+        "../envs/sphering.yaml"
+    params:
+        method="ZCA-cor",
+        column_norm="Metadata_JCP2022",
+        values_norm="DMSO",
+    shell:
+        """
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --method '{params.method}' \
+            --column_norm '{params.column_norm}' \
+            --values_norm '{params.values_norm}' \
+            --output_path '{output.path}' \
+            &> '{log}'
+        """
+
+rule methods_harmony:
+    input:
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_harmony.py"
     output:
-        "outputs/{scenario}/{pipeline}_harmony.parquet"
+        path="outputs/{scenario}/" + config["preproc"] + "_harmony.parquet"
     log:
-        "logs/{scenario}/{pipeline}_harmony.log"
+        "logs/{scenario}/" + config["preproc"] + "_harmony.log"
     conda:
-        "../envs/harmony.yaml"  
+        "../envs/harmony.yaml"
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
-        smoketest=config["smoketest"],
+        smoketest="--smoketest" if config["smoketest"] else "",
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} harmony {input.data} {params.batch_key} {output} --smoketest={params.smoketest} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --mode 'harmony' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --output_path '{output.path}' \
+            {params.smoketest} \
+            &> '{log}'
         """
 
-
-rule pca_harmony:
+rule methods_pca_harmony:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_harmony.py"
     output:
-        "outputs/{scenario}/{pipeline}_pca_harmony.parquet"
+        path="outputs/{scenario}/" + config["preproc"] + "_pca_harmony.parquet"
     log:
-        "logs/{scenario}/{pipeline}_pca_harmony.log"
+        "logs/{scenario}/" + config["preproc"] + "_pca_harmony.log"
     conda:
-        "../envs/harmony.yaml"  
+        "../envs/harmony.yaml"
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
-        smoketest=config["smoketest"],
+        smoketest="--smoketest" if config["smoketest"] else "",
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} pca_harmony {input.data} {params.batch_key} {output} --smoketest={params.smoketest} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --mode 'pca_harmony' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --output_path '{output.path}' \
+            {params.smoketest} \
+            &> '{log}'
         """
 
-rule scanorama:
+rule methods_scanorama:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_scanorama.py"
     output:
-        "outputs/{scenario}/{pipeline}_scanorama.parquet"
+        path="outputs/{scenario}/" + config["preproc"] + "_scanorama.parquet"
     log:
-        "logs/{scenario}/{pipeline}_scanorama.log"
+        "logs/{scenario}/" + config["preproc"] + "_scanorama.log"
     conda:
-        "../envs/scanorama.yaml"  
+        "../envs/scanorama.yaml"
     params:
+        method="scanorama",
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} scanorama {input.data} {params.batch_key} {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --mode '{params.method}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --output_path '{output.path}' \
+            &> '{log}'
         """
 
-
-
-rule pca_scanorama:
+rule methods_pca_scanorama:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_scanorama.py"
     output:
-        "outputs/{scenario}/{pipeline}_pca_scanorama.parquet"
+        path="outputs/{scenario}/" + config["preproc"] + "_pca_scanorama.parquet"
     log:
-        "logs/{scenario}/{pipeline}_pca_scanorama.log"
+        "logs/{scenario}/" + config["preproc"] + "_pca_scanorama.log"
     conda:
-        "../envs/scanorama.yaml"  
+        "../envs/scanorama.yaml"
     params:
+        method="pca_scanorama",
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} pca_scanorama {input.data} {params.batch_key} {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --mode '{params.method}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --output_path '{output.path}' \
+            &> '{log}'
         """
 
-
-rule mnn:
+rule methods_mnn:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_mnn.py"
     output:
-        "outputs/{scenario}/{pipeline}_mnn.parquet"
+        path="outputs/{scenario}/" + config["preproc"] + "_mnn.parquet"
     log:
-        "logs/{scenario}/{pipeline}_mnn.log"
+        "logs/{scenario}/" + config["preproc"] + "_mnn.log"
     conda:
-        "../envs/mnn.yaml"  
+        "../envs/mnn.yaml"
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} {params.batch_key} {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --output_path '{output.path}' \
+            &> '{log}'
         """
 
-rule desc:
+rule methods_desc:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_desc.py"
     output:
-        "outputs/{scenario}/{pipeline}_desc.parquet"
+        path="outputs/{scenario}/" + config["preproc"] + "_desc.parquet"
     log:
-        "logs/{scenario}/{pipeline}_desc.log"
+        "logs/{scenario}/" + config["preproc"] + "_desc.log"
     conda:
-        "../envs/desc.yaml"  
+        "../envs/desc.yaml"
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
+        smoketest="--smoketest" if config["smoketest"] else "",
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} {params.batch_key} {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --output_path '{output.path}' \
+            {params.smoketest} \
+            &> '{log}'
         """
 
-rule scvi:
+rule methods_scvi:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_scvi.py"
     output:
-        "outputs/{scenario}/{pipeline}_scvi.parquet",
+        path="outputs/{scenario}/" + config["preproc"] + "_scvi.parquet"
     log:
-        "logs/{scenario}/{pipeline}_scvi.log"
+        "logs/{scenario}/" + config["preproc"] + "_scvi.log"
     conda:
-        "../envs/scvi.yaml"  
+        "../envs/scvi.yaml"
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
         label_key=config["label_key"],
-        smoketest=config["smoketest"],
+        smoketest="--smoketest" if config["smoketest"] else "",
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} {params.batch_key} {params.label_key} {output} --smoketest={params.smoketest} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --label_key '{params.label_key}' \
+            --output_path '{output.path}' \
+            {params.smoketest} \
+            &> '{log}'
         """
 
-
-rule sysvi:
+rule methods_sysvi:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_sysvi.py"
     output:
-        "outputs/{scenario}/{pipeline}_sysvi.parquet",
+        path="outputs/{scenario}/" + config["preproc"] + "_sysvi.parquet"
     log:
-        "logs/{scenario}/{pipeline}_sysvi.log"
+        "logs/{scenario}/" + config["preproc"] + "_sysvi.log"
     conda:
-        "../envs/sysvi.yaml"  
+        "../envs/sysvi.yaml"
     params:
-        batch_key=config["batch_key"],
+        batch_key=','.join(config["batch_key"]),
         label_key=config["label_key"],
-        smoketest=config["smoketest"],
+        smoketest="--smoketest" if config["smoketest"] else "",
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} '{params.batch_key}' {params.label_key} {output} --smoketest={params.smoketest} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --label_key '{params.label_key}' \
+            --output_path '{output.path}' \
+            {params.smoketest} \
+            &> '{log}'
         """
 
-rule scpoli:
+rule methods_scpoli:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_scpoli.py"
     output:
-        "outputs/{scenario}/{pipeline}_scpoli.parquet",
+        path="outputs/{scenario}/" + config["preproc"] + "_scpoli.parquet"
     log:
-        "logs/{scenario}/{pipeline}_scpoli.log"
+        "logs/{scenario}/" + config["preproc"] + "_scpoli.log"
     conda:
-        "../envs/scpoli.yaml"  
+        "../envs/scpoli.yaml"
     params:
-        batch_key=config["batch_key"],
+        batch_key=','.join(config["batch_key"]),
         label_key=config["label_key"],
-        smoketest=config["smoketest"],
+        smoketest="--smoketest" if config["smoketest"] else "",
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && python {input.script} {input.data} '{params.batch_key}' {params.label_key} {output} --smoketest={params.smoketest} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --label_key '{params.label_key}' \
+            --output_path '{output.path}' \
+            {params.smoketest} \
+            &> '{log}'
         """
 
-
-rule fastMNN:
+rule methods_fastMNN:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_fastmnn.R"
     output:
-        "outputs/{scenario}/{pipeline}_fastMNN.parquet",
+        path="outputs/{scenario}/" + config["preproc"] + "_fastMNN.parquet"
     log:
-        "logs/{scenario}/{pipeline}_fastmnn.log"
+        "logs/{scenario}/" + config["preproc"] + "_fastmnn.log"
     conda:
-        "../envs/fastmnn.yaml"  
+        "../envs/fastmnn.yaml"
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && Rscript {input.script} {input.data} {params.batch_key} {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        Rscript '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --output_path '{output.path}' \
+            &> '{log}'
         """
 
-rule seurat_cca:
+rule methods_seurat_cca:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
-        script="scripts/correct_with_seurat.R",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
+        script="scripts/correct_with_seurat.R"
     output:
-        "outputs/{scenario}/{pipeline}_seurat_cca.parquet",
+        path="outputs/{scenario}/" + config["preproc"] + "_seurat_cca.parquet"
     log:
-        "logs/{scenario}/{pipeline}_seurat_cca.log"
+        "logs/{scenario}/" + config["preproc"] + "_seurat_cca.log"
     conda:
-        "../envs/seurat.yaml"  
+        "../envs/seurat.yaml"
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
+        method="cca",
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && Rscript {input.script} {input.data} {params.batch_key} cca {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        Rscript '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --method '{params.method}' \
+            --output_path '{output.path}' \
+            &> '{log}'
         """
 
-
-rule seurat_rpca:
+rule methods_seurat_rpca:
     input:
-        data="outputs/{scenario}/{pipeline}.parquet",
-        script="scripts/correct_with_seurat.R",
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
+        script="scripts/correct_with_seurat.R"
     output:
-        "outputs/{scenario}/{pipeline}_seurat_rpca.parquet",
+        path="outputs/{scenario}/" + config["preproc"] + "_seurat_rpca.parquet"
     log:
-        "logs/{scenario}/{pipeline}_seurat_rpca.log"
+        "logs/{scenario}/" + config["preproc"] + "_seurat_rpca.log"
     conda:
-        "../envs/seurat.yaml"  
+        "../envs/seurat.yaml"
     params:
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
+        method="rpca",
     shell:
         """
-        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && Rscript {input.script} {input.data} {params.batch_key} rpca {output} &> {log}
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        Rscript '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --method '{params.method}' \
+            --output_path '{output.path}' \
+            &> '{log}'
         """

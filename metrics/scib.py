@@ -23,11 +23,60 @@ logger = logging.getLogger(__name__)
 CLUSTER_KEY = "Metadata_Cluster"
 
 
-def _add_moa_info(meta) -> pd.DataFrame:
+def _load_opentargets_moa_info() -> pd.DataFrame:
     # from https://github.com/theislab/jump-integrate-reproducibility/blob/main/experiments/get_moas_from_opentarget/get_moas_from_opentarget.ipynb
-    moa_info = pd.read_parquet("inputs/metadata/opentargets_moa_target2_eval.parquet")
+    return pd.read_parquet("inputs/metadata/opentargets_moa_target2_eval.parquet")
 
-    return meta.merge(moa_info, on="Metadata_InChIKey", how="left")
+def _merge_with_duplication(
+    adata: ad.AnnData, 
+    meta: pd.DataFrame, 
+    merge_key: str = "Metadata_InChIKey",
+    copy_obsm: bool = True,
+) -> ad.AnnData:
+    """Returns a modified AnnData object with duplicated rows when 'meta' contained multiple annotations for them."""
+
+    if not isinstance(adata, ad.AnnData):
+        raise ValueError("adata must be an AnnData object.")
+    
+    if not isinstance(meta, pd.DataFrame):
+        raise ValueError("meta must be a pandas DataFrame.")
+    
+    if not isinstance(merge_key, str):
+        raise ValueError("merge_key must be a string.")
+
+    if merge_key not in adata.obs.columns or merge_key not in meta.columns:
+        raise ValueError(f"Key to merge on ('{merge_key}') not found in both adata.obs and meta.")
+
+    # Add positional integer indices to adata.obs
+    adata.obs["index_old"] = np.arange(adata.n_obs)
+
+    # to preserve original indices
+    # adata.obs = adata.obs.reset_index().rename(columns={"index": "index_old"})
+
+    merged_obs = adata.obs.merge(
+        meta,
+        on=merge_key,
+        how="left",
+        suffixes=("", "_meta")
+    )
+
+    # extract indices to replicate adata.X and other attributes
+    replicate_indices = merged_obs["index_old"].values.astype(int)
+    X_new = adata.X[replicate_indices, :]
+
+    # create new AnnData object with duplicated rows
+    adata_new = ad.AnnData(
+        X=X_new,
+        obs=merged_obs.drop(columns="index_old").reset_index(drop=True),
+    )
+    if copy_obsm:
+        for key in adata.obsm.keys():
+            obsm = adata.obsm[key].iloc[replicate_indices, :]
+            obsm = obsm.reset_index(drop=True)
+            obsm.index = adata_new.obs.index
+            adata_new.obsm[key] = obsm
+
+    return adata_new
 
 def _subset_obs_based_on_eval_label_presence(meta, feats, eval_key) -> pd.DataFrame:
     # using mask because pd.DataFrames and np.arrays index differently
@@ -37,6 +86,22 @@ def _subset_obs_based_on_eval_label_presence(meta, feats, eval_key) -> pd.DataFr
     
     return feats_subset, meta_subset
 
+def aggregate_method_outputs_into_adata(unintegrated_path, integrated_paths, output_path):
+
+    # extract integration method name from paths
+    base_path = unintegrated_path.replace(".parquet", "")
+    name_path_mapping = {
+        path.replace(f"{base_path}_", "").replace(".parquet", ""): path for path in integrated_paths
+    }
+
+    # make baseline adata and then add integrated embeddings to obsm for scib-metrics
+    adata = to_anndata(unintegrated_path)
+
+    for name, path in name_path_mapping.items():
+        integrated_adata = to_anndata(path).to_df()
+        adata.obsm[name] = integrated_adata
+
+    adata.write_h5ad(output_path, compression="gzip")
 
 def filter_dmso_anndata(parquet_path):
     adata = to_anndata(parquet_path)
@@ -50,7 +115,6 @@ def filter_dmso(parquet_path):
     meta = meta[non_dmso_ix].reset_index(drop=True).copy()
     feats = feats[non_dmso_ix]
     return meta, feats, features
-
 
 def cluster(parquet_path, adata_path):
     adata = filter_dmso_anndata(parquet_path)
@@ -85,7 +149,7 @@ def ari(adata_path, label_key, ari_path):
 def asw(parquet_path, eval_key, asw_path):
 
     meta, feats, _ = filter_dmso(parquet_path)
-    meta = _add_moa_info(meta)
+    # meta = _add_moa_info(meta)
 
     if eval_key not in meta.columns:
         raise ValueError(f"Eval key '{eval_key}' not in metadata")

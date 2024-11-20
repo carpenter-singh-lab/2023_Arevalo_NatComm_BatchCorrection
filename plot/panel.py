@@ -107,8 +107,13 @@ def colorby(embds: pd.DataFrame, column: str) -> pd.Series:
 
 
 def results_table(pivot_path: str, fig_path: str):
-    fig = plt.figure(figsize=(14, 9))
-    spec = fig.add_gridspec(2, 11, height_ratios=[2.5, 0.1])
+    # load data we'll visulise so we can dynamically adjust the plot sizes
+    data = pd.read_parquet(pivot_path)
+    n_columns = data.shape[1]
+    fig_width = max(24, n_columns * 1.5)
+
+    fig = plt.figure(figsize=(fig_width, 9))
+    spec = fig.add_gridspec(2, n_columns, height_ratios=[2.5, 0.1])
     add_table(pivot_path, fig, spec)
     plt.savefig(fig_path, bbox_inches="tight")
 
@@ -233,10 +238,16 @@ def scenario_5(embd_path: str, pivot_path: str, fig_path: str):
     plt.savefig(fig_path, bbox_inches="tight", dpi=300)
 
 def scenario_6(embd_path: str, pivot_path: str, fig_path: str):
-    fig = plt.figure(figsize=(24, 18))
+    
+    # load data we'll visulise so we can dynamically adjust the plot sizes
+    data = pd.read_parquet(embd_path)
+    n_columns = data.shape[1]
+    fig_width = max(24, n_columns * 1.5)
+
+    fig = plt.figure(figsize=(fig_width, 18))
     spec = fig.add_gridspec(
         5, 
-        13, # adjust when more methods are added
+        n_columns,
         height_ratios=[2.5, 0.1, 0.8, 0.8, 0.7]
     )
     ax = add_table(pivot_path, fig, spec)

@@ -39,7 +39,8 @@ def pca(parquet_path, pca_path):
     meta.to_parquet(pca_path)
 
 
-def umap(adata_path, umap_path):
+def umap(adata_path, umap_paths):
+    print(umap_paths)
     adata = ad.read_h5ad(adata_path)
     sc.tl.umap(adata)  # Generates X_umap
     meta = adata.obs

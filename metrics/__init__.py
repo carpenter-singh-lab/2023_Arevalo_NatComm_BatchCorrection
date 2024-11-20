@@ -7,6 +7,7 @@ from .map import (
     average_precision_nonrep,
     mean_average_precision,
 )
+import numpy as np
 
 DIMENSION_MAP = {
     'silhouette_batch': 'batch',
@@ -30,24 +31,72 @@ DIMENSION_MAP = {
 }
 
 
-def concat(scib_path, negcon_path, nonrep_path, output_path):
-    print(scib_path)
+def concat_and_average_all_metrics(
+    scib_path: str,
+    map_path: str, 
+    metrics_redlist: list[str],
+    methods_redlist: list[str],
+    output_path: str
+):
+
     scib_scores = pd.read_parquet(scib_path)
+    map_scores = pd.read_parquet(map_path)
 
-    def map_summary(path, name):
-        map_scores = pd.read_parquet(path)
-        map_scores.dropna(inplace=True)
-        frac_p = map_scores['below_p'].sum() / len(map_scores)
-        frac_q = map_scores['below_corrected_p'].sum() / len(map_scores)
-        mean_map = map_scores['mean_average_precision'].mean()
-        scib_scores[f'{name}_mean_map'] = mean_map
-        scib_scores[f'{name}_fraction_below_p'] = frac_p
-        scib_scores[f'{name}_fraction_below_corrected_p'] = frac_q
+    expected_cols = [
+        "eval_key",
+        "method",
+        "metric",
+        "value",
+        "metric_type",
+    ]
 
-    map_summary(negcon_path, 'negcon')
-    map_summary(nonrep_path, 'nonrep')
+    assert all(col in scib_scores.columns for col in expected_cols)
+    assert all(col in map_scores.columns for col in expected_cols)
 
-    scib_scores = scib_scores.reset_index()
-    scib_scores['dimension'] = scib_scores['metric'].map(DIMENSION_MAP)
-    print(scib_scores)
-    scib_scores.to_parquet(output_path)
+    # assert correct col order
+    scib_scores = scib_scores[expected_cols]
+    map_scores = map_scores[expected_cols]
+
+    # concatenate and sort scores
+    all_scores = pd.concat([scib_scores, map_scores], ignore_index=True)
+    all_scores = all_scores.sort_values(by=["eval_key", "method", "metric"])
+
+    # remove metrics and methods we don't want to include
+    all_scores = all_scores[~all_scores["metric"].isin(metrics_redlist)]
+    all_scores = all_scores[~all_scores["method"].isin(methods_redlist)]
+
+    # aggregate columns
+    aggregate_scores = []
+
+    for eval_key in all_scores.eval_key.unique():
+        for method in all_scores.method.unique():
+            per_method_means = {}
+            for group in ["batch", "bio"]:
+                local_scores = all_scores[
+                    (all_scores.eval_key == eval_key) 
+                    & (all_scores.method == method)
+                    & (all_scores.metric_type == ("batch_correction" if group == "batch" else "bio_conservation"))
+                ]
+                per_method_means[group] = np.mean(local_scores.value)
+                aggregate_scores.append({
+                    "eval_key": eval_key,
+                    "method": method,
+                    "metric": f"mean_{group}",
+                    "value": per_method_means[group],
+                    "metric_type": "aggregate_score",
+                })
+            
+            aggregate_scores.append({
+                "eval_key": eval_key,
+                "method": method,
+                "metric": "mean_overall",
+                "value": 0.4 * per_method_means["batch"] + 0.6 * per_method_means["bio"],
+                "metric_type": "aggregate_score",
+            })
+            
+    scores_with_means = pd.concat([all_scores, pd.DataFrame(aggregate_scores)])
+    scores_with_means = scores_with_means.sort_values(by=["eval_key", "method", "metric"])
+    scores_with_means = scores_with_means.reset_index(drop=True)
+    
+    scores_with_means.reset_index(drop=True).to_parquet(output_path, index=False)
+        

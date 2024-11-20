@@ -8,11 +8,11 @@ from preprocessing.io import merge_parquet, split_parquet
 from pycytominer.operations import Spherize
 
 
-def log_uniform_sampling(min_=-5, max_=3, size=25, seed=None):
+def log_uniform_sampling(min_=-5, max_=3, size=25, seed=42):
     if seed is None:
         seed = [6, 12, 2022]
     rng = np.random.default_rng(seed)
-    return 10.**rng.uniform(min_, max_, size=size)
+    return np.round(10.**rng.uniform(min_, max_, size=size), 3)
 
 
 def sphering(

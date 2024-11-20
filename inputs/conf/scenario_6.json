@@ -1,8 +1,9 @@
 {
     "scenario": "scenario_6",
-    "smoketest": 1,
+    "smoketest": true,
     "iqr_scale": 100,
     "clip_value": 500,
+    "preproc": "mad_int_featselect",
     "sources": [
         "source_2",
         "source_6"
@@ -12,11 +13,5 @@
     ],
     "batch_key": ["Metadata_Source", "Metadata_Batch"],
     "label_key": "Metadata_JCP2022",
-    "eval_key": ["Metadata_JCP2022", "Metadata_MOA"],
-    "column_norm": "Metadata_JCP2022",
-    "values_norm": [
-        "DMSO"
-    ],
-    "sphering_method": "ZCA-cor",
-    "sphering_n_opts": 25
+    "eval_key": ["Metadata_JCP2022"]
 }

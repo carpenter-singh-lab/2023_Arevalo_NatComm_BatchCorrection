@@ -21,8 +21,9 @@ rule pca:
 
 rule umap:
     input:
-        f"outputs/{{scenario}}/metrics/{criteria}/scib/{{pipeline}}_clusters.h5ad",
+        adata_path="outputs/{scenario}/{pipeline}_all_methods.h5ad",
     output:
         "outputs/{scenario}/projection/{pipeline}_umap.parquet",
+        expand("outputs/{{scenario}}/projection/{{pipeline}}_{method}_umap.parquet", method=METHODS),
     run:
         proj.umap(*input, *output)

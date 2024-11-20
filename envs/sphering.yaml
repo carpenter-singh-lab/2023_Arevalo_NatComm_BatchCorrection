@@ -1,0 +1,12 @@
+name: batchcp_correct_sphering
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - anndata
+  - pandas
+  - pip=24.0
+  - scanpy
+  - numpy
+  - pyarrow
+  - scikit-learn

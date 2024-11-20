@@ -1,5 +1,5 @@
-import sys
 import logging
+import argparse
 import scanpy as sc
 from preprocessing import io
 
@@ -17,8 +17,16 @@ def correct_with_combat(dframe_path: str, batch_key: str, output_path: str):
 
 
 if __name__ == "__main__":
-    dframe_path = sys.argv[1]
-    batch_key = sys.argv[2]
-    output_path = sys.argv[3]
+    parser = argparse.ArgumentParser(description="Perform Combat correction on data.")
 
-    correct_with_combat(dframe_path, batch_key, output_path)
+    parser.add_argument("--input_data", required=True, help="Path to input data.")
+    parser.add_argument("--batch_key", required=True, help="Batch key.")
+    parser.add_argument("--output_path", required=True, help="Path to save corrected data.")
+
+    args = parser.parse_args()
+
+    correct_with_combat(
+        dframe_path=args.input_data,
+        batch_key=args.batch_key,
+        output_path=args.output_path,
+    )

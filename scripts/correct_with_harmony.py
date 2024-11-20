@@ -1,4 +1,4 @@
-import sys
+import argparse
 import logging
 from harmonypy import run_harmony
 from preprocessing import io
@@ -6,9 +6,8 @@ import scanpy as sc
 
 logger = logging.getLogger(__name__)
 
-def correct_with_harmony(dframe_path: str, batch_key: str, output_path: str, **kwargs):
-    '''Harmony correction'''
-    smoketest = kwargs.get("smoketest", 0)
+def correct_with_harmony(dframe_path: str, batch_key: list, output_path: str, smoketest=False):
+    """Harmony correction"""
     n_max_iter = 2 if smoketest else 999999
 
     meta, feats, features = io.split_parquet(dframe_path)
@@ -17,44 +16,57 @@ def correct_with_harmony(dframe_path: str, batch_key: str, output_path: str, **k
         meta,
         batch_key,
         max_iter_harmony=n_max_iter,
-        nclust=300
-    )  # Number of compounds
+        nclust=300  # Number of compounds
+    )
 
     feats = harmony_out.Z_corr.T
-    features = [f'harmony_{i}' for i in range(feats.shape[1])]
+    features = [f"harmony_{i}" for i in range(feats.shape[1])]
     io.merge_parquet(meta, feats, features, output_path)
 
-def correct_with_pca_harmony(dframe_path: str, batch_key: str, output_path: str, **kwargs):
-    '''Harmony correction with PCA'''
-    smoketest = kwargs.get("smoketest", 0)
+def correct_with_pca_harmony(dframe_path: str, batch_key: list, output_path: str, smoketest=False):
+    """Harmony correction with PCA"""
     n_max_iter = 2 if smoketest else 999999
 
     meta, feats, features = io.split_parquet(dframe_path)
-    n_latent = min(feats.shape) - 1  # required for arpack
-    logger.info('Computing PCA...')
+    n_latent = min(feats.shape) - 1  # Required for arpack
+    logger.info("Computing PCA...")
     sc.tl.pca(feats, n_comps=n_latent)  # Generates X_pca
-    logger.info('Computing PCA Done.')
+    logger.info("Computing PCA Done.")
     harmony_out = run_harmony(
         feats,
         meta,
         batch_key,
         max_iter_harmony=n_max_iter,
-        nclust=300
-    )  # Number of compounds
+        nclust=300  # Number of compounds
+    )
 
     feats = harmony_out.Z_corr.T
-    features = [f'harmony_{i}' for i in range(feats.shape[1])]
+    features = [f"harmony_{i}" for i in range(feats.shape[1])]
     io.merge_parquet(meta, feats, features, output_path)
 
 if __name__ == "__main__":
-    mode = sys.argv[1]
-    dframe_path = sys.argv[2]
-    batch_key = sys.argv[3]
-    output_path = sys.argv[4]
+    parser = argparse.ArgumentParser(description="Perform Harmony correction on data.")
+    parser.add_argument("--mode", choices=["harmony", "pca_harmony"], required=True, help="Correction mode to use.")
+    parser.add_argument("--input_data", required=True, help="Path to input data.")
+    parser.add_argument("--batch_key", required=True, help="Batch key.")
+    parser.add_argument("--output_path", required=True, help="Path to save corrected data.")
+    parser.add_argument("--smoketest", action="store_true", help="Run in smoketest mode (limited iterations).")
 
-    if mode == "harmony":
-        correct_with_harmony(dframe_path, batch_key, output_path)
-    elif mode == "pca_harmony":
-        correct_with_pca_harmony(dframe_path, batch_key, output_path)
+    args = parser.parse_args()
+
+    if args.mode == "harmony":
+        correct_with_harmony(
+            dframe_path=args.input_data,
+            batch_key=args.batch_key,
+            output_path=args.output_path,
+            smoketest=args.smoketest
+        )
+    elif args.mode == "pca_harmony":
+        correct_with_pca_harmony(
+            dframe_path=args.input_data,
+            batch_key=args.batch_key,
+            output_path=args.output_path,
+            smoketest=args.smoketest
+        )
     else:
         raise ValueError("Invalid mode. Choose either 'harmony' or 'pca_harmony'")

@@ -1,0 +1,28 @@
+name: batchcp_scibmetrics
+channels:
+  - conda-forge
+  - nvidia
+  - defaults
+dependencies:
+  - python>=3.10
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - anndata
+  - scanpy>=1.9  # from scib-metrics
+  - pynndescent
+  - igraph
+  - umap-learn>=0.5.0  # from scib-metrics
+  - pyarrow
+  - pip
+  - pip:
+    - jax
+    - jaxlib
+    - jax-cuda12-pjrt  # Change '12' based on your CUDA version
+    - jax-cuda12-plugin
+    - plottable
+    - scib-metrics
+    - copairs
+    - chex
