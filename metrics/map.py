@@ -142,12 +142,12 @@ def mean_average_precision(
     for eval_key in eval_keys:
         results[eval_key] = {}
         for embedding in adata.obsm.keys():
-            results[eval_key][embedding] = {}
+            results[eval_key][embedding.lower()] = {}
             for mode in ["negcon", "nonrep"]:
             
                 logger.info(f"Calculating {mode} mAP with eval_key '{eval_key}' for '{embedding}'.")
             
-                results[eval_key][embedding][mode] = calculate_map(
+                results[eval_key][embedding.lower()][mode] = calculate_map(
                     mode=mode,
                     metadata=adata.obs.copy(),
                     embedding=adata.obsm[embedding].copy(),
@@ -173,6 +173,6 @@ def mean_average_precision(
     tidy_results = pd.DataFrame(rows)
     tidy_results["metric_type"] = "bio_conservation"
        
-    print(tidy_results)
-    
     tidy_results.reset_index(drop=True).to_parquet(output_path, index=False)
+
+    logger.info(f"Finished calculating mAP scores for all {len(methods.keys())} embeddings.")

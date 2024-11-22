@@ -14,7 +14,8 @@ def correct_with_combat(dframe_path: str, batch_key: str, output_path: str):
 
     meta = adata.obs.reset_index(drop=True).copy()
     features = [f"combat_{i}" for i in range(vals.shape[1])]
-    io.merge_parquet(meta, vals, features, output_path)
+    io.merge_parquet(meta, vals, features, output_path)        
+    logger.info(f"Combat-corrected data saved successfully to {output_path}")
 
 
 if __name__ == "__main__":

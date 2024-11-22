@@ -139,52 +139,11 @@ def tidy_scores(metrics_files, metrics_redlist, methods_redlist, tidy_path):
 
 
 def pivot_scores(tidy_path, pivot_path):
-    print(tidy_path, pivot_path)
     scores = pd.read_parquet(tidy_path)
     scores = scores.pivot_table(
         index="method",
         columns=["eval_key", "metric_type", "metric"],
         values="value"
     )
-    print(scores)
-    # scores["eval_key"] = scores["eval_key"].fillna("Metadata_JCP2022") # HACK until all methods are pivoted
-    # eval_keys = scores["eval_key"].unique()
-    # scores["method"] = scores["method"].map(lambda x: METHOD_FMT.get(x, x))
-    # scores["metric"] = scores["metric"].map(lambda x: METRIC_FMT.get(x, x))
-
-    # for eval_key in eval_keys:
-
-    #     try:
-    #         scores[eval_key, "overall", "mean_batch"] =  scores[eval_key, "batch"].mean(axis=1)
-    #     except KeyError:
-    #         scores[eval_key, "overall", "mean_batch"] = None
-
-    #     try:
-    #         scores[eval_key, "overall", "mean_bio"] =  scores[eval_key, "bio"].mean(axis=1)
-    #     except KeyError:
-    #         scores[eval_key, "overall", "mean_bio"] = None
-        
-    #     if micro_mean:
-    #         scores[eval_key, "mean", "micro_mean"] = scores.mean(axis=1)
-    #     if macro_mean:
-    #         macro = (scores["bio"].mean(axis=1) + scores[eval_key, "batch"].mean(axis=1)) / 2
-    #         scores[eval_key, "mean", "macro_mean"] = macro
-
-    #     # This is the default weighting from the scIB manuscript
-    #     overall = 0.4 * scores[eval_key, "overall", "mean_batch"] + 0.6 * scores[eval_key, "overall", "mean_bio"]
-
-    #     scores[eval_key, "overall", "mean_overall"] = overall
-
-    # scores["overall", "overall", "mean_overall"] = np.nanmean([scores[eval_key, "overall", "mean_overall"] for eval_key in eval_keys], axis=0)
-
-    # scores = scores.sort_values(("overall", "overall", "mean_overall"), ascending=False)
-    # # agg_names = {
-    # #     "batch": "Batch correction",
-    # #     "bio": "Bio metrics",
-    # #     "overall": "Overall",
-    # # }
-    # scores.sort_index(axis=1, level=[0,1], inplace=True)
-
-    # # scores.rename(columns=agg_names, inplace=True)
     scores.index.name = "Method"
     scores.to_parquet(pivot_path)

@@ -1,7 +1,8 @@
 include: "scib.smk"
-include: "map.smk"
 include: "consistency.smk"
 include: "bbknn.smk"
+
+import logging
 
 
 metrics_baseline_pattern = (
@@ -69,5 +70,15 @@ rule metrics_mean_average_precision:
     params:
         plate_type=config["plate_types"],
         eval_keys=config["eval_key"],
+    log:
+        path=f"logs/{scenario}/{config['preproc']}_map_metrics.log"
     run:
+        logging.basicConfig(
+            filename=log.path,
+            filemode="w",
+            format="%(asctime)s - %(levelname)s - %(message)s",
+            level=logging.INFO
+        )
+        
+        logger = logging.getLogger()
         metrics.mean_average_precision(input.adata, output.path, params.plate_type, params.eval_keys)
