@@ -7,8 +7,8 @@ WORKFLOWS = [
 ]
 METHODS = [
     "scanorama",
+    # "mnn", # pain in the ass, we'll just use the R version fastMNN instead
     "fastMNN",
-    "mnn",
     "harmony",
     "combat",
     "desc",

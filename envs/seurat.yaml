@@ -5,6 +5,7 @@ dependencies:
   - r-arrow
   - r-dplyr
   - r-remotes
+  - r-optparse
   - r-seurat=4.4
   - r-seuratobject
   - r-matrixstats

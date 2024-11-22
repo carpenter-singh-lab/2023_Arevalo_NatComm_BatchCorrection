@@ -2,8 +2,6 @@ import argparse
 import logging
 import scanpy as sc
 from preprocessing import io
-import pandas as pd
-import numpy as np
 import anndata as ad
 
 logger = logging.getLogger(__name__)
@@ -12,7 +10,11 @@ logger = logging.getLogger(__name__)
 def correct_with_scanorama(parquet_path, batch_key, output_path, smoketest=False):
     """Scanorama correction on raw data"""
     import scanorama
+
     adata = io.to_anndata(parquet_path)
+
+    # Sort adata based on batch_key (needed for scanorama)
+    adata = adata[adata.obs.sort_values(by=batch_key).index]
 
     def split_adata_by_col(adata, col):
         """Split the AnnData object by a column"""
@@ -22,27 +24,17 @@ def correct_with_scanorama(parquet_path, batch_key, output_path, smoketest=False
             splits.append(adata[mask].copy())
         return splits
 
+    # batch-correct
     adatas_by_source = split_adata_by_col(adata, batch_key)
-    scanorama.integrate_scanpy(adatas_by_source)
+    scanorama.integrate_scanpy(adatas_by_source)  # modifies in-place
     corrected_adata = ad.concat(adatas_by_source)
 
-    # group values
-    col = pd.Series(data=meta.index, index=meta[batch_key])
-    indices = list(col.groupby(level=0).indices.values())
-    vals = [vals[ix] for ix in indices]
-
-    # correct
-    vals = assemble(vals, batch_size=5000)
-    vals = np.concatenate(vals)
-
-    # Recover original order for vals
-    indices = np.concatenate(indices)
-    sort_ix = np.argsort(indices)
-    vals = vals[sort_ix]
-
-    # Save file
+    # write to parquet as old pipeline
+    meta = corrected_adata.obs.reset_index(drop=True).copy()
+    vals = corrected_adata.obsm["X_scanorama"]
     features = [f"scanorama_{i}" for i in range(vals.shape[1])]
     io.merge_parquet(meta, vals, features, output_path)
+
 
 def correct_with_pca_scanorama(parquet_path, batch_key, output_path, smoketest=False):
     """Scanorama correction using PCA components"""
@@ -51,20 +43,19 @@ def correct_with_pca_scanorama(parquet_path, batch_key, output_path, smoketest=F
     # Sort adata based on batch_key (needed for scanorama)
     adata = adata[adata.obs.sort_values(by=batch_key).index]
 
-    # Determine number of principal components
-    n_pcs = 10 if smoketest else 50
-
-    # Compute PCA
-    sc.tl.pca(adata, n_comps=n_pcs)
+    # TODO(ttreis): Do these numbers make sense?
+    n_pcs = 2 if smoketest else 50
 
     # Use the PCA components in Scanorama
+    sc.tl.pca(adata, n_comps=n_pcs)
     sc.external.pp.scanorama_integrate(
         adata, key=batch_key, dimred="X_pca", adjusted_basis="X_scanorama"
     )
 
+    # write to parquet as old pipeline
     meta = adata.obs.reset_index(drop=True).copy()
     vals = adata.obsm["X_scanorama"]
-    features = [f"scanorama_{i}" for i in range(vals.shape[1])]
+    features = [f"pca_scanorama_{i}" for i in range(vals.shape[1])]
     io.merge_parquet(meta, vals, features, output_path)
 
 
@@ -109,6 +100,4 @@ if __name__ == "__main__":
             smoketest=args.smoketest,
         )
     else:
-        raise ValueError(
-            "Invalid mode. Choose either 'scanorama' or 'pca_scanorama'."
-        )
+        raise ValueError("Invalid mode. Choose either 'scanorama' or 'pca_scanorama'.")

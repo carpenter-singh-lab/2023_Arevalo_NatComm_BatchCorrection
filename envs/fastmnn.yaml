@@ -5,6 +5,7 @@ channels:
 dependencies:
   - r-arrow
   - r-dplyr
+  - r-optparse
   - r-remotes
   - bioconductor-batchelor
   - bioconductor-singlecellexperiment

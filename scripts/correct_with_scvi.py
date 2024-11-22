@@ -5,6 +5,7 @@ from preprocessing import io
 
 logger = logging.getLogger(__name__)
 
+
 def correct_with_scvi(
     dframe_path: str,
     batch_key: str | list,
@@ -12,7 +13,7 @@ def correct_with_scvi(
     output_path: str,
     smoketest: bool = False,
 ):
-    '''scVI correction'''
+    """scVI correction"""
     n_latent = 30
     n_epochs = 2 if smoketest else 999999
 
@@ -32,8 +33,9 @@ def correct_with_scvi(
     )
 
     vals = vae.get_latent_representation()
-    features = [f'scvi_{i}' for i in range(vals.shape[1])]
+    features = [f"scvi_{i}" for i in range(vals.shape[1])]
     io.merge_parquet(meta, vals, features, output_path)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Perform scVI correction on data.")
@@ -45,7 +47,9 @@ if __name__ == "__main__":
         help="Batch key",
     )
     parser.add_argument("--label_key", required=True, help="Label key")
-    parser.add_argument("--output_path", required=True, help="Path to save corrected data")
+    parser.add_argument(
+        "--output_path", required=True, help="Path to save corrected data"
+    )
     parser.add_argument(
         "--smoketest",
         action="store_true",
