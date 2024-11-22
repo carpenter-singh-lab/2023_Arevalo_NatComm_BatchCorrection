@@ -69,7 +69,6 @@ def _jitter(trace, win_size=0.02):
 
 def load_all_parquet(files, key_name="file_id", placeholder="baseline"):
     dframe = []
-    print(files)
     dframes = [pd.read_parquet(file) for file in files]
     prefix, suffix = _common_prefix_suffix(files)
     start = len(prefix)

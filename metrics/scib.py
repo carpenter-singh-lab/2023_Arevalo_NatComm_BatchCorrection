@@ -86,7 +86,11 @@ def _subset_obs_based_on_eval_label_presence(meta, feats, eval_key) -> pd.DataFr
     
     return feats_subset, meta_subset
 
-def aggregate_method_outputs_into_adata(unintegrated_path, integrated_paths, output_path):
+def aggregate_method_outputs_into_adata(
+    unintegrated_path: str, 
+    integrated_paths: str, 
+    output_path: str
+):
 
     # extract integration method name from paths
     base_path = unintegrated_path.replace(".parquet", "")

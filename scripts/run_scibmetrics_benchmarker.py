@@ -31,7 +31,6 @@ def run_scibmetrics_benchmarker(
         if eval_key == "Metadata_MOA":
             moa_meta = _load_opentargets_moa_info()
             adata_for_eval = _merge_with_duplication(adata.copy(), moa_meta)
-            print(adata_for_eval)
 
             # subset adata to drugs with MOA info
             adata_for_eval = adata_for_eval[~adata_for_eval.obs[eval_key].isna()].copy()

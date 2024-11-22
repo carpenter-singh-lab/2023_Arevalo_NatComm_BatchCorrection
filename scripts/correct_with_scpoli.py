@@ -53,7 +53,6 @@ def correct_with_scpoli(
     model.model.eval()
     vals = model.get_latent(adata, mean=True)
     features = [f"scpoli_{i}" for i in range(vals.shape[1])]
-    print(meta, vals.shape, features, output_path)
     io.merge_parquet(meta, vals, features, output_path)
 
 

@@ -120,7 +120,6 @@ def write_parquet(sources, plate_types, output_file):
     # Efficient merge
     meta = load_metadata(sources, plate_types)
     add_pert_type(meta)
-    print(meta.columns)
     add_row_col(meta)
     add_microscopy_info(meta)
     foreign_key = ['Metadata_Source', 'Metadata_Plate', 'Metadata_Well']

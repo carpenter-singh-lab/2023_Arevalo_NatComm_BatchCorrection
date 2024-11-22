@@ -36,8 +36,6 @@ def correct_with_sysvi(
         actual_batch_key = batch_key
         categorical_covariate_keys = [None]
 
-    print(actual_batch_key, categorical_covariate_keys)
-
     SysVI.setup_anndata(
         adata,
         batch_key=actual_batch_key,

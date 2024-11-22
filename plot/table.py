@@ -14,7 +14,6 @@ def add_colorbar(fig, ax_colorbar):
     ax_colorbar.xaxis.set_ticks_position("top")
     ax_colorbar.set_ylabel("Score ", ha="right", rotation="horizontal")
 
-
 def white_yellow_green_cm():
     lut_size = 256
     spec = [
@@ -57,7 +56,6 @@ def draw(pivot_path: str, ax: plt.Axes):
     Greens = matplotlib.cm.get_cmap("Greens")
 
     # extract labels from columns so we can construct queries later
-    print(df)
     eval_keys = df.columns.get_level_values("eval_key").unique()
     metric_type_keys = df.columns.get_level_values("metric_type").unique()
     metric_keys = df.columns.get_level_values("metric").unique().drop(["mean_batch", "mean_bio", "mean_overall"])
@@ -68,8 +66,6 @@ def draw(pivot_path: str, ax: plt.Axes):
         "_".join(filter(None, map(str, col))).strip() if isinstance(col, tuple) else col
         for col in df_for_table.columns.values
     ]
-    print(df_for_table.columns)
-    # df_for_table.fillna(0, inplace=True)  # TMP HACK
 
     # Add first column for the method names
     column_definitions = [
@@ -97,7 +93,6 @@ def draw(pivot_path: str, ax: plt.Axes):
         mean_col_fstring_tuples = []
 
         for metric_type in metric_type_keys:
-            print(metric_type)
             # Skip 'aggregate_score' as it contains mean values
             if metric_type == 'aggregate_score':
                 continue
