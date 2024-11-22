@@ -27,7 +27,7 @@ def correct_with_harmony(
     io.merge_parquet(meta, feats, features, output_path)
 
 
-def correct_with_pca_harmony(
+def correct_with_harmony_pca(
     dframe_path: str, batch_key: list, output_path: str, smoketest=False
 ):
     """Harmony correction with PCA"""
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Perform Harmony correction on data.")
     parser.add_argument(
         "--mode",
-        choices=["harmony", "pca_harmony"],
+        choices=["harmony", "harmony_pca"],
         required=True,
         help="Correction mode to use.",
     )
@@ -79,12 +79,12 @@ if __name__ == "__main__":
             output_path=args.output_path,
             smoketest=args.smoketest,
         )
-    elif args.mode == "pca_harmony":
-        correct_with_pca_harmony(
+    elif args.mode == "harmony_pca":
+        correct_with_harmony_pca(
             dframe_path=args.input_data,
             batch_key=args.batch_key,
             output_path=args.output_path,
             smoketest=args.smoketest,
         )
     else:
-        raise ValueError("Invalid mode. Choose either 'harmony' or 'pca_harmony'")
+        raise ValueError("Invalid mode. Choose either 'harmony' or 'harmony_pca'")

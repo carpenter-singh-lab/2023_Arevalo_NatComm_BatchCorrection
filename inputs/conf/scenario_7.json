@@ -1,24 +1,20 @@
 {
     "scenario": "scenario_7",
-    "smoketest": 0,
+    "smoketest": false,
     "iqr_scale": 100,
     "clip_value": 500,
+    "preproc": "mad_int_featselect",
     "sources": [
-        "source_6"
+        "source_2",
+        "source_3",
+        "source_6",
+        "source_8",
+        "source_10"
     ],
     "plate_types": [
         "TARGET2"
     ],
-    "seurat_methods": [
-        "cca",
-        "rpca"
-    ],
-    "batch_key": "Metadata_Batch",
+    "batch_key": ["Metadata_Source", "Metadata_Batch"],
     "label_key": "Metadata_JCP2022",
-    "column_norm": "Metadata_JCP2022",
-    "values_norm": [
-        "DMSO"
-    ],
-    "sphering_method": "ZCA-cor",
-    "sphering_n_opts": 25
+    "eval_key": ["Metadata_JCP2022", "Metadata_MOA"]
 }

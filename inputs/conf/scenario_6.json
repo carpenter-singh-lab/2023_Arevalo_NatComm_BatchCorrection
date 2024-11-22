@@ -1,6 +1,6 @@
 {
     "scenario": "scenario_6",
-    "smoketest": true,
+    "smoketest": false,
     "iqr_scale": 100,
     "clip_value": 500,
     "preproc": "mad_int_featselect",

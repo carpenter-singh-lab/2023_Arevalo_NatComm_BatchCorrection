@@ -3,16 +3,51 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from plottable import ColumnDefinition, Table
 from plottable.plots import bar
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
 
+def add_colorbars(fig, spec, n_columns, colorbar_specs):
+    """Creates a group of colorbars that is centered below the table."""
+    bar_width_fraction = 0.12
+    padding_fraction = 0.04
 
-def add_colorbar(fig, ax_colorbar):
-    fig.colorbar(
-        get_scalar_mapppable([]),
-        cax=ax_colorbar,
-        orientation="horizontal",
-    )
-    ax_colorbar.xaxis.set_ticks_position("top")
-    ax_colorbar.set_ylabel("Score ", ha="right", rotation="horizontal")
+    # Total width of all colorbars and the gaps between them
+    total_width_fraction = len(colorbar_specs) * bar_width_fraction + (len(colorbar_specs) - 1) * padding_fraction
+
+    # Calculate starting column to center the group
+    start_triplet_fraction = (1 - total_width_fraction) / 2
+    start_triplet_col = int(start_triplet_fraction * n_columns)
+
+    # Calculate the width of each colorbar and spacing in columns
+    bar_width_cols = int(bar_width_fraction * n_columns)
+    padding_cols = int(padding_fraction * n_columns)
+
+    for i, colorbar_spec in enumerate(colorbar_specs):
+        cmap = colorbar_spec["cmap"]
+        label = colorbar_spec["label"]
+
+        scalar_mappable = ScalarMappable(norm=Normalize(vmin=0, vmax=1), cmap=cmap)
+
+        # Compute the exact start and end columns for each colorbar
+        start_col = (start_triplet_col + i * (bar_width_cols + padding_cols)) + 2
+        end_col = start_col + bar_width_cols
+
+        # Add the colorbar
+        ax_colorbar = fig.add_subplot(spec[1, slice(start_col, end_col)])
+        cbar = fig.colorbar(
+            scalar_mappable,
+            cax=ax_colorbar,
+            orientation="horizontal",
+        )
+
+        # Add title above and numbers (ticks) below
+        ax_colorbar.set_title(label, pad=8, fontsize=10)
+        cbar.ax.xaxis.set_ticks_position("bottom")
+        cbar.ax.xaxis.set_label_position("bottom")
+        ax_colorbar.xaxis.label.set_size(8)
+
+  
+
 
 def white_yellow_green_cm():
     lut_size = 256
@@ -44,16 +79,18 @@ def get_scalar_mapppable(col_data, norm_type=None):
     return m
 
 
-def draw(pivot_path: str, ax: plt.Axes):
+def draw_table(pivot_path: str, ax: plt.Axes, cbar_specs):
     """
     Adapted from:
     https://github.com/yoseflab/scib-metrics/blob/0.4.1/src/scib_metrics/benchmark/_core.py#L276-L364
     """
     df = pd.read_parquet(pivot_path)
 
-    # prepare cmaps so we can pass them as callables
-    Blues = matplotlib.cm.get_cmap("Blues")
-    Greens = matplotlib.cm.get_cmap("Greens")
+    # extract cmaps for the respective metric categories
+    batch_cmap = next(spec["cmap"] for spec in cbar_specs if spec["label"] == "Batch correction metrics")
+    bio_cmap = next(spec["cmap"] for spec in cbar_specs if spec["label"] == "Bio conservation metrics")
+    aggregate_cmap = next(spec["cmap"] for spec in cbar_specs if spec["label"] == "Aggregate scores")
+
 
     # extract labels from columns so we can construct queries later
     eval_keys = df.columns.get_level_values("eval_key").unique()
@@ -77,7 +114,7 @@ def draw(pivot_path: str, ax: plt.Axes):
     # define how circles and barplots look
     circle_props = {"ha": "center", "bbox": {"boxstyle": "circle", "pad": 0.25}}
     barplot_props = {
-        "cmap": matplotlib.cm.YlGnBu,
+        "cmap": aggregate_cmap,
         "plot_bg_bar": False,
         "annotate": True,
         "height": 0.9,
@@ -107,7 +144,7 @@ def draw(pivot_path: str, ax: plt.Axes):
                         title=metric.replace("_", "\n", 1),
                         textprops=circle_props,
                         width=1,
-                        cmap=Blues if metric_type == "batch_correction" else Greens,
+                        cmap=batch_cmap if metric_type == "batch_correction" else bio_cmap,
                         group=eval_key,
                         formatter="{:.2f}",
                     )

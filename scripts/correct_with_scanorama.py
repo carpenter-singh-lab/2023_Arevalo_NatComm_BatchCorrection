@@ -36,7 +36,7 @@ def correct_with_scanorama(parquet_path, batch_key, output_path, smoketest=False
     io.merge_parquet(meta, vals, features, output_path)
 
 
-def correct_with_pca_scanorama(parquet_path, batch_key, output_path, smoketest=False):
+def correct_with_scanorama_pca(parquet_path, batch_key, output_path, smoketest=False):
     """Scanorama correction using PCA components"""
     adata = io.to_anndata(parquet_path)
 
@@ -44,18 +44,17 @@ def correct_with_pca_scanorama(parquet_path, batch_key, output_path, smoketest=F
     adata = adata[adata.obs.sort_values(by=batch_key).index]
 
     # TODO(ttreis): Do these numbers make sense?
-    n_pcs = 2 if smoketest else 50
+    n_comps = 2 if smoketest else 50
 
-    # Use the PCA components in Scanorama
-    sc.tl.pca(adata, n_comps=n_pcs)
+    sc.pp.pca(adata, svd_solver="arpack", n_comps=n_comps)
     sc.external.pp.scanorama_integrate(
-        adata, key=batch_key, dimred="X_pca", adjusted_basis="X_scanorama"
+        adata, key=batch_key, basis="X_pca", adjusted_basis="X_scanorama"
     )
 
     # write to parquet as old pipeline
     meta = adata.obs.reset_index(drop=True).copy()
     vals = adata.obsm["X_scanorama"]
-    features = [f"pca_scanorama_{i}" for i in range(vals.shape[1])]
+    features = [f"scanorama_pca_{i}" for i in range(vals.shape[1])]
     io.merge_parquet(meta, vals, features, output_path)
 
 
@@ -67,8 +66,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--mode",
         required=True,
-        choices=["scanorama", "pca_scanorama"],
-        help="Correction mode to use: 'scanorama' or 'pca_scanorama'.",
+        choices=["scanorama", "scanorama_pca"],
+        help="Correction mode to use: 'scanorama' or 'scanorama_pca'.",
     )
     parser.add_argument(
         "--input_data", required=True, help="Path to the input data in Parquet format."
@@ -92,12 +91,12 @@ if __name__ == "__main__":
             output_path=args.output_path,
             smoketest=args.smoketest,
         )
-    elif args.mode == "pca_scanorama":
-        correct_with_pca_scanorama(
+    elif args.mode == "scanorama_pca":
+        correct_with_scanorama_pca(
             parquet_path=args.input_data,
             batch_key=args.batch_key,
             output_path=args.output_path,
             smoketest=args.smoketest,
         )
     else:
-        raise ValueError("Invalid mode. Choose either 'scanorama' or 'pca_scanorama'.")
+        raise ValueError("Invalid mode. Choose either 'scanorama' or 'scanorama_pca'.")

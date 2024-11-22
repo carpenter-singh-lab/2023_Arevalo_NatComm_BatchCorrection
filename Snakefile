@@ -7,14 +7,17 @@ WORKFLOWS = [
 ]
 METHODS = [
     "scanorama",
+    "scanorama_pca",
     # "mnn", # pain in the ass, we'll just use the R version fastMNN instead
     "fastMNN",
     "harmony",
+    # "harmony_pca", # performs the same as normal harmony
     "combat",
     "desc",
     "scvi",
     "sysvi",
     "scpoli",
+    # "scpoli_pca", # performs quite a bit worse than normal scpoli
     "sphering",
     "seurat_cca",
     "seurat_rpca",

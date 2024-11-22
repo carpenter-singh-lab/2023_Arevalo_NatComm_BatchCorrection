@@ -83,14 +83,14 @@ rule methods_harmony:
             &> '{log}'
         """
 
-rule methods_pca_harmony:
+rule methods_harmony_pca:
     input:
         data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_harmony.py"
     output:
-        path="outputs/{scenario}/" + config["preproc"] + "_pca_harmony.parquet"
+        path="outputs/{scenario}/" + config["preproc"] + "_harmony_pca.parquet"
     log:
-        "logs/{scenario}/" + config["preproc"] + "_pca_harmony.log"
+        "logs/{scenario}/" + config["preproc"] + "_harmony_pca.log"
     conda:
         "../envs/harmony.yaml"
     params:
@@ -100,7 +100,7 @@ rule methods_pca_harmony:
         """
         export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
         python '{input.script}' \
-            --mode 'pca_harmony' \
+            --mode 'harmony_pca' \
             --input_data '{input.data}' \
             --batch_key '{params.batch_key}' \
             --output_path '{output.path}' \
@@ -132,18 +132,18 @@ rule methods_scanorama:
             &> '{log}'
         """
 
-rule methods_pca_scanorama:
+rule methods_scanorama_pca:
     input:
         data="outputs/{scenario}/" + config["preproc"] + ".parquet",
         script="scripts/correct_with_scanorama.py"
     output:
-        path="outputs/{scenario}/" + config["preproc"] + "_pca_scanorama.parquet"
+        path="outputs/{scenario}/" + config["preproc"] + "_scanorama_pca.parquet"
     log:
-        "logs/{scenario}/" + config["preproc"] + "_pca_scanorama.log"
+        "logs/{scenario}/" + config["preproc"] + "_scanorama_pca.log"
     conda:
         "../envs/scanorama.yaml"
     params:
-        method="pca_scanorama",
+        method="scanorama_pca",
         batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
     shell:
         """
@@ -276,6 +276,33 @@ rule methods_scpoli:
             --batch_key '{params.batch_key}' \
             --label_key '{params.label_key}' \
             --output_path '{output.path}' \
+            {params.smoketest} \
+            &> '{log}'
+        """
+
+rule methods_scpoli_pca:
+    input:
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
+        script="scripts/correct_with_scpoli.py"
+    output:
+        path="outputs/{scenario}/" + config["preproc"] + "_scpoli_pca.parquet"
+    log:
+        "logs/{scenario}/" + config["preproc"] + "_scpoli_pca.log"
+    conda:
+        "../envs/scpoli.yaml"
+    params:
+        batch_key=','.join(config["batch_key"]),
+        label_key=config["label_key"],
+        smoketest="--smoketest" if config["smoketest"] else "",
+    shell:
+        """
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --label_key '{params.label_key}' \
+            --output_path '{output.path}' \
+            --preproc 'pca' \
             {params.smoketest} \
             &> '{log}'
         """

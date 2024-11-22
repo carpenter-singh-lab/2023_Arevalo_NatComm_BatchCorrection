@@ -2,6 +2,7 @@ import itertools
 from functools import partial
 
 import pandas as pd
+import matplotlib
 from matplotlib import pyplot as plt
 
 from .colors import (
@@ -14,8 +15,8 @@ from .colors import (
 )
 from .data import query_multiple_pos
 from .scatter import despine, scatter_panel
-from .table import add_colorbar
-from .table import draw as draw_table
+from .table import add_colorbars
+from .table import draw_table
 
 
 def load_embeddings(embd_path: str, pivot_path: str):
@@ -42,12 +43,10 @@ def add_number(ax: plt.Axes, number: str, **kwargs):
     ax.text(s=number, **text_params)
 
 
-def add_table(pivot_path, fig, spec) -> plt.Axes:
+def add_table(pivot_path, fig, spec, cbar_specs) -> plt.Axes:
     # Table with colorbar
     ax = fig.add_subplot(spec[0, :])
-    draw_table(pivot_path, ax)
-    ax_colorbar = fig.add_subplot(spec[1, 4:7])
-    add_colorbar(fig, ax_colorbar)
+    draw_table(pivot_path, ax, cbar_specs)
     return ax
 
 
@@ -109,12 +108,20 @@ def colorby(embds: pd.DataFrame, column: str) -> pd.Series:
 def results_table(pivot_path: str, fig_path: str):
     # load data we'll visulise so we can dynamically adjust the plot sizes
     data = pd.read_parquet(pivot_path)
-    n_columns = data.shape[1]
+    n_rows, n_columns = data.shape 
     fig_width = max(24, n_columns * 1.5)
 
-    fig = plt.figure(figsize=(fig_width, 9))
+    fig = plt.figure(figsize=(fig_width, n_rows))
     spec = fig.add_gridspec(2, n_columns, height_ratios=[2.5, 0.1])
-    add_table(pivot_path, fig, spec)
+
+    cbar_specs = [
+        {"cmap": matplotlib.cm.get_cmap("Blues"), "label": "Batch correction metrics"},
+        {"cmap": matplotlib.cm.get_cmap("Greens"), "label": "Bio conservation metrics"},
+        {"cmap": matplotlib.cm.get_cmap("Oranges"), "label": "Aggregate scores"},
+    ]
+    add_table(pivot_path, fig, spec, cbar_specs)
+    add_colorbars(fig, spec, n_columns, cbar_specs)
+
     plt.savefig(fig_path, bbox_inches="tight")
 
 
