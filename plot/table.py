@@ -5,8 +5,10 @@ from plottable import ColumnDefinition, Table
 from plottable.plots import bar
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
+import matplotlib.colors as mcolors
+import numpy as np
 
-def add_colorbars(fig, spec, n_columns, colorbar_specs):
+def add_colorbars(fig, spec, n_cols, n_rows, colorbar_specs, score_transfunc):
     """Creates a group of colorbars that is centered below the table."""
     bar_width_fraction = 0.12
     padding_fraction = 0.04
@@ -16,17 +18,18 @@ def add_colorbars(fig, spec, n_columns, colorbar_specs):
 
     # Calculate starting column to center the group
     start_triplet_fraction = (1 - total_width_fraction) / 2
-    start_triplet_col = int(start_triplet_fraction * n_columns)
+    start_triplet_col = int(start_triplet_fraction * n_cols)
 
     # Calculate the width of each colorbar and spacing in columns
-    bar_width_cols = int(bar_width_fraction * n_columns)
-    padding_cols = int(padding_fraction * n_columns)
+    bar_width_cols = int(bar_width_fraction * n_cols)
+    padding_cols = int(padding_fraction * n_cols)
 
     for i, colorbar_spec in enumerate(colorbar_specs):
         cmap = colorbar_spec["cmap"]
         label = colorbar_spec["label"]
 
-        scalar_mappable = ScalarMappable(norm=Normalize(vmin=0, vmax=1), cmap=cmap)
+        norm = Normalize(vmin=0, vmax=1) # if score_transfunc == "" else Normalize(vmin=n_rows, vmax=1)
+        scalar_mappable = ScalarMappable(norm=norm, cmap=cmap)
 
         # Compute the exact start and end columns for each colorbar
         start_col = (start_triplet_col + i * (bar_width_cols + padding_cols)) + 2
@@ -39,6 +42,8 @@ def add_colorbars(fig, spec, n_columns, colorbar_specs):
             cax=ax_colorbar,
             orientation="horizontal",
         )
+        # if score_transfunc == "_scaled":
+        #     cbar.ax.invert_xaxis()
 
         # Add title above and numbers (ticks) below
         ax_colorbar.set_title(label, pad=8, fontsize=10)
@@ -46,7 +51,12 @@ def add_colorbars(fig, spec, n_columns, colorbar_specs):
         cbar.ax.xaxis.set_label_position("bottom")
         ax_colorbar.xaxis.label.set_size(8)
 
-  
+
+def make_discrete_cmap(cmap_name, num_colors):
+    """Creates a discrete colormap with a specified number of colors."""
+    base_cmap = plt.get_cmap(cmap_name)
+    color_list = base_cmap(np.linspace(0, 1, num_colors))
+    return mcolors.ListedColormap(color_list)
 
 
 def white_yellow_green_cm():
@@ -79,7 +89,7 @@ def get_scalar_mapppable(col_data, norm_type=None):
     return m
 
 
-def draw_table(pivot_path: str, ax: plt.Axes, cbar_specs):
+def draw_table(pivot_path: str, ax: plt.Axes, cbar_specs, score_transfunc):
     """
     Adapted from:
     https://github.com/yoseflab/scib-metrics/blob/0.4.1/src/scib_metrics/benchmark/_core.py#L276-L364
@@ -90,7 +100,6 @@ def draw_table(pivot_path: str, ax: plt.Axes, cbar_specs):
     batch_cmap = next(spec["cmap"] for spec in cbar_specs if spec["label"] == "Batch correction metrics")
     bio_cmap = next(spec["cmap"] for spec in cbar_specs if spec["label"] == "Bio conservation metrics")
     aggregate_cmap = next(spec["cmap"] for spec in cbar_specs if spec["label"] == "Aggregate scores")
-
 
     # extract labels from columns so we can construct queries later
     eval_keys = df.columns.get_level_values("eval_key").unique()
@@ -113,13 +122,6 @@ def draw_table(pivot_path: str, ax: plt.Axes, cbar_specs):
 
     # define how circles and barplots look
     circle_props = {"ha": "center", "bbox": {"boxstyle": "circle", "pad": 0.25}}
-    barplot_props = {
-        "cmap": aggregate_cmap,
-        "plot_bg_bar": False,
-        "annotate": True,
-        "height": 0.9,
-        "formatter": "{:.2f}",
-    }
 
     # we'll use this to resort the df columns later
     final_col_order = []
@@ -162,9 +164,6 @@ def draw_table(pivot_path: str, ax: plt.Axes, cbar_specs):
         if mean_overall_colname in df_for_table.columns:
             mean_col_fstring_tuples.append((eval_key, 'aggregate_score', "mean_overall"))
 
-        # Add mean columns for reordering
-        # final_col_order.extend([f"{ek}_{mt}_{meancol}" for ek, mt, meancol in mean_col_fstring_tuples])
-
         title_lookup = {
             "mean_batch": "mean\nbatch",
             "mean_bio": "mean\nbio",
@@ -181,9 +180,9 @@ def draw_table(pivot_path: str, ax: plt.Axes, cbar_specs):
             col_def = ColumnDefinition(
                 colname,
                 title=title_lookup.get(meancol, meancol).replace("_", "\n", 1),
-                plot_kw=barplot_props,
+                textprops=circle_props,
                 width=1,
-                plot_fn=bar,
+                cmap=aggregate_cmap,
                 group=eval_key,
                 formatter="{:.2f}",
                 border=border_lookup.get(i),
@@ -191,17 +190,56 @@ def draw_table(pivot_path: str, ax: plt.Axes, cbar_specs):
             column_definitions.append(col_def)
             final_col_order.append(colname)
 
-    # Calculate mean-score across all eval_keys and add it to the table
     name_for_col_that_averages_across_eval_keys = "total_mean"
+    non_aggregate_cols = [col for col in df_for_table.columns if "aggregate_score" not in col and col != "Method"]
+
+    if score_transfunc == "":
+
+        pass
+    
+    elif score_transfunc == "_scaled":
+        
+        df_for_table[non_aggregate_cols] = df_for_table[non_aggregate_cols].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
+    
+    elif score_transfunc == "_ranked":
+        
+        # Identify non-aggregate columns and substitue scores with ranks, then scale to [0, 1]
+        df_for_table[non_aggregate_cols] = df_for_table[non_aggregate_cols].rank(method="average", ascending=True)
+        df_for_table[non_aggregate_cols] = df_for_table[non_aggregate_cols].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
+
+    # re-average per key and metric type
+    for eval_key in eval_keys:
+
+        metric_types = [mt for mt in metric_type_keys if mt != 'aggregate_score']
+        
+        for metric_type in metric_types:
+
+            metric_cols = [col for col in non_aggregate_cols if col.startswith(f"{eval_key}_{metric_type}_")]
+
+            if not metric_cols:
+                continue  # Skip if no metrics found for this category
+            
+            # mean rank for metric_type (batch / bio) 
+            mean_rank_col = f"{eval_key}_aggregate_score_mean_{metric_type.split('_')[0]}"
+            df_for_table[mean_rank_col] = df_for_table[metric_cols].mean(axis=1)
+
+        # mean rank for eval_key
+        overall_metric_cols = [col for col in non_aggregate_cols if col.startswith(f"{eval_key}_")]
+        mean_overall_col = f"{eval_key}_aggregate_score_mean_overall"
+        if mean_overall_col in df_for_table.columns:
+            df_for_table[mean_overall_col] = df_for_table[overall_metric_cols].mean(axis=1)
+
+    # overall mean rank
     total_mean = df_for_table[[col for col in df_for_table.columns if "aggregate_score_mean_overall" in col]].mean(axis=1)
-    df_for_table["total_mean"] = total_mean
+    df_for_table[name_for_col_that_averages_across_eval_keys] = total_mean
+
 
     col_def = ColumnDefinition(
         name_for_col_that_averages_across_eval_keys,
         title="Total",
-        plot_kw=barplot_props,
+        textprops=circle_props,
         width=1,
-        plot_fn=bar,
+        cmap=aggregate_cmap,
         formatter="{:.2f}",
         border="both",
     )
