@@ -1,5 +1,25 @@
-/ictstr01/home/icb/tim.treis/projects/broad_integrate/2023_Arevalo_BatchCorrection/env_store/c3b71e8e8009d5c71efb3c36471cc09c_/lib/python3.12/site-packages/scanpy/preprocessing/_pca.py:325: ImplicitModificationWarning: Setting element `.obsm['X_pca']` of view, initializing view as actual.
-  adata.obsm["X_pca"] = X_pca
-[[0.         0.41170324]
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/4bb0b7369a4e75f72fef4e966caecf34_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_csv from `anndata` is deprecated. Import anndata.io.read_csv instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/4bb0b7369a4e75f72fef4e966caecf34_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_excel from `anndata` is deprecated. Import anndata.io.read_excel instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/4bb0b7369a4e75f72fef4e966caecf34_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_hdf from `anndata` is deprecated. Import anndata.io.read_hdf instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/4bb0b7369a4e75f72fef4e966caecf34_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_loom from `anndata` is deprecated. Import anndata.io.read_loom instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/4bb0b7369a4e75f72fef4e966caecf34_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_mtx from `anndata` is deprecated. Import anndata.io.read_mtx instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/4bb0b7369a4e75f72fef4e966caecf34_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_text from `anndata` is deprecated. Import anndata.io.read_text instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/4bb0b7369a4e75f72fef4e966caecf34_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_umi_tools from `anndata` is deprecated. Import anndata.io.read_umi_tools instead.
+  warnings.warn(msg, FutureWarning)
+Found 1014 genes among all datasets
+[[0.         0.88061651]
  [0.         0.        ]]
-Processing datasets source_2 <=> source_6
+Processing datasets (0, 1)
+Traceback (most recent call last):
+  File "/ictstr01/home/icb/mahima.arunkumar/hiwi/scripts/correct_with_scanorama.py", line 98, in <module>
+    correct_with_scanorama(
+  File "/ictstr01/home/icb/mahima.arunkumar/hiwi/scripts/correct_with_scanorama.py", line 30, in correct_with_scanorama
+    col = pd.Series(data=meta.index, index=meta[batch_key])
+                         ^^^^
+NameError: name 'meta' is not defined

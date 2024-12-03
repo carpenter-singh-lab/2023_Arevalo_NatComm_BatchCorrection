@@ -1,13 +1,19 @@
-2024-08-01 03:25:27,805 - harmonypy - INFO - Computing initial centroids with sklearn.KMeans...
-2024-08-01 03:27:44,012 - harmonypy - INFO - sklearn.KMeans initialization complete.
-2024-08-01 03:27:44,363 - harmonypy - INFO - Iteration 1 of 999999
-2024-08-01 03:28:11,672 - harmonypy - INFO - Iteration 2 of 999999
-2024-08-01 03:28:42,076 - harmonypy - INFO - Iteration 3 of 999999
-2024-08-01 03:29:08,435 - harmonypy - INFO - Iteration 4 of 999999
-2024-08-01 03:29:35,100 - harmonypy - INFO - Iteration 5 of 999999
-2024-08-01 03:29:59,854 - harmonypy - INFO - Iteration 6 of 999999
-2024-08-01 03:30:24,280 - harmonypy - INFO - Iteration 7 of 999999
-2024-08-01 03:30:46,448 - harmonypy - INFO - Iteration 8 of 999999
-2024-08-01 03:31:10,838 - harmonypy - INFO - Iteration 9 of 999999
-2024-08-01 03:31:31,978 - harmonypy - INFO - Iteration 10 of 999999
-2024-08-01 03:31:55,128 - harmonypy - INFO - Converged after 10 iterations
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/50c6c0cd1f262f168baa8e5eb9dca048_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_csv from `anndata` is deprecated. Import anndata.io.read_csv instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/50c6c0cd1f262f168baa8e5eb9dca048_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_excel from `anndata` is deprecated. Import anndata.io.read_excel instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/50c6c0cd1f262f168baa8e5eb9dca048_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_hdf from `anndata` is deprecated. Import anndata.io.read_hdf instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/50c6c0cd1f262f168baa8e5eb9dca048_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_loom from `anndata` is deprecated. Import anndata.io.read_loom instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/50c6c0cd1f262f168baa8e5eb9dca048_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_mtx from `anndata` is deprecated. Import anndata.io.read_mtx instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/50c6c0cd1f262f168baa8e5eb9dca048_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_text from `anndata` is deprecated. Import anndata.io.read_text instead.
+  warnings.warn(msg, FutureWarning)
+/ictstr01/home/icb/mahima.arunkumar/hiwi/env_store/50c6c0cd1f262f168baa8e5eb9dca048_/lib/python3.12/site-packages/anndata/utils.py:429: FutureWarning: Importing read_umi_tools from `anndata` is deprecated. Import anndata.io.read_umi_tools instead.
+  warnings.warn(msg, FutureWarning)
+2024-11-21 10:50:13,237 - harmonypy - INFO - Computing initial centroids with sklearn.KMeans...
+2024-11-21 10:51:46,068 - harmonypy - INFO - sklearn.KMeans initialization complete.
+2024-11-21 10:51:46,554 - harmonypy - INFO - Iteration 1 of 2
+2024-11-21 10:52:15,683 - harmonypy - INFO - Iteration 2 of 2
+2024-11-21 10:52:44,291 - harmonypy - INFO - Stopped before convergence

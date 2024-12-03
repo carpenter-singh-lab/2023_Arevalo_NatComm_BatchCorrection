@@ -5,20 +5,24 @@ configfile: "./inputs/conf/scenario_6.json"
 WORKFLOWS = [
     "mad_int_featselect",
 ]
+
 METHODS = [
-    "scanorama",
-    "fastMNN",
-    "mnn",
-    "harmony",
-    "combat",
-    "desc",
-    "scvi",
-    "sysvi",
-    "scpoli",
-    "sphering",
-    "seurat_cca",
-    "seurat_rpca",
-]
+    #"scanorama", problem
+    #"fastMNN", problem latency
+    #"mnn", problem latency
+    #"harmony", 
+    #"combat", 
+    #"desc", 
+    #"scvi", 
+    #"scanvi",
+    "gaushvi",
+    "gaushanvi", 
+    # "sysvi", problem
+    #"scpoli", problem
+    #"sphering", 
+    #"seurat_cca", problem latency
+    #"seurat_rpca", problem latency
+] 
 
 
 # Load rules

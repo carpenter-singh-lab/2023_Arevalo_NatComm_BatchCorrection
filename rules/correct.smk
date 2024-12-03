@@ -228,6 +228,85 @@ rule methods_scvi:
             &> '{log}'
         """
 
+
+rule methods_scanvi:
+    input:
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
+        script="scripts/correct_with_scanvi.py"
+    output:
+        path="outputs/{scenario}/" + config["preproc"] + "_scanvi.parquet"
+    log:
+        "logs/{scenario}/" + config["preproc"] + "_scanvi.log"
+    conda:
+        "../envs/scvi.yaml"
+    params:
+        batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
+        label_key=config["label_key"],
+        smoketest="--smoketest" if config["smoketest"] else "",
+    shell:
+        """
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --label_key '{params.label_key}' \
+            --output_path '{output.path}' \
+            {params.smoketest} \
+            &> '{log}'
+        """
+
+rule methods_gaushvi:
+    input:
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
+        script="scripts/correct_with_gaushvi.py"
+    output:
+        path="outputs/{scenario}/" + config["preproc"] + "_gaushvi.parquet"
+    log:
+        "logs/{scenario}/" + config["preproc"] + "_gaushvi.log"
+    conda:
+        "../envs/gaushvi.yaml"
+    params:
+        batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
+        label_key=config["label_key"],
+        smoketest="--smoketest" if config["smoketest"] else "",
+    shell:
+        """
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --label_key '{params.label_key}' \
+            --output_path '{output.path}' \
+            {params.smoketest} \
+            &> '{log}'
+        """
+
+rule methods_gaushanvi:
+    input:
+        data="outputs/{scenario}/" + config["preproc"] + ".parquet",
+        script="scripts/correct_with_gaushanvi.py"
+    output:
+        path="outputs/{scenario}/" + config["preproc"] + "_gaushanvi.parquet"
+    log:
+        "logs/{scenario}/" + config["preproc"] + "_gaushanvi.log"
+    conda:
+        "../envs/gaushvi.yaml"
+    params:
+        batch_key=config["batch_key"] if isinstance(config["batch_key"], str) else config["batch_key"][0],
+        label_key=config["label_key"],
+        smoketest="--smoketest" if config["smoketest"] else "",
+    shell:
+        """
+        export PYTHONPATH=$(dirname $(pwd)):$(pwd) && \
+        python '{input.script}' \
+            --input_data '{input.data}' \
+            --batch_key '{params.batch_key}' \
+            --label_key '{params.label_key}' \
+            --output_path '{output.path}' \
+            {params.smoketest} \
+            &> '{log}'
+        """
+
 rule methods_sysvi:
     input:
         data="outputs/{scenario}/" + config["preproc"] + ".parquet",
