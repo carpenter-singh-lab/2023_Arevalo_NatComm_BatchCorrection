@@ -37,7 +37,11 @@ Every scenario reported in the paper can be reproduced running snakemake with
 the associated config file. For example, to reproduce Scenario 6 using 8 cores:
 
 ```bash
-snakemake -c8 --configfile inputs/conf/scenario_6.json --use-conda --conda-prefix "./env_store/"
+snakemake -c8 --configfile inputs/conf/scenario_7.json --use-conda --conda-prefix "./env_store/" --resources nvidia_gpu=2
+```
+
+```bash
+snakemake -c8 --configfile inputs/conf/scenario_7.json --use-conda --conda-prefix "./env_store/" --rulegraph > rulegraph.dot
 ```
 
 snakemake -c8 --configfile inputs/conf/scenario_6.json --use-conda --conda-prefix "./env_store/" --until results_table

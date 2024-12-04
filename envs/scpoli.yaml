@@ -11,7 +11,14 @@ dependencies:
   - python=3.9
   - scanpy
   - pyarrow
+  - scvi-tools=1.1.6.post2
+  - numpyro=0.15.3
   - pip:
-    - scarches
+    - scarches==0.6.1 
+    - scib-metrics
+    - optuna
+    - jax==0.4.30
+    - jax-cuda12-pjrt
+    - jax-cuda12-plugin 
 variables:
   SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL: True

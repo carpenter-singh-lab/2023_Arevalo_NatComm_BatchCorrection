@@ -1,4 +1,4 @@
-configfile: "./inputs/conf/scenario_6.json"
+configfile: "./inputs/conf/scenario_7.json"
 
 
 # Define processing workflows and correction methods to run
@@ -15,7 +15,10 @@ METHODS = [
     "combat",
     "desc",
     "scvi",
-    "sysvi",
+    "sysvi",    
+    "scanvi",
+    "gaushvi",
+    "gaushanvi", 
     "scpoli",
     # "scpoli_pca", # performs quite a bit worse than normal scpoli
     "sphering",
@@ -31,6 +34,7 @@ include: "rules/metrics.smk"
 include: "rules/correct.smk"
 include: "rules/projection.smk"
 include: "rules/plots.smk"
+include: "rules/tune.smk"
 
 
 rule all:
