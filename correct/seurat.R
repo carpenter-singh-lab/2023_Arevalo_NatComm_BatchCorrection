@@ -30,23 +30,23 @@ seurat_lists <- list()
 for (i in c(1:length(batches))) {
   raw <- batches[[i]] %>% as.data.frame()
   meta <- meta_batches[[i]] %>% as.data.frame()
-  
+
   # Create a Seurat object from the batch
   names(raw) <- gsub("_","-",names(raw))
   obj <- CreateSeuratObject(counts = t(raw), meta.data = meta)
   obj <- SetAssayData(object = obj, slot = "data", new.data = t(raw))
   obj <- SetAssayData(object = obj, slot = "scale.data", new.data = t(raw))
-  
+
   # Specifying features enables skipping automatic trigger of "FindVariableFeatures" function
   obj <- RunPCA(obj, features = colnames(raw), verbose = FALSE)
-  
+
   seurat_lists[i] <- obj
 }
 
 # Integrate using Seurat
-anchor_set <- FindIntegrationAnchors(object.list = seurat_lists, 
-                                     reduction = seurat_method, 
-                                     anchor.features = colnames(raw), 
+anchor_set <- FindIntegrationAnchors(object.list = seurat_lists,
+                                     reduction = seurat_method,
+                                     anchor.features = colnames(raw),
                                      scale = FALSE,
                                      verbose = FALSE)
 integrated_obj = IntegrateData(anchor_set, verbose = FALSE)
